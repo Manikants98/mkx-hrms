@@ -310,11 +310,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               ? AppColors.darkSecondary
                               : AppColors.lightSecondary,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: isDark
-                                ? AppColors.darkBorder
-                                : AppColors.lightBorder,
-                          ),
                         ),
                         child: Icon(
                           Icons.fingerprint_rounded,
@@ -359,11 +354,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             ? AppColors.darkCard
                             : AppColors.lightCard,
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: isDark
-                              ? AppColors.darkBorder
-                              : AppColors.lightBorder,
-                        ),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,

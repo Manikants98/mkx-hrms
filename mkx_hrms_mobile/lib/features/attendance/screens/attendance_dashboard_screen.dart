@@ -6,6 +6,8 @@ import '../../../core/utils/date_utils.dart';
 import '../../../core/utils/ui_helpers.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/metric_card.dart';
+import '../../../core/widgets/mkx_app_bar.dart';
+import '../../../core/widgets/section_tile.dart';
 import '../../../core/widgets/status_badge.dart';
 import '../../auth/state/auth_provider.dart';
 import '../../leaves/state/leaves_provider.dart';
@@ -124,7 +126,12 @@ class _AttendanceDashboardScreenState extends State<AttendanceDashboardScreen> {
     final pendingLeaveRequests = leaves.balances?.pendingRequests ?? 0;
 
     return Scaffold(
+      appBar: MkxAppBar(
+        title: 'Attendance',
+        subtitle: '${user?.role ?? "Employee"} • ${user?.department ?? "Engineering"}',
+      ),
       body: SafeArea(
+        top: false,
         child: RefreshIndicator(
           onRefresh: _loadData,
           color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
@@ -134,70 +141,6 @@ class _AttendanceDashboardScreenState extends State<AttendanceDashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Employee Greeting Header
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Hello, ${user?.firstName ?? user?.name ?? "Employee"} 👋',
-                          style: GoogleFonts.inter(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.4,
-                            color: isDark
-                                ? AppColors.darkForeground
-                                : AppColors.lightForeground,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '${user?.role ?? "Employee"} • ${user?.department ?? "Engineering"}',
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
-                            color: isDark
-                                ? AppColors.darkMuted
-                                : AppColors.lightMuted,
-                          ),
-                        ),
-                      ],
-                    ),
-                    // Avatar / Initial Badge
-                    Container(
-                      width: 42,
-                      height: 42,
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? AppColors.darkSecondary
-                            : AppColors.lightSecondary,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isDark
-                              ? AppColors.darkBorder
-                              : AppColors.lightBorder,
-                        ),
-                      ),
-                      child: Center(
-                        child: Text(
-                          (user?.name.isNotEmpty == true)
-                              ? user!.name[0].toUpperCase()
-                              : 'E',
-                          style: GoogleFonts.inter(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: isDark
-                                ? AppColors.darkForeground
-                                : AppColors.lightForeground,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-
                 // Interactive Punch Card
                 PunchCard(
                   currentTime: attendance.currentTime,
@@ -317,104 +260,77 @@ class _AttendanceDashboardScreenState extends State<AttendanceDashboardScreen> {
                         'Your punch logs and daily records will appear here as you punch in and out.',
                   )
                 else
-                  ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: attendance.history.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 10),
-                    itemBuilder: (context, index) {
-                      final item = attendance.history[index];
-                      return Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? AppColors.darkCard
-                              : AppColors.lightCard,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: isDark
-                                ? AppColors.darkBorder
-                                : AppColors.lightBorder,
+                  SectionCard(
+                    isDark: isDark,
+                    children: attendance.history.map((item) {
+                      return Row(
+                        children: [
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? AppColors.darkSecondary
+                                  : AppColors.lightSecondary,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  AppDateUtils.formatDate(
+                                    item.date,
+                                  ).split(' ')[0],
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark
+                                        ? AppColors.darkMuted
+                                        : AppColors.lightMuted,
+                                  ),
+                                ),
+                                Text(
+                                  item.date.split('-').last,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w800,
+                                    color: isDark
+                                        ? AppColors.darkForeground
+                                        : AppColors.lightForeground,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        child: Row(
-                          children: [
-                            // Date Column
-                            Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                color: isDark
-                                    ? AppColors.darkSecondary
-                                    : AppColors.lightSecondary,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    AppDateUtils.formatDate(
-                                      item.date,
-                                    ).split(' ')[0],
-                                    style: GoogleFonts.inter(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                      color: isDark
-                                          ? AppColors.darkMuted
-                                          : AppColors.lightMuted,
-                                    ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${item.checkIn} - ${item.checkOut}',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
                                   ),
-                                  Text(
-                                    item.date.split('-').last,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w800,
-                                      color: isDark
-                                          ? AppColors.darkForeground
-                                          : AppColors.lightForeground,
-                                    ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '${item.workHours} • ${item.location}',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    color: isDark
+                                        ? AppColors.darkMuted
+                                        : AppColors.lightMuted,
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 14),
-
-                            // In/Out Times
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Text(
-                                        '${item.checkIn} - ${item.checkOut}',
-                                        style: GoogleFonts.inter(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    '${item.workHours} • ${item.location}',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 12,
-                                      color: isDark
-                                          ? AppColors.darkMuted
-                                          : AppColors.lightMuted,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            // Status Tag
-                            StatusBadge(status: item.status),
-                          ],
-                        ),
+                          ),
+                          StatusBadge(status: item.status),
+                        ],
                       );
-                    },
+                    }).toList(),
                   ),
                 const SizedBox(height: 40),
               ],

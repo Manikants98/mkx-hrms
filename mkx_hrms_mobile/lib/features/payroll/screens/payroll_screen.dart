@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/mkx_app_bar.dart';
+import '../../../core/widgets/section_tile.dart';
 import '../../../core/widgets/status_badge.dart';
 import '../../auth/state/auth_provider.dart';
 import '../models/payslip_model.dart';
@@ -51,7 +53,12 @@ class _PayrollScreenState extends State<PayrollScreen> {
     final latest = payroll.latestPayslip;
 
     return Scaffold(
+      appBar: const MkxAppBar(
+        title: 'Salary & Payslips',
+        subtitle: 'Remuneration statements and annual earnings',
+      ),
       body: SafeArea(
+        top: false,
         child: RefreshIndicator(
           onRefresh: _loadData,
           color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
@@ -61,39 +68,12 @@ class _PayrollScreenState extends State<PayrollScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Salary & Payslips',
-                  style: GoogleFonts.inter(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.4,
-                    color: isDark
-                        ? AppColors.darkForeground
-                        : AppColors.lightForeground,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'View remuneration statements and annual earnings',
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
-                  ),
-                ),
-                const SizedBox(height: 20),
 
                 if (latest != null)
-                  Container(
+                  SectionTile(
+                    isDark: isDark,
+                    position: TilePosition.only,
                     padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isDark
-                            ? AppColors.darkBorder
-                            : AppColors.lightBorder,
-                      ),
-                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -143,8 +123,8 @@ class _PayrollScreenState extends State<PayrollScreen> {
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
                                   color: isDark
-                                      ? AppColors.darkSecondary
-                                      : AppColors.lightSecondary,
+                                       ? AppColors.darkSecondary
+                                       : AppColors.lightSecondary,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Column(
@@ -177,8 +157,8 @@ class _PayrollScreenState extends State<PayrollScreen> {
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
                                   color: isDark
-                                      ? AppColors.darkSecondary
-                                      : AppColors.lightSecondary,
+                                       ? AppColors.darkSecondary
+                                       : AppColors.lightSecondary,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Column(
@@ -239,90 +219,71 @@ class _PayrollScreenState extends State<PayrollScreen> {
                         'Your generated salary slips and statements will be listed here after monthly payroll runs.',
                   )
                 else
-                  ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: payroll.slips.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 10),
-                    itemBuilder: (context, index) {
-                      final item = payroll.slips[index];
+                  SectionCard(
+                    isDark: isDark,
+                    children: payroll.slips.map((item) {
                       return InkWell(
                         onTap: () => _openDetailModal(item),
-                        borderRadius: BorderRadius.circular(12),
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? AppColors.darkCard
-                                : AppColors.lightCard,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: isDark
-                                  ? AppColors.darkBorder
-                                  : AppColors.lightBorder,
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: isDark
+                                       ? AppColors.darkSecondary
+                                       : AppColors.lightSecondary,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(
+                                Icons.receipt_outlined,
+                                size: 22,
+                              ),
                             ),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 44,
-                                height: 44,
-                                decoration: BoxDecoration(
-                                  color: isDark
-                                      ? AppColors.darkSecondary
-                                      : AppColors.lightSecondary,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: const Icon(
-                                  Icons.receipt_outlined,
-                                  size: 22,
-                                ),
-                              ),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      item.monthLabel,
-                                      style: GoogleFonts.inter(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      'Disbursed: ${item.payDate} • ${item.payrollCode}',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 12,
-                                        color: isDark
-                                            ? AppColors.darkMuted
-                                            : AppColors.lightMuted,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    item.formattedNetPay,
+                                    item.monthLabel,
                                     style: GoogleFonts.inter(
                                       fontSize: 15,
-                                      fontWeight: FontWeight.w800,
-                                      color: AppColors.success,
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
-                                  const SizedBox(height: 4),
-                                  StatusBadge(status: item.status),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Disbursed: ${item.payDate} • ${item.payrollCode}',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12,
+                                      color: isDark
+                                          ? AppColors.darkMuted
+                                          : AppColors.lightMuted,
+                                    ),
+                                  ),
                                 ],
                               ),
-                            ],
-                          ),
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  item.formattedNetPay,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.success,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                StatusBadge(status: item.status),
+                              ],
+                            ),
+                          ],
                         ),
                       );
-                    },
+                    }).toList(),
                   ),
                 const SizedBox(height: 40),
               ],

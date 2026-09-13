@@ -6,6 +6,8 @@ import '../../../core/utils/date_utils.dart';
 import '../../../core/utils/ui_helpers.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/mkx_app_bar.dart';
+import '../../../core/widgets/section_tile.dart';
 import '../../../core/widgets/status_badge.dart';
 import '../../auth/state/auth_provider.dart';
 import '../models/leave_model.dart';
@@ -53,7 +55,25 @@ class _LeavesScreenState extends State<LeavesScreen> {
     final leaves = context.watch<LeavesProvider>();
 
     return Scaffold(
+      appBar: MkxAppBar(
+        title: 'Leaves',
+        subtitle: 'Track balances and submit time off',
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: CustomButton(
+              text: 'Apply',
+              icon: const Icon(Icons.add_rounded, size: 16),
+              height: 36,
+              width: 90,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              onPressed: _openApplyModal,
+            ),
+          ),
+        ],
+      ),
       body: SafeArea(
+        top: false,
         child: RefreshIndicator(
           onRefresh: _loadData,
           color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
@@ -63,49 +83,6 @@ class _LeavesScreenState extends State<LeavesScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header with Apply Leave CTA
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Leaves',
-                          style: GoogleFonts.inter(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.4,
-                            color: isDark
-                                ? AppColors.darkForeground
-                                : AppColors.lightForeground,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Track balances and submit time off',
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
-                            color: isDark
-                                ? AppColors.darkMuted
-                                : AppColors.lightMuted,
-                          ),
-                        ),
-                      ],
-                    ),
-                    CustomButton(
-                      text: 'Apply',
-                      icon: const Icon(Icons.add_rounded, size: 16),
-                      height: 38,
-                      width: 98,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      onPressed: _openApplyModal,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-
-                // Quota Allowance Cards
                 _buildDynamicQuotaCards(context, leaves),
                 const SizedBox(height: 24),
 
@@ -150,9 +127,6 @@ class _LeavesScreenState extends State<LeavesScreen> {
                                 ? AppColors.darkBorder
                                 : AppColors.lightBorder,
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
                           padding: const EdgeInsets.symmetric(
                             horizontal: 4,
                             vertical: 2,
@@ -186,154 +160,129 @@ class _LeavesScreenState extends State<LeavesScreen> {
                     ),
                   )
                 else
-                  ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: leaves.filteredHistory.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 10),
-                    itemBuilder: (context, index) {
-                      final item = leaves.filteredHistory[index];
-                      return Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? AppColors.darkCard
-                              : AppColors.lightCard,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: isDark
-                                ? AppColors.darkBorder
-                                : AppColors.lightBorder,
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      width: 8,
-                                      height: 8,
-                                      decoration: BoxDecoration(
-                                        color: item.status == 'Approved'
-                                            ? AppColors.success
-                                            : (item.status == 'Pending'
-                                                  ? AppColors.warning
-                                                  : AppColors.error),
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      item.leaveType,
-                                      style: GoogleFonts.inter(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                StatusBadge(status: item.status),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-
-                            // Date Range & Duration
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: isDark
-                                    ? AppColors.darkSecondary
-                                    : AppColors.lightSecondary,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                  SectionCard(
+                    isDark: isDark,
+                    children: leaves.filteredHistory.map((item) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
                                 children: [
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.date_range_rounded,
-                                        size: 14,
-                                        color: isDark
-                                            ? AppColors.darkMuted
-                                            : AppColors.lightMuted,
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        '${AppDateUtils.formatDate(item.startDate)} - ${AppDateUtils.formatDate(item.endDate)}',
-                                        style: GoogleFonts.inter(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
+                                  Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: BoxDecoration(
+                                      color: item.status == 'Approved'
+                                          ? AppColors.success
+                                          : (item.status == 'Pending'
+                                                ? AppColors.warning
+                                                : AppColors.error),
+                                      shape: BoxShape.circle,
+                                    ),
                                   ),
+                                  const SizedBox(width: 8),
                                   Text(
-                                    '${item.daysCount} ${item.daysCount == 1 ? "day" : "days"}',
+                                    item.leaveType,
                                     style: GoogleFonts.inter(
-                                      fontSize: 12,
+                                      fontSize: 15,
                                       fontWeight: FontWeight.w700,
-                                      color: isDark
-                                          ? AppColors.darkForeground
-                                          : AppColors.lightForeground,
                                     ),
                                   ),
                                 ],
                               ),
+                              StatusBadge(status: item.status),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
                             ),
-                            const SizedBox(height: 10),
-
-                            // Reason
-                            Text(
-                              item.reason,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.inter(
-                                fontSize: 13,
-                                color: isDark
-                                    ? AppColors.darkMuted
-                                    : AppColors.lightMuted,
-                              ),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? AppColors.darkSecondary
+                                  : AppColors.lightSecondary,
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            const SizedBox(height: 8),
-
-                            // Applied Date & Code
-                            Row(
+                            child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  item.leaveCode,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: isDark
-                                        ? AppColors.darkMuted
-                                        : AppColors.lightMuted,
-                                  ),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.date_range_rounded,
+                                      size: 14,
+                                      color: isDark
+                                          ? AppColors.darkMuted
+                                          : AppColors.lightMuted,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      '${AppDateUtils.formatDate(item.startDate)} - ${AppDateUtils.formatDate(item.endDate)}',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                                 Text(
-                                  'Applied: ${AppDateUtils.formatDate(item.appliedOn)}',
+                                  '${item.daysCount} ${item.daysCount == 1 ? "day" : "days"}',
                                   style: GoogleFonts.inter(
-                                    fontSize: 11,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
                                     color: isDark
-                                        ? AppColors.darkMuted
-                                        : AppColors.lightMuted,
+                                        ? AppColors.darkForeground
+                                        : AppColors.lightForeground,
                                   ),
                                 ),
                               ],
                             ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            item.reason,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              color: isDark
+                                  ? AppColors.darkMuted
+                                  : AppColors.lightMuted,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                item.leaveCode,
+                                style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark
+                                      ? AppColors.darkMuted
+                                      : AppColors.lightMuted,
+                                ),
+                              ),
+                              Text(
+                                'Applied: ${AppDateUtils.formatDate(item.appliedOn)}',
+                                style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  color: isDark
+                                      ? AppColors.darkMuted
+                                      : AppColors.lightMuted,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       );
-                    },
+                    }).toList(),
                   ),
                 const SizedBox(height: 40),
               ],
@@ -375,7 +324,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
         scrollDirection: Axis.horizontal,
         clipBehavior: Clip.none,
         itemCount: displayQuotas.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 10),
+        separatorBuilder: (_, __) => const SizedBox(width: 10),
         itemBuilder: (context, index) {
           final item = displayQuotas[index];
           final color = UiHelpers.parseHexColor(
@@ -420,9 +369,6 @@ class _LeavesScreenState extends State<LeavesScreen> {
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkCard : AppColors.lightCard,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -451,7 +397,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
                   ),
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     code,

@@ -1,3 +1,4 @@
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -28,15 +29,19 @@ class MkxHrmsApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => LeavesProvider()),
         ChangeNotifierProvider(create: (_) => PayrollProvider()),
       ],
-      child: Consumer<AuthProvider>(
-        builder: (context, auth, _) {
-          return MaterialApp(
-            title: 'MKX HRMS',
-            debugShowCheckedModeBanner: false,
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
-            themeMode: auth.themeMode,
-            home: _buildHome(auth),
+      child: DynamicColorBuilder(
+        builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
+          return Consumer<AuthProvider>(
+            builder: (context, auth, _) {
+              return MaterialApp(
+                title: 'MKX HRMS',
+                debugShowCheckedModeBanner: false,
+                theme: AppTheme.lightTheme(lightDynamic),
+                darkTheme: AppTheme.darkTheme(darkDynamic),
+                themeMode: auth.themeMode,
+                home: _buildHome(auth),
+              );
+            },
           );
         },
       ),
@@ -44,12 +49,8 @@ class MkxHrmsApp extends StatelessWidget {
   }
 
   Widget _buildHome(AuthProvider auth) {
-    if (auth.isLoading) {
-      return const _SplashScreen();
-    }
-    if (auth.isAuthenticated) {
-      return const MainShellScreen();
-    }
+    if (auth.isInitializing) return const _SplashScreen();
+    if (auth.isAuthenticated) return const MainShellScreen();
     return const LoginScreen();
   }
 }
@@ -71,13 +72,8 @@ class _SplashScreen extends StatelessWidget {
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                color: isDark
-                    ? AppColors.darkSecondary
-                    : AppColors.lightSecondary,
+                color: isDark ? AppColors.darkCard : AppColors.lightCard,
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                ),
               ),
               child: Icon(
                 Icons.fingerprint_rounded,

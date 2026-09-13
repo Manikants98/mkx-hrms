@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/widgets/section_tile.dart';
 import '../../../core/widgets/status_badge.dart';
 import '../models/payslip_model.dart';
 
@@ -74,17 +75,10 @@ class PayslipDetailModal extends StatelessWidget {
             const SizedBox(height: 20),
 
             // Net Pay Card Highlight
-            Container(
+            SectionTile(
+              isDark: isDark,
+              position: TilePosition.only,
               padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? AppColors.darkSecondary
-                    : AppColors.lightSecondary,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                ),
-              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -123,72 +117,70 @@ class PayslipDetailModal extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            // Employee Details
             _buildSectionHeader('Employee Details'),
             const SizedBox(height: 8),
-            _buildRow('Employee Name', slip.employeeName, isDark),
-            _buildRow('Designation', slip.role, isDark),
-            _buildRow('Department', slip.department, isDark),
-            _buildRow('Payroll Code', slip.payrollCode, isDark),
+            SectionCard(
+              isDark: isDark,
+              children: [
+                _buildRow('Employee Name', slip.employeeName, isDark),
+                _buildRow('Designation', slip.role, isDark),
+                _buildRow('Department', slip.department, isDark),
+                _buildRow('Payroll Code', slip.payrollCode, isDark),
+              ],
+            ),
             const SizedBox(height: 16),
 
-            /// Attendance & Leave Calculation
             _buildSectionHeader('Attendance & Calendar'),
             const SizedBox(height: 8),
-            _buildRow(
-              'Working Days in Month',
-              '${slip.workingDays} days',
-              isDark,
+            SectionCard(
+              isDark: isDark,
+              children: [
+                _buildRow('Working Days in Month', '${slip.workingDays} days', isDark),
+                _buildRow('Paid Days', '${slip.paidDays} days', isDark),
+                if (slip.lopDays > 0)
+                  _buildRow('Loss of Pay (Unpaid Leave)', '${slip.lopDays} days', isDark),
+              ],
             ),
-            _buildRow('Paid Days', '${slip.paidDays} days', isDark),
-            if (slip.lopDays > 0)
-              _buildRow(
-                'Loss of Pay (Unpaid Leave)',
-                '${slip.lopDays} days',
-                isDark,
-              ),
             const SizedBox(height: 16),
 
-            /// Earnings Breakdown
             _buildSectionHeader('Earnings & Allowances'),
             const SizedBox(height: 8),
             if (slip.items.any((i) => i.category == 'Earning'))
-              ...slip.items
-                  .where((i) => i.category == 'Earning')
-                  .map(
-                    (it) => _buildRow(
-                      it.name,
-                      '+\$${it.amount.toStringAsFixed(2)}',
-                      isDark,
-                    ),
-                  )
-            else ...[
-              _buildRow('Base Salary', slip.formattedBase, isDark),
-              _buildRow(
-                'Allowances & Benefits',
-                slip.formattedAllowance,
-                isDark,
+              SectionCard(
+                isDark: isDark,
+                children: slip.items
+                    .where((i) => i.category == 'Earning')
+                    .map((it) => _buildRow(it.name, '+${it.amount.toStringAsFixed(2)}', isDark))
+                    .toList(),
+              )
+            else
+              SectionCard(
+                isDark: isDark,
+                children: [
+                  _buildRow('Base Salary', slip.formattedBase, isDark),
+                  _buildRow('Allowances & Benefits', slip.formattedAllowance, isDark),
+                ],
               ),
-            ],
             const SizedBox(height: 16),
 
-            /// Deductions Breakdown
-            if (slip.items.any((i) => i.category == 'Deduction') ||
-                slip.totalDeductions > 0) ...[
+            if (slip.items.any((i) => i.category == 'Deduction') || slip.totalDeductions > 0) ...[
               _buildSectionHeader('Deductions & Statutory Taxes'),
               const SizedBox(height: 8),
               if (slip.items.any((i) => i.category == 'Deduction'))
-                ...slip.items
-                    .where((i) => i.category == 'Deduction')
-                    .map(
-                      (it) => _buildRow(
-                        it.name,
-                        '-\$${it.amount.toStringAsFixed(2)}',
-                        isDark,
-                      ),
-                    )
+                SectionCard(
+                  isDark: isDark,
+                  children: slip.items
+                      .where((i) => i.category == 'Deduction')
+                      .map((it) => _buildRow(it.name, '-${it.amount.toStringAsFixed(2)}', isDark))
+                      .toList(),
+                )
               else
-                _buildRow('Total Deductions', slip.formattedDeductions, isDark),
+                SectionCard(
+                  isDark: isDark,
+                  children: [
+                    _buildRow('Total Deductions', slip.formattedDeductions, isDark),
+                  ],
+                ),
               const SizedBox(height: 16),
             ],
             const Divider(height: 20),

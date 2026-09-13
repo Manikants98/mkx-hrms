@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../core/widgets/custom_button.dart';
+import '../../../core/widgets/section_tile.dart';
 import '../../../core/widgets/status_badge.dart';
 import '../models/attendance_model.dart';
 
@@ -29,16 +30,10 @@ class PunchCard extends StatelessWidget {
     final hasCheckedIn = record?.hasCheckedIn ?? false;
     final hasCheckedOut = record?.hasCheckedOut ?? false;
 
-    return Container(
+    return SectionTile(
+      isDark: isDark,
+      position: TilePosition.only,
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-          width: 1,
-        ),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -96,9 +91,6 @@ class PunchCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: isDark ? AppColors.darkSecondary : AppColors.lightSecondary,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,

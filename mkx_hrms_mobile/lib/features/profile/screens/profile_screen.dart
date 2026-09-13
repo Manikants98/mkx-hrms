@@ -6,6 +6,8 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../core/utils/ui_helpers.dart';
 import '../../../core/widgets/custom_button.dart';
+import '../../../core/widgets/mkx_app_bar.dart';
+import '../../../core/widgets/section_tile.dart';
 import '../../../core/widgets/status_badge.dart';
 import '../../auth/state/auth_provider.dart';
 import '../../leaves/models/leave_model.dart';
@@ -62,48 +64,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final user = auth.currentUser;
 
     return Scaffold(
+      appBar: MkxAppBar(
+        title: 'Profile',
+        subtitle: 'Employment records and account preferences',
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.logout_rounded,
+              size: 20,
+              color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
+            ),
+            onPressed: () => _handleLogout(context),
+            tooltip: 'Sign Out',
+          ),
+        ],
+      ),
       body: SafeArea(
+        top: false,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Personal Profile',
-                style: GoogleFonts.inter(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.4,
-                  color: isDark
-                      ? AppColors.darkForeground
-                      : AppColors.lightForeground,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                'Employment records and account preferences',
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
-                ),
-              ),
-              const SizedBox(height: 24),
 
-              // Profile Card Header
-              Container(
+              SectionTile(
+                isDark: isDark,
+                position: TilePosition.only,
                 padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isDark
-                        ? AppColors.darkBorder
-                        : AppColors.lightBorder,
-                  ),
-                ),
                 child: Row(
                   children: [
-                    // Avatar
                     Container(
                       width: 64,
                       height: 64,
@@ -112,11 +101,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ? AppColors.darkSecondary
                             : AppColors.lightSecondary,
                         borderRadius: BorderRadius.circular(18),
-                        border: Border.all(
-                          color: isDark
-                              ? AppColors.darkBorder
-                              : AppColors.lightBorder,
-                        ),
                       ),
                       child: Center(
                         child: Text(
@@ -182,7 +166,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Employment Details Group
               Text(
                 'Employment Details',
                 style: GoogleFonts.inter(
@@ -192,67 +175,50 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               const SizedBox(height: 10),
-              Container(
-                decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: isDark
-                        ? AppColors.darkBorder
-                        : AppColors.lightBorder,
+              SectionCard(
+                isDark: isDark,
+                children: [
+                  _buildInfoTileContent(
+                    icon: Icons.badge_outlined,
+                    label: 'Employee Code',
+                    value: user?.employeeId ?? 'EMP-001',
+                    isDark: isDark,
                   ),
-                ),
-                child: Column(
-                  children: [
-                    _buildInfoTile(
-                      icon: Icons.badge_outlined,
-                      label: 'Employee Code',
-                      value: user?.employeeId ?? 'EMP-001',
-                      isDark: isDark,
-                    ),
-                    _buildDivider(isDark),
-                    _buildInfoTile(
-                      icon: Icons.alternate_email_rounded,
-                      label: 'Email',
-                      value: user?.email ?? '--',
-                      isDark: isDark,
-                    ),
-                    _buildDivider(isDark),
-                    _buildInfoTile(
-                      icon: Icons.supervisor_account_outlined,
-                      label: 'Reporting Manager',
-                      value: user?.managerName ?? 'Department Head',
-                      isDark: isDark,
-                    ),
-                    _buildDivider(isDark),
-                    _buildInfoTile(
-                      icon: Icons.calendar_today_outlined,
-                      label: 'Joining Date',
-                      value: AppDateUtils.formatDate(user?.joinDate),
-                      isDark: isDark,
-                    ),
-                    _buildDivider(isDark),
-                    _buildInfoTile(
-                      icon: Icons.access_time_rounded,
-                      label: 'Timezone',
-                      value: 'Asia/Kolkata (IST)',
-                      isDark: isDark,
-                    ),
-                    _buildDivider(isDark),
-                    _buildInfoTile(
-                      icon: Icons.schedule_outlined,
-                      label: 'Work Shift',
-                      value: user?.shiftName != null
-                          ? '${user!.shiftName}'
-                          : 'General',
-                      isDark: isDark,
-                    ),
-                  ],
-                ),
+                  _buildInfoTileContent(
+                    icon: Icons.alternate_email_rounded,
+                    label: 'Email',
+                    value: user?.email ?? '--',
+                    isDark: isDark,
+                  ),
+                  _buildInfoTileContent(
+                    icon: Icons.supervisor_account_outlined,
+                    label: 'Reporting Manager',
+                    value: user?.managerName ?? 'Department Head',
+                    isDark: isDark,
+                  ),
+                  _buildInfoTileContent(
+                    icon: Icons.calendar_today_outlined,
+                    label: 'Joining Date',
+                    value: AppDateUtils.formatDate(user?.joinDate),
+                    isDark: isDark,
+                  ),
+                  _buildInfoTileContent(
+                    icon: Icons.access_time_rounded,
+                    label: 'Timezone',
+                    value: 'Asia/Kolkata (IST)',
+                    isDark: isDark,
+                  ),
+                  _buildInfoTileContent(
+                    icon: Icons.schedule_outlined,
+                    label: 'Work Shift',
+                    value: user?.shiftName != null
+                        ? '${user!.shiftName}'
+                        : 'General',
+                    isDark: isDark,
+                  ),
+                ],
               ),
               const SizedBox(height: 24),
-
-              // Leave Balances Group
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -308,8 +274,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 10),
               _buildLeaveBalancesCard(context, leaves, isDark),
               const SizedBox(height: 24),
-
-              // Preferences & Theme
               Text(
                 'App Preferences',
                 style: GoogleFonts.inter(
@@ -319,17 +283,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               const SizedBox(height: 10),
-              Container(
+              SectionTile(
+                isDark: isDark,
+                position: TilePosition.only,
                 padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: isDark
-                        ? AppColors.darkBorder
-                        : AppColors.lightBorder,
-                  ),
-                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -401,43 +358,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildInfoTile({
+  /// Builds the row content for an info tile — decoration is handled by [SectionCard].
+  Widget _buildInfoTileContent({
     required IconData icon,
     required String label,
     required String value,
     required bool isDark,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            size: 18,
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 18,
+          color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
+        ),
+        const SizedBox(width: 14),
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 13,
             color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
           ),
-          const SizedBox(width: 14),
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
-            ),
-          ),
-          const Spacer(),
-          Text(
-            value,
-            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDivider(bool isDark) {
-    return Divider(
-      height: 1,
-      color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+        ),
+        const Spacer(),
+        Text(
+          value,
+          style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600),
+        ),
+      ],
     );
   }
 
@@ -507,15 +455,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final quotas = leaves.balances?.list ?? [];
 
     if (leaves.isLoading && quotas.isEmpty) {
-      return Container(
+      return SectionTile(
+        isDark: isDark,
+        position: TilePosition.only,
         padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.darkCard : AppColors.lightCard,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-          ),
-        ),
         child: const Center(
           child: SizedBox(
             width: 20,
@@ -546,15 +489,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               : <LeaveQuota>[]);
 
     if (displayQuotas.isEmpty) {
-      return Container(
+      return SectionTile(
+        isDark: isDark,
+        position: TilePosition.only,
         padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.darkCard : AppColors.lightCard,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-          ),
-        ),
         child: Center(
           child: Text(
             'No leave balances available',
@@ -567,138 +505,114 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-        ),
-      ),
-      child: Column(
-        children: displayQuotas.asMap().entries.map((entry) {
-          final index = entry.key;
-          final quota = entry.value;
-          final color = UiHelpers.parseHexColor(
-            quota.color,
-            defaultColor: index % 3 == 0
-                ? AppColors.info
-                : (index % 3 == 1 ? AppColors.success : AppColors.warning),
-          );
-          final progress = quota.total > 0
-              ? (quota.used / quota.total).clamp(0.0, 1.0)
-              : 0.0;
+    return SectionCard(
+      isDark: isDark,
+      children: displayQuotas.asMap().entries.map((entry) {
+        final index = entry.key;
+        final quota = entry.value;
+        final color = UiHelpers.parseHexColor(
+          quota.color,
+          defaultColor: index % 3 == 0
+              ? AppColors.info
+              : (index % 3 == 1 ? AppColors.success : AppColors.warning),
+        );
+        final progress = quota.total > 0
+            ? (quota.used / quota.total).clamp(0.0, 1.0)
+            : 0.0;
 
-          return Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: color,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              quota.name ?? 'Leave',
-                              style: GoogleFonts.inter(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            if (quota.code != null &&
-                                quota.code!.isNotEmpty) ...[
-                              const SizedBox(width: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 5,
-                                  vertical: 1,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: color.withValues(alpha: 0.12),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  quota.code!,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                    color: color,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ],
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      quota.name ?? 'Leave',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    if (quota.code != null && quota.code!.isNotEmpty) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 1,
                         ),
-                        Text(
-                          '${quota.remaining} days left',
+                        decoration: BoxDecoration(
+                          color: color.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          quota.code!,
                           style: GoogleFonts.inter(
-                            fontSize: 13,
+                            fontSize: 10,
                             fontWeight: FontWeight.w700,
                             color: color,
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(3),
-                      child: LinearProgressIndicator(
-                        value: progress,
-                        minHeight: 4,
-                        backgroundColor: isDark
-                            ? AppColors.darkBorder
-                            : AppColors.lightBorder,
-                        valueColor: AlwaysStoppedAnimation<Color>(color),
                       ),
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '${quota.used} used of ${quota.total} total',
-                          style: GoogleFonts.inter(
-                            fontSize: 11,
-                            color: isDark
-                                ? AppColors.darkMuted
-                                : AppColors.lightMuted,
-                          ),
-                        ),
-                        Text(
-                          quota.isPaid == false ? 'Unpaid' : 'Paid Leave',
-                          style: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            color: isDark
-                                ? AppColors.darkMuted
-                                : AppColors.lightMuted,
-                          ),
-                        ),
-                      ],
-                    ),
+                    ],
                   ],
                 ),
+                Text(
+                  '${quota.remaining} days left',
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: color,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(3),
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 4,
+                backgroundColor: isDark
+                    ? AppColors.darkSecondary
+                    : AppColors.lightSecondary,
+                valueColor: AlwaysStoppedAnimation<Color>(color),
               ),
-              if (index < displayQuotas.length - 1) _buildDivider(isDark),
-            ],
-          );
-        }).toList(),
-      ),
+            ),
+            const SizedBox(height: 6),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '${quota.used} used of ${quota.total} total',
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
+                  ),
+                ),
+                Text(
+                  quota.isPaid == false ? 'Unpaid' : 'Paid Leave',
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      }).toList(),
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_colors.dart';
+import 'section_tile.dart';
 
 /// KPI / Stats card matching the MKX HRMS web card design
 class MetricCard extends StatelessWidget {
@@ -30,17 +31,11 @@ class MetricCard extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
+      borderRadius: BorderRadius.circular(14),
+      child: SectionTile(
+        isDark: isDark,
+        position: TilePosition.only,
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.darkCard : AppColors.lightCard,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-            width: 1,
-          ),
-        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,

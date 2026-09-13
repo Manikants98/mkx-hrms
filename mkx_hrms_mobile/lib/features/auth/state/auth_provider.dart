@@ -9,11 +9,13 @@ class AuthProvider extends ChangeNotifier {
 
   UserModel? _currentUser;
   bool _isLoading = false;
+  bool _isInitializing = true;
   String? _errorMessage;
   ThemeMode _themeMode = ThemeMode.system;
 
   UserModel? get currentUser => _currentUser;
   bool get isLoading => _isLoading;
+  bool get isInitializing => _isInitializing;
   String? get errorMessage => _errorMessage;
   bool get isAuthenticated => _currentUser != null;
   ThemeMode get themeMode => _themeMode;
@@ -23,7 +25,7 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> _initApp() async {
-    _isLoading = true;
+    _isInitializing = true;
     notifyListeners();
 
     // Load theme preference
@@ -45,7 +47,7 @@ class AuthProvider extends ChangeNotifier {
       _currentUser = await _repo.getMe() ?? _currentUser;
     }
 
-    _isLoading = false;
+    _isInitializing = false;
     notifyListeners();
   }
 

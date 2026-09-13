@@ -54,13 +54,13 @@ class _MainShellScreenState extends State<MainShellScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    final colorScheme = Theme.of(context).colorScheme;
     final surfaceColor = isDark ? AppColors.darkCard : AppColors.lightCard;
-    final activeColor = isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
+    final activeColor = colorScheme.primary;
     final inactiveColor = isDark ? AppColors.darkMuted : AppColors.lightMuted;
-    final indicatorColor =
-        (isDark ? AppColors.darkPrimary : AppColors.lightPrimary).withValues(
-          alpha: isDark ? 0.24 : 0.14,
-        );
+    final indicatorColor = colorScheme.primary.withValues(
+      alpha: isDark ? 0.24 : 0.14,
+    );
 
     return Scaffold(
       body: IndexedStack(index: _currentIndex, children: _screens),
