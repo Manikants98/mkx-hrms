@@ -7,7 +7,7 @@ import {
   Shield,
 } from "@mui/icons-material";
 import { Button, CircularProgress, IconButton } from "@mui/material";
-import axios from "axios";
+import { api } from "libraries/axios";
 import { useTheme } from "context/ThemeContext/useTheme";
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -46,7 +46,7 @@ export default function LeaveApproval() {
       return;
     }
     try {
-      const res = await axios.get(`/api/v1/leaves/approval/${token}`);
+      const res = await api.get(`/v1/leaves/approval/${token}`);
       setLeaveDetails(res.data?.data ?? null);
       setPageState("valid");
     } catch (err: unknown) {
@@ -68,7 +68,7 @@ export default function LeaveApproval() {
   const handleAction = async (status: "Approved" | "Rejected") => {
     setIsSubmitting(true);
     try {
-      await axios.post(`/api/v1/leaves/approval/${token}`, { status });
+      await api.post(`/v1/leaves/approval/${token}`, { status });
       toast.success(`Leave ${status.toLowerCase()} successfully.`);
       setSuccessAction(status);
       setPageState("success");
