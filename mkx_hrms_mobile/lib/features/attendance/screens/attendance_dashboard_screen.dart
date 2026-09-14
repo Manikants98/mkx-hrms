@@ -149,7 +149,7 @@ class _AttendanceDashboardScreenState extends State<AttendanceDashboardScreen> {
                   onPunchIn: _handlePunchIn,
                   onPunchOut: _handlePunchOut,
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
 
                 // Monthly Quick Metrics
                 Text(
@@ -160,7 +160,7 @@ class _AttendanceDashboardScreenState extends State<AttendanceDashboardScreen> {
                     letterSpacing: -0.2,
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 Row(
                   children: [
                     Expanded(
@@ -218,7 +218,7 @@ class _AttendanceDashboardScreenState extends State<AttendanceDashboardScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 10),
 
                 // Recent Attendance History List
                 Row(
@@ -243,7 +243,7 @@ class _AttendanceDashboardScreenState extends State<AttendanceDashboardScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
 
                 if (attendance.isLoading && attendance.history.isEmpty)
                   const Center(

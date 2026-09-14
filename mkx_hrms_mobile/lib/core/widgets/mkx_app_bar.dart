@@ -106,7 +106,7 @@ class MkxAppBar extends StatelessWidget implements PreferredSizeWidget {
                     ],
                   ),
                 ),
-                if (actions != null) ...actions!,
+                ...?actions,
                 if (actions == null) const SizedBox(width: 16),
               ],
             ),

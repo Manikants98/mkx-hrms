@@ -84,7 +84,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildDynamicQuotaCards(context, leaves),
-                const SizedBox(height: 24),
+                const SizedBox(height: 10),
 
                 // Status Filter Chips
                 SingleChildScrollView(
@@ -136,7 +136,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
                     }).toList(),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
 
                 // History List
                 if (leaves.isLoading && leaves.history.isEmpty)

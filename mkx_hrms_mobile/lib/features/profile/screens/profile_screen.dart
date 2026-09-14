@@ -164,7 +164,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 10),
 
               Text(
                 'Employment Details',
@@ -218,7 +218,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -273,7 +273,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 10),
               _buildLeaveBalancesCard(context, leaves, isDark),
-              const SizedBox(height: 24),
+              const SizedBox(height: 10),
               Text(
                 'App Preferences',
                 style: GoogleFonts.inter(

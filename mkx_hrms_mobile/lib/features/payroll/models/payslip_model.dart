@@ -101,25 +101,53 @@ class Payslip {
         ? json['total_deductions']
         : (num.tryParse(json['total_deductions']?.toString() ?? '') ?? 0);
 
+    // Compute Base Salary and Allowances from items if missing
+    final earnings = parsedItems.where((i) => i.category == 'Earning').toList();
+    num computedBase = 0;
+    num computedAllowance = 0;
+    
+    if (earnings.isNotEmpty) {
+      final baseItemIndex = earnings.indexWhere((e) => e.name.toLowerCase().contains('base') || e.name.toLowerCase().contains('basic'));
+      if (baseItemIndex != -1) {
+        computedBase = earnings[baseItemIndex].amount;
+        for (int i = 0; i < earnings.length; i++) {
+          if (i != baseItemIndex) computedAllowance += earnings[i].amount;
+        }
+      } else {
+        computedBase = earnings[0].amount;
+        for (int i = 1; i < earnings.length; i++) {
+          computedAllowance += earnings[i].amount;
+        }
+      }
+    }
+
+    final finalBase = json['base_salary'] is num
+        ? json['base_salary']
+        : (num.tryParse(json['base_salary']?.toString() ?? '') ?? computedBase);
+
+    final finalAllowance = json['allowance'] is num
+        ? json['allowance']
+        : (num.tryParse(json['allowance']?.toString() ?? '') ?? computedAllowance);
+
+    String formatCurrency(num amount) {
+      return '\$${amount.toStringAsFixed(0).replaceAll(RegExp(r'\B(?=(\d{3})+(?!\d))'), ',')}';
+    }
+
     return Payslip(
       id: json['id']?.toString() ?? json['payroll_code']?.toString() ?? '',
       dbId: json['db_id'] is int
           ? json['db_id']
           : int.tryParse(json['db_id']?.toString() ?? ''),
       payrollCode: json['payroll_code']?.toString() ?? json['id']?.toString() ?? '',
-      baseSalary: json['base_salary'] is num
-          ? json['base_salary']
-          : (num.tryParse(json['base_salary']?.toString() ?? '') ?? 0),
-      allowance: json['allowance'] is num
-          ? json['allowance']
-          : (num.tryParse(json['allowance']?.toString() ?? '') ?? 0),
+      baseSalary: finalBase,
+      allowance: finalAllowance,
       grossPay: gross,
       totalDeductions: deductions,
       netPay: json['net_pay'] is num
           ? json['net_pay']
           : (num.tryParse(json['net_pay']?.toString() ?? '') ?? 0),
-      formattedBase: json['formatted_base']?.toString() ?? '\$0',
-      formattedAllowance: json['formatted_allowance']?.toString() ?? '\$0',
+      formattedBase: json['formatted_base']?.toString() ?? formatCurrency(finalBase),
+      formattedAllowance: json['formatted_allowance']?.toString() ?? formatCurrency(finalAllowance),
       formattedGross: json['formatted_gross']?.toString() ?? '\$$gross',
       formattedDeductions: json['formatted_deductions']?.toString() ?? '\$$deductions',
       formattedNetPay: json['formatted_net_pay']?.toString() ?? '\$0',

@@ -120,7 +120,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                           children: [
                             Expanded(
                               child: Container(
-                                padding: const EdgeInsets.all(12),
+                                padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
                                   color: isDark
                                        ? AppColors.darkSecondary
@@ -138,23 +138,27 @@ class _PayrollScreenState extends State<PayrollScreen> {
                                             ? AppColors.darkMuted
                                             : AppColors.lightMuted,
                                       ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
                                       latest.formattedBase,
                                       style: GoogleFonts.inter(
-                                        fontSize: 15,
+                                        fontSize: 14,
                                         fontWeight: FontWeight.w700,
                                       ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ],
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 10),
+                            const SizedBox(width: 8),
                             Expanded(
                               child: Container(
-                                padding: const EdgeInsets.all(12),
+                                padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
                                   color: isDark
                                        ? AppColors.darkSecondary
@@ -172,15 +176,58 @@ class _PayrollScreenState extends State<PayrollScreen> {
                                             ? AppColors.darkMuted
                                             : AppColors.lightMuted,
                                       ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
                                       latest.formattedAllowance,
                                       style: GoogleFonts.inter(
-                                        fontSize: 15,
+                                        fontSize: 14,
                                         fontWeight: FontWeight.w700,
                                         color: AppColors.success,
                                       ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                       ? AppColors.darkSecondary
+                                       : AppColors.lightSecondary,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Deductions',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 11,
+                                        color: isDark
+                                            ? AppColors.darkMuted
+                                            : AppColors.lightMuted,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      latest.formattedDeductions,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.error,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ],
                                 ),
@@ -191,7 +238,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                       ],
                     ),
                   ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 10),
 
                 // Past Payslips List
                 Text(
@@ -202,7 +249,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                     letterSpacing: -0.2,
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
 
                 if (payroll.isLoading && payroll.slips.isEmpty)
                   const Center(

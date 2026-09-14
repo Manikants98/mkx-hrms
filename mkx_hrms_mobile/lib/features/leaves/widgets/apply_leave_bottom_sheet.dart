@@ -251,11 +251,6 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                         ? AppColors.darkInput
                         : AppColors.lightBackground,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: isDark
-                          ? AppColors.darkBorder
-                          : AppColors.lightBorder,
-                    ),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
@@ -370,11 +365,6 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                                     ? AppColors.darkInput
                                     : AppColors.lightBackground,
                                 borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: isDark
-                                      ? AppColors.darkBorder
-                                      : AppColors.lightBorder,
-                                ),
                               ),
                               child: Row(
                                 children: [
@@ -426,11 +416,6 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                                     ? AppColors.darkInput
                                     : AppColors.lightBackground,
                                 borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: isDark
-                                      ? AppColors.darkBorder
-                                      : AppColors.lightBorder,
-                                ),
                               ),
                               child: Row(
                                 children: [
@@ -536,11 +521,9 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
             ? (isDark ? AppColors.errorBgDark : AppColors.errorBgLight)
             : (isDark ? AppColors.darkSecondary : AppColors.lightSecondary),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: isExceeded
-              ? AppColors.error.withValues(alpha: 0.4)
-              : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-        ),
+        border: isExceeded
+            ? Border.all(color: AppColors.error.withValues(alpha: 0.4))
+            : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
