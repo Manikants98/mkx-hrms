@@ -375,3 +375,41 @@ export const useAssignEmployeeSalaryStructures = (
       }),
   };
 };
+
+/**
+ * Hook to reset an employee's password
+ *
+ * @param employeeId - The employee ID
+ * @param onSuccessCallback - Optional callback on success
+ * @returns Mutation trigger
+ */
+export const useResetEmployeePassword = (
+  employeeId: string | number,
+  onSuccessCallback?: () => void,
+) => {
+  const mutation = useCustomMutation<ApiResponse<unknown>, unknown, { password: string }>({
+    toastMessages: {
+      loading: "Resetting password...",
+      success: "Password reset successfully!",
+    },
+    onSuccess: () => {
+      if (onSuccessCallback) onSuccessCallback();
+    },
+  });
+
+  return {
+    ...mutation,
+    mutate: (data: { password: string }) =>
+      mutation.mutate({
+        url: `/v1/employees/${employeeId}/reset-password`,
+        method: "POST",
+        data,
+      }),
+    mutateAsync: (data: { password: string }) =>
+      mutation.mutateAsync({
+        url: `/v1/employees/${employeeId}/reset-password`,
+        method: "POST",
+        data,
+      }),
+  };
+};

@@ -1,9 +1,6 @@
 import {
-  CalendarToday,
-  Check,
   DoneAll,
   EventAvailable,
-  KeyboardArrowDown,
   Logout,
   NotificationsNone,
   Payment,
@@ -40,11 +37,6 @@ interface AppNotification {
   unread: boolean;
   type: "leave" | "recruitment" | "payroll" | "attendance";
 }
-
-/**
- * Available timeframe preset filter options
- */
-const timeframeOptions = ["Today", "Last 7 days", "Last 30 days", "This Quarter", "Year to Date"];
 
 /**
  * Initial sample notification entries
@@ -92,10 +84,6 @@ export function Header() {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-
-  const [selectedTimeframe, setSelectedTimeframe] = useState("Last 30 days");
-  const [timeframeAnchorEl, setTimeframeAnchorEl] = useState<HTMLElement | null>(null);
-
   const [notifications, setNotifications] = useState<AppNotification[]>(initialNotifications);
   const [notificationAnchorEl, setNotificationAnchorEl] = useState<HTMLElement | null>(null);
 
@@ -155,51 +143,13 @@ export function Header() {
     if (location.pathname.startsWith("/leaves")) return "Leaves";
     if (location.pathname.startsWith("/recruitment")) return "Recruitment";
     if (location.pathname.startsWith("/payroll")) return "Payroll";
-    return "Overview";
+    return "Dashboard";
   };
 
   return (
     <header className="h-16 border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-30 flex items-center justify-between px-6">
       <div className="flex items-center gap-6">
         <h1 className="text-xl font-semibold text-foreground">{getPageTitle()}</h1>
-
-        {/* Dynamic Date Range Menu */}
-        <Button
-          size="small"
-          onClick={(e: MouseEvent<HTMLButtonElement>) => setTimeframeAnchorEl(e.currentTarget)}
-          endIcon={<KeyboardArrowDown className="!w-4 !h-4 !text-muted-foreground" />}
-          startIcon={<CalendarToday className="!w-3.5 !h-3.5 !text-muted-foreground" />}
-          className="!hidden md:!inline-flex !text-xs !normal-case !text-muted-foreground hover:!text-foreground !bg-secondary/40 hover:!bg-secondary/80 !border !border-border/60 !rounded-[5px] !px-2.5 !py-1 !font-normal transition-colors"
-        >
-          {selectedTimeframe}
-        </Button>
-
-        <ArrowMenu
-          anchorEl={timeframeAnchorEl}
-          open={Boolean(timeframeAnchorEl)}
-          onClose={() => setTimeframeAnchorEl(null)}
-          arrowPosition="right"
-          arrowOffsetY={-10}
-          paperClassName="!min-w-[160px] !p-1"
-        >
-          {timeframeOptions.map((option) => (
-            <MenuItem
-              key={option}
-              onClick={() => {
-                setSelectedTimeframe(option);
-                setTimeframeAnchorEl(null);
-              }}
-              className={`!text-xs !py-1 !px-3 !rounded-[5px] flex items-center !justify-between ${
-                selectedTimeframe === option
-                  ? "!bg-secondary !font-semibold !text-foreground"
-                  : "!text-muted-foreground hover:!text-foreground hover:!bg-secondary/50"
-              }`}
-            >
-              <span>{option}</span>
-              {selectedTimeframe === option && <Check className="!w-3.5 !h-3.5 !text-primary" />}
-            </MenuItem>
-          ))}
-        </ArrowMenu>
       </div>
 
       <div className="flex items-center gap-3">

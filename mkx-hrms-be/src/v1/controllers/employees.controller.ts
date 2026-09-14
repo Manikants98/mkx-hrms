@@ -1040,3 +1040,61 @@ export const assignEmployeeSalaryStructures = async (
     next(err);
   }
 };
+
+/**
+ * Controller to reset a specific employee's password manually (admin action)
+ *
+ * @param req - Express request with employee ID as param and new password in body
+ * @param res - Express response
+ * @param next - Next middleware delegate for error handling
+ */
+export const resetEmployeePassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { password } = req.body;
+
+    if (!password || password.length < 8) {
+      res.sendError({ statusCode: 400, message: "Password must be at least 8 characters long" });
+      return;
+    }
+
+    const employee = await prisma.employee.findUnique({
+      where: { id: Number(id) },
+      include: { user: true },
+    });
+
+    if (!employee) {
+      res.sendError({ statusCode: 404, message: "Employee not found" });
+      return;
+    }
+
+    if (!employee.user_id) {
+      res.sendError({ statusCode: 400, message: "Employee does not have an associated user account" });
+      return;
+    }
+
+    // Dynamic import to avoid circular dependency or import clutter at top if not needed,
+    // but better to require it properly. Let's just require it.
+    const { hashPassword } = require("../services/auth.service");
+    const hashedPassword = await hashPassword(password);
+
+    await prisma.user.update({
+      where: { id: employee.user_id },
+      data: {
+        password_hash: hashedPassword,
+        password_reset_token: null,
+        password_reset_expires: null,
+      },
+    });
+
+    res.sendSuccess({
+      message: "Employee password has been successfully reset",
+    });
+  } catch (err) {
+    next(err);
+  }
+};

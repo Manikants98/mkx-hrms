@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { NextFunction, Request, Response } from "express";
 import { prisma } from "../../libraries/prisma";
 
 /**
@@ -109,10 +109,9 @@ export const getDashboardOverview = async (
       take: 5,
     });
 
-    const topEmployees = await prisma.employee.findMany({
+    const allEmployees = await prisma.employee.findMany({
       where: { status: "Active" },
-      take: 4,
-      orderBy: { created_at: "asc" },
+      take: 5,
       include: {
         role_rel: true,
         department_rel: true,
@@ -152,7 +151,7 @@ export const getDashboardOverview = async (
       Date.UTC(nowIST.getFullYear(), nowIST.getMonth(), nowIST.getDate() + diffToMonday + 7),
     );
 
-    const employeeIds = topEmployees.map((e) => e.id);
+    const employeeIds = allEmployees.map((e) => e.id);
     const weeklyAttendance = await prisma.attendance.findMany({
       where: {
         employee_id: { in: employeeIds },
@@ -175,7 +174,7 @@ export const getDashboardOverview = async (
      */
     const elapsedWorkDays = Math.min(dayOfWeek === 0 ? 5 : dayOfWeek, 5);
 
-    const formattedPerformers = topEmployees.map((emp) => {
+    const allPerformers = allEmployees.map((emp) => {
       const actualMins = weeklyMinutesMap.get(emp.id) ?? 0;
 
       /** Derive expected daily minutes from the employee's assigned shift */
@@ -202,9 +201,20 @@ export const getDashboardOverview = async (
         join_date: emp.join_date.toISOString().split("T")[0],
         weekly_hours: formatMinutesToHours(actualMins),
         performance_pct: performancePct,
+        actualMins,
         avatar: emp.avatar || undefined,
       };
     });
+
+    const formattedPerformers = allPerformers
+      .sort((a, b) => {
+        if (b.performance_pct !== a.performance_pct) {
+          return b.performance_pct - a.performance_pct;
+        }
+        return b.actualMins - a.actualMins;
+      })
+      .slice(0, 4)
+      .map(({ actualMins, ...rest }) => rest);
 
     const overview = {
       kpi_metrics: {

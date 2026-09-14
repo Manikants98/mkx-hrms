@@ -188,7 +188,7 @@ export default function Dashboard(): React.ReactElement {
             </div>
           </div>
 
-          <StaggerContainer className="space-y-3">
+          <StaggerContainer className="space-y-1">
             {topPerformersList.map((performer) => (
               <FadeUpItem
                 key={performer.id}
@@ -227,19 +227,6 @@ export default function Dashboard(): React.ReactElement {
                       }}
                     />
                   </div>
-                  <p
-                    className="text-[10px] font-medium mt-0.5"
-                    style={{
-                      color:
-                        performer.performancePct >= 80
-                          ? "#10b981"
-                          : performer.performancePct >= 50
-                            ? "#f59e0b"
-                            : "#ef4444",
-                    }}
-                  >
-                    {performer.performancePct}% efficiency
-                  </p>
                 </div>
               </FadeUpItem>
             ))}

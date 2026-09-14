@@ -6,6 +6,7 @@ import {
   FileDownload,
   FilterList,
   KeyboardArrowDown,
+  LockReset,
   MoreHoriz,
   People,
   PersonAdd,
@@ -32,6 +33,7 @@ import { CustomDateRangePicker } from "shared/DatePicker";
 import { StatsCard } from "shared/StatsCard";
 import { downloadExcelFromApi } from "src/utils/exportToExcel";
 import { ManageEmployee, type ManageEmployeeFormValues } from "./ManageEmployee";
+import { ResetPasswordDialog } from "./ResetPasswordDialog";
 
 /**
  * Type representing an Employee status filter option
@@ -65,12 +67,13 @@ interface RowActionsProps {
   onEdit: (employee: Employee) => void;
   onDelete: (employeeId: string) => void;
   onView: (employee: Employee) => void;
+  onResetPassword: (employee: Employee) => void;
 }
 
 /**
  * Individual row actions component managing its own popup state
  */
-const RowActions = ({ row, onEdit, onDelete, onView }: RowActionsProps) => {
+const RowActions = ({ row, onEdit, onDelete, onView, onResetPassword }: RowActionsProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   return (
@@ -112,6 +115,16 @@ const RowActions = ({ row, onEdit, onDelete, onView }: RowActionsProps) => {
         <MenuItem
           onClick={() => {
             setAnchorEl(null);
+            onResetPassword(row);
+          }}
+          className="!text-xs !py-2 !px-3 !gap-2 !rounded-[5px] !text-warning hover:!bg-warning/10"
+        >
+          <LockReset className="!w-4 !h-4 text-warning" />
+          <span className="text-warning font-medium">Reset Password</span>
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            setAnchorEl(null);
             onDelete(row.id);
           }}
           className="!text-xs !py-2 !px-3 !gap-2 !rounded-[5px] !text-destructive hover:!bg-destructive/10"
@@ -131,6 +144,7 @@ const getEmployeeColumns = (
   onEdit: (employee: Employee) => void,
   onDelete: (employeeId: string) => void,
   onView: (employee: Employee) => void,
+  onResetPassword: (employee: Employee) => void,
 ): ColumnDef<Employee>[] => [
   {
     header: "EMPLOYEE",
@@ -218,7 +232,7 @@ const getEmployeeColumns = (
   },
   {
     header: "ACTION",
-    cell: (row) => <RowActions row={row} onEdit={onEdit} onDelete={onDelete} onView={onView} />,
+    cell: (row) => <RowActions row={row} onEdit={onEdit} onDelete={onDelete} onView={onView} onResetPassword={onResetPassword} />,
     width: "5%",
     align: "right",
   },
@@ -230,7 +244,9 @@ const getEmployeeColumns = (
 export default function Employees() {
   const navigate = useNavigate();
   const [isAddDrawerOpen, setIsAddDrawerOpen] = useState(false);
+  const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [selectedEmployeeForReset, setSelectedEmployeeForReset] = useState<Employee | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("All");
   const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(null);
@@ -387,8 +403,13 @@ export default function Employees() {
     navigate(`/employees/${emp.id}`);
   };
 
+  const handleResetPassword = (emp: Employee) => {
+    setSelectedEmployeeForReset(emp);
+    setIsResetPasswordOpen(true);
+  };
+
   const employeeColumns = useMemo(
-    () => getEmployeeColumns(handleEditEmployee, handleDeleteEmployee, handleViewEmployee),
+    () => getEmployeeColumns(handleEditEmployee, handleDeleteEmployee, handleViewEmployee, handleResetPassword),
     [handleDeleteEmployee],
   );
 
@@ -709,6 +730,15 @@ export default function Employees() {
         }}
         initialData={selectedEmployee}
         onSubmit={handleSaveEmployee}
+      />
+
+      <ResetPasswordDialog
+        open={isResetPasswordOpen}
+        onClose={() => {
+          setIsResetPasswordOpen(false);
+          setSelectedEmployeeForReset(null);
+        }}
+        employee={selectedEmployeeForReset}
       />
     </StaggerContainer>
   );
