@@ -24,6 +24,52 @@ function formatRelativeTime(date: Date): string {
 }
 
 /**
+ * Parses a work_hours string like "8h 30m" or "8h" or "30m" into total minutes
+ *
+ * @param raw - Raw work_hours string from the attendance record
+ * @returns Total minutes as a number
+ */
+function parseWorkHoursToMinutes(raw: string | null): number {
+  if (!raw) return 0;
+  const hoursMatch = raw.match(/(\d+)h/);
+  const minsMatch = raw.match(/(\d+)m/);
+  const hours = hoursMatch ? parseInt(hoursMatch[1], 10) : 0;
+  const mins = minsMatch ? parseInt(minsMatch[1], 10) : 0;
+  return hours * 60 + mins;
+}
+
+/**
+ * Formats total minutes into a human-readable string like "8h 30m"
+ *
+ * @param totalMinutes - Total minutes to format
+ * @returns Formatted duration string
+ */
+function formatMinutesToHours(totalMinutes: number): string {
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+  if (h === 0) return `${m} M`;
+  if (m === 0) return `${h} H`;
+  return `${h} H ${m} M`;
+}
+
+/**
+ * Parses a shift time string "HH:MM" or 12-hour format into total minutes from midnight
+ *
+ * @param timeStr - Shift start_time or end_time string
+ * @returns Total minutes from midnight
+ */
+function parseShiftMinutes(timeStr: string): number {
+  const match = timeStr.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+  if (!match) return 0;
+  let hours = parseInt(match[1], 10);
+  const mins = parseInt(match[2], 10);
+  const mod = match[3]?.toUpperCase();
+  if (mod === "PM" && hours < 12) hours += 12;
+  if (mod === "AM" && hours === 12) hours = 0;
+  return hours * 60 + mins;
+}
+
+/**
  * Controller to fetch comprehensive dashboard metrics, activities, and performers
  *
  * @param _req - Express request
@@ -60,7 +106,7 @@ export const getDashboardOverview = async (
 
     const activities = await prisma.activityLog.findMany({
       orderBy: { created_at: "desc" },
-      take: 10,
+      take: 5,
     });
 
     const topEmployees = await prisma.employee.findMany({
@@ -69,6 +115,8 @@ export const getDashboardOverview = async (
       orderBy: { created_at: "asc" },
       include: {
         role_rel: true,
+        department_rel: true,
+        shift_rel: true,
       },
     });
 
@@ -93,12 +141,70 @@ export const getDashboardOverview = async (
       };
     });
 
-    const formattedPerformers = topEmployees.map((emp, idx) => ({
-      name: emp.name,
-      role: emp.role_rel?.name || "Staff",
-      deals: 18 - idx * 3,
-      avatar: emp.avatar || undefined,
-    }));
+    /** Compute Monday and Sunday boundaries for the current week in IST */
+    const nowIST = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+    const dayOfWeek = nowIST.getDay();
+    const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    const weekStart = new Date(
+      Date.UTC(nowIST.getFullYear(), nowIST.getMonth(), nowIST.getDate() + diffToMonday),
+    );
+    const weekEnd = new Date(
+      Date.UTC(nowIST.getFullYear(), nowIST.getMonth(), nowIST.getDate() + diffToMonday + 7),
+    );
+
+    const employeeIds = topEmployees.map((e) => e.id);
+    const weeklyAttendance = await prisma.attendance.findMany({
+      where: {
+        employee_id: { in: employeeIds },
+        date: { gte: weekStart, lt: weekEnd },
+        work_hours: { not: null },
+      },
+      select: { employee_id: true, work_hours: true },
+    });
+
+    /** Group total minutes per employee */
+    const weeklyMinutesMap = new Map<number, number>();
+    for (const record of weeklyAttendance) {
+      const prev = weeklyMinutesMap.get(record.employee_id) ?? 0;
+      weeklyMinutesMap.set(record.employee_id, prev + parseWorkHoursToMinutes(record.work_hours));
+    }
+
+    /**
+     * Number of working days elapsed so far this week (Mon–today, max 5).
+     * Used as the denominator for expected hours.
+     */
+    const elapsedWorkDays = Math.min(dayOfWeek === 0 ? 5 : dayOfWeek, 5);
+
+    const formattedPerformers = topEmployees.map((emp) => {
+      const actualMins = weeklyMinutesMap.get(emp.id) ?? 0;
+
+      /** Derive expected daily minutes from the employee's assigned shift */
+      let expectedDailyMins = 8 * 60;
+      if (emp.shift_rel) {
+        const startMins = parseShiftMinutes(emp.shift_rel.start_time);
+        const endMins = parseShiftMinutes(emp.shift_rel.end_time);
+        const shiftDuration =
+          endMins > startMins ? endMins - startMins : 24 * 60 - startMins + endMins;
+        const graceMins = emp.shift_rel.grace_mins ?? 0;
+        expectedDailyMins = Math.max(shiftDuration - graceMins, 1);
+      }
+
+      const expectedWeeklyMins = expectedDailyMins * elapsedWorkDays;
+      const performancePct =
+        expectedWeeklyMins > 0
+          ? Math.min(Math.round((actualMins / expectedWeeklyMins) * 100), 100)
+          : 0;
+
+      return {
+        name: emp.name,
+        role: emp.role_rel?.name || "Staff",
+        department: emp.department_rel?.name || null,
+        join_date: emp.join_date.toISOString().split("T")[0],
+        weekly_hours: formatMinutesToHours(actualMins),
+        performance_pct: performancePct,
+        avatar: emp.avatar || undefined,
+      };
+    });
 
     const overview = {
       kpi_metrics: {
@@ -180,6 +286,64 @@ export const getAllActivities = async (
     res.sendSuccess({
       message: "Activity logs fetched successfully",
       data: formatted,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * Controller to fetch real monthly workforce growth data for the current year
+ *
+ * @param _req - Express request
+ * @param res - Express response
+ * @param next - Next middleware delegate
+ */
+export const getWorkforceTrend = async (
+  _req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+
+    const MONTH_LABELS = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+
+    const allEmployees = await prisma.employee.findMany({
+      select: { created_at: true },
+      orderBy: { created_at: "asc" },
+    });
+
+    /**
+     * Build a cumulative headcount snapshot per month of the current year.
+     * An employee hired before month M still counts toward M's total.
+     */
+    const trend = MONTH_LABELS.slice(0, currentMonth).map((label, idx) => {
+      const month = idx + 1;
+      const monthEnd = new Date(Date.UTC(currentYear, month, 1));
+      const count = allEmployees.filter((e) => new Date(e.created_at) < monthEnd).length;
+
+      return { name: label, employees: count };
+    });
+
+    res.sendSuccess({
+      message: "Workforce trend fetched successfully",
+      data: trend,
     });
   } catch (err) {
     next(err);

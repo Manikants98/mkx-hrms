@@ -1,21 +1,17 @@
 import { AccessTime, Cancel, CheckCircle, Info } from "@mui/icons-material";
 import { Avatar, Badge, Chip } from "@mui/material";
-import {
-  Activity,
-  ArrowUpRight,
-  Briefcase,
-  TrendingUp,
-  Trophy,
-  UserCheck,
-  Users,
-} from "lucide-react";
+import { Activity, ArrowUpRight, Briefcase, Trophy, UserCheck, Users } from "lucide-react";
 import React, { useState } from "react";
 import { DepartmentDistribution } from "components/Dashboard/DepartmentDistribution";
 import { WorkforceChart } from "components/Dashboard/WorkforceChart";
 import { ActivityAuditDrawer } from "components/Dashboard/ActivityAuditDrawer";
 import { FadeUpItem, StaggerContainer } from "shared/animations";
 import { MetricCard } from "shared/MetricCard";
-import { useGetDashboardOverview, type RecentActivity } from "services/dashboard";
+import {
+  useGetDashboardOverview,
+  useGetWorkforceTrend,
+  type RecentActivity,
+} from "services/dashboard";
 
 const statusIconMap: Record<string, React.ElementType> = {
   success: CheckCircle,
@@ -25,6 +21,24 @@ const statusIconMap: Record<string, React.ElementType> = {
 };
 
 /**
+ * Computes a human-readable tenure string from an ISO date string
+ *
+ * @param joinDateStr - ISO date string of the employee's join date
+ * @returns Formatted tenure string e.g. "2y 3m" or "5m"
+ */
+function formatTenure(joinDateStr: string): string {
+  const join = new Date(joinDateStr);
+  const now = new Date();
+  const totalMonths =
+    (now.getFullYear() - join.getFullYear()) * 12 + (now.getMonth() - join.getMonth());
+  const years = Math.floor(totalMonths / 12);
+  const months = totalMonths % 12;
+  if (years === 0) return `${months}m`;
+  if (months === 0) return `${years}y`;
+  return `${years}y ${months}m`;
+}
+
+/**
  * Main dashboard view displaying key metrics, workforce telemetry, and real-time activity log
  *
  * @returns Rendered Dashboard page
@@ -32,9 +46,11 @@ const statusIconMap: Record<string, React.ElementType> = {
 export default function Dashboard(): React.ReactElement {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const { data: dashboardResponse } = useGetDashboardOverview();
+  const { data: trendResponse, isLoading: isTrendLoading } = useGetWorkforceTrend();
 
   const metrics = dashboardResponse?.data?.kpi_metrics;
   const recentActivitiesList: RecentActivity[] = dashboardResponse?.data?.recent_activities || [];
+  const workforceTrendData = trendResponse?.data || [];
 
   const topPerformersList = (dashboardResponse?.data?.top_performers || []).map(
     (performer, idx) => ({
@@ -46,9 +62,11 @@ export default function Dashboard(): React.ReactElement {
         .join("")
         .slice(0, 2),
       name: performer.name,
-      department: performer.role,
-      kpi: `${performer.deals * 5}% KPI`,
-      trend: `+${performer.deals}%`,
+      role: performer.role,
+      department: performer.department,
+      tenure: formatTenure(performer.join_date),
+      weeklyHours: performer.weekly_hours,
+      performancePct: performer.performance_pct,
     }),
   );
 
@@ -58,43 +76,35 @@ export default function Dashboard(): React.ReactElement {
         <MetricCard
           title="Total Employees"
           value={String(metrics?.total_employees ?? 0)}
-          trend="+12%"
-          trendUp={true}
           icon={<Users className="w-4 h-4" />}
         />
         <MetricCard
           title="Active Attendance"
-          value="94.2%"
-          trend="+2.1%"
-          trendUp={true}
+          value={String(metrics?.active_workforce ?? 0)}
           icon={<UserCheck className="w-4 h-4" />}
         />
         <MetricCard
-          title="Open Positions"
-          value={String(metrics?.active_candidates ?? 0)}
-          trend="-3"
-          trendUp={false}
+          title="On Leave Today"
+          value={String(metrics?.on_leave_today ?? 0)}
           icon={<Briefcase className="w-4 h-4" />}
         />
         <MetricCard
-          title="Performance Rate"
-          value="87%"
-          trend="+4.5%"
-          trendUp={true}
+          title="Active Candidates"
+          value={String(metrics?.active_candidates ?? 0)}
           icon={<Activity className="w-4 h-4" />}
         />
       </FadeUpItem>
 
-      <FadeUpItem className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <FadeUpItem className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2">
-          <WorkforceChart />
+          <WorkforceChart data={workforceTrendData} isLoading={isTrendLoading} />
         </div>
         <div className="lg:col-span-1">
           <DepartmentDistribution />
         </div>
       </FadeUpItem>
 
-      <FadeUpItem className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <FadeUpItem className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="bg-card border border-border rounded-xl p-5">
           <div className="flex items-center justify-between mb-5">
             <div>
@@ -182,7 +192,7 @@ export default function Dashboard(): React.ReactElement {
             {topPerformersList.map((performer) => (
               <FadeUpItem
                 key={performer.id}
-                className="group flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50 transition-all duration-200 cursor-pointer"
+                className="group flex items-center justify-between p-2 rounded-lg hover:bg-secondary/50 transition-all duration-200 cursor-pointer"
               >
                 <div className="flex items-center gap-3">
                   <Badge
@@ -197,15 +207,39 @@ export default function Dashboard(): React.ReactElement {
                   </Badge>
                   <div>
                     <p className="text-sm font-medium text-foreground">{performer.name}</p>
-                    <p className="text-xs text-muted-foreground">{performer.department}</p>
+                    <p className="text-xs text-muted-foreground">{performer.role}</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold text-foreground">{performer.kpi}</p>
-                  <div className="flex items-center justify-end gap-1 text-xs text-success">
-                    <TrendingUp className="w-3 h-3" />
-                    {performer.trend}
+                <div className="text-right shrink-0 min-w-[80px]">
+                  <p className="text-sm font-semibold text-foreground">{performer.weeklyHours}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">this week</p>
+                  <div className="mt-1.5 h-1.5 w-full rounded-full bg-secondary overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-700"
+                      style={{
+                        width: `${performer.performancePct}%`,
+                        backgroundColor:
+                          performer.performancePct >= 80
+                            ? "#10b981"
+                            : performer.performancePct >= 50
+                              ? "#f59e0b"
+                              : "#ef4444",
+                      }}
+                    />
                   </div>
+                  <p
+                    className="text-[10px] font-medium mt-0.5"
+                    style={{
+                      color:
+                        performer.performancePct >= 80
+                          ? "#10b981"
+                          : performer.performancePct >= 50
+                            ? "#f59e0b"
+                            : "#ef4444",
+                    }}
+                  >
+                    {performer.performancePct}% efficiency
+                  </p>
                 </div>
               </FadeUpItem>
             ))}

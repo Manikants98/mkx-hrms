@@ -23,8 +23,19 @@ export interface RecentActivity {
 export interface TopPerformer {
   name: string;
   role: string;
-  deals: number;
+  department: string | null;
+  join_date: string;
+  weekly_hours: string;
+  performance_pct: number;
   avatar?: string;
+}
+
+/**
+ * Single month data point for the workforce growth trend chart
+ */
+export interface WorkforceTrendPoint {
+  name: string;
+  employees: number;
 }
 
 /**
@@ -64,5 +75,17 @@ export const useGetAllActivities = (search?: string) => {
   return useCustomQuery<ApiResponse<RecentActivity[]>>(
     ["dashboard", "activities", search],
     `/v1/dashboard/activities${queryParam}`,
+  );
+};
+
+/**
+ * Hook to retrieve real monthly workforce growth trend for the current year
+ *
+ * @returns React Query query result
+ */
+export const useGetWorkforceTrend = () => {
+  return useCustomQuery<ApiResponse<WorkforceTrendPoint[]>>(
+    ["dashboard", "workforce-trend"],
+    "/v1/dashboard/workforce-trend",
   );
 };

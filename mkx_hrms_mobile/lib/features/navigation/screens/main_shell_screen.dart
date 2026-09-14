@@ -29,9 +29,9 @@ class _MainShellScreenState extends State<MainShellScreen> {
 
   static const List<_NavItemData> _items = [
     _NavItemData(
-      label: 'Punch In',
-      icon: Icons.fingerprint_rounded,
-      activeIcon: Icons.fingerprint_rounded,
+      label: 'Dashboard',
+      icon: Icons.dashboard_outlined,
+      activeIcon: Icons.dashboard_rounded,
     ),
     _NavItemData(
       label: 'Leaves',

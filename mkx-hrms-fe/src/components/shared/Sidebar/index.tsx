@@ -109,7 +109,7 @@ export function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
       </div>
 
       {/* Scrollable Navigation List */}
-      <nav className="flex-1 p-3 space-y-1 overflow-y-auto overflow-x-hidden">
+      <nav className="flex-1 p-2 space-y-1 overflow-y-auto overflow-x-hidden">
         {navItems.map((item: NavItem) => {
           const Icon = item.icon;
           const hasChildren = Boolean(item.children && item.children.length > 0);
@@ -168,7 +168,7 @@ export function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
                 {/* Submenu Items Dropdown via MUI Collapse */}
                 {!isCollapsed && item.children && (
                   <Collapse in={isSubMenuOpen} timeout="auto" unmountOnExit>
-                    <div className="pl-2 pr-1  flex flex-col space-y-0.5 border-l border-sidebar-border ml-5 my-1">
+                    <div className="px-1  flex flex-col space-y-0.5 border-l border-sidebar-border ml-4 my-1">
                       {item.children.map((subItem) => {
                         const SubIcon = subItem.icon;
                         return (
@@ -251,11 +251,11 @@ export function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
       </nav>
 
       {/* Collapse Toggle Footer */}
-      <div className="p-3 border-t border-sidebar-border">
+      <div className="p-2 border-t border-sidebar-border">
         <button
           onClick={toggleCollapse}
           className={cn(
-            "flex items-center gap-2 py-2 rounded-lg text-sm text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-all duration-200",
+            "flex items-center gap-2 py-2 cursor-pointer rounded-lg text-sm text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-all duration-200",
             isCollapsed ? "justify-center px-0 w-11 mx-auto" : "px-3 w-full justify-center",
           )}
         >

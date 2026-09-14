@@ -108,10 +108,8 @@ export const Masters: React.FC = () => {
               <TuneOutlined className="!w-5 !h-5" />
             </div>
             <div>
-              <h1 className="text-xl font-bold tracking-tight text-foreground">
-                Workforce Masters
-              </h1>
-              <p className="text-xs text-muted-foreground mt-0.5">{activeTab.description}</p>
+              <h1 className="font-bold tracking-tight text-foreground">Workforce Masters</h1>
+              <p className="text-xs text-muted-foreground">{activeTab.description}</p>
             </div>
           </div>
         </div>

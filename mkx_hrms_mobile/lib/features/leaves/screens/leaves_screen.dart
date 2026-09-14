@@ -324,7 +324,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
         scrollDirection: Axis.horizontal,
         clipBehavior: Clip.none,
         itemCount: displayQuotas.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 10),
+        separatorBuilder: (_, _) => const SizedBox(width: 10),
         itemBuilder: (context, index) {
           final item = displayQuotas[index];
           final color = UiHelpers.parseHexColor(
