@@ -125,10 +125,9 @@ const getMailTransporter = async (): Promise<Transporter> => {
  * @returns Fully formatted HTML string
  */
 export const buildWelcomeEmailHtml = (options: EmployeeWelcomeEmailOptions): string => {
-  const baseUrl =
-    options.portalUrl || process.env.APP_PORTAL_URL || "http://localhost:5174/login";
+  const baseUrl = options.portalUrl || process.env.APP_PORTAL_URL || "https://mkxhrms.vercel.app";
   const portalUrl = options.setPasswordToken
-    ? `${baseUrl.replace(/\/login$/, "")}/set-password?token=${options.setPasswordToken}`
+    ? `${baseUrl}/set-password?token=${options.setPasswordToken}`
     : baseUrl;
 
   return `<!DOCTYPE html>
@@ -341,8 +340,7 @@ export const buildWelcomeEmailHtml = (options: EmployeeWelcomeEmailOptions): str
  * @returns Plain text representation
  */
 export const buildWelcomeEmailPlainText = (options: EmployeeWelcomeEmailOptions): string => {
-  const baseUrl =
-    options.portalUrl || process.env.APP_PORTAL_URL || "http://localhost:5174/login";
+  const baseUrl = options.portalUrl || process.env.APP_PORTAL_URL || "https://mkxhrms.vercel.app";
   const portalUrl = options.setPasswordToken
     ? `${baseUrl.replace(/\/login$/, "")}/set-password?token=${options.setPasswordToken}`
     : baseUrl;
@@ -502,7 +500,7 @@ export interface LeaveApprovalEmailOptions {
 }
 
 export const buildLeaveApprovalEmailHtml = (options: LeaveApprovalEmailOptions): string => {
-  const baseUrl = options.portalUrl || process.env.APP_PORTAL_URL || "http://localhost:5174/login";
+  const baseUrl = options.portalUrl || process.env.APP_PORTAL_URL || "https://mkxhrms.vercel.app";
   const portalUrl = `${baseUrl.replace(/\/login$/, "")}/leave-approval/${options.approvalToken}`;
 
   return `<!DOCTYPE html>
@@ -579,7 +577,7 @@ export const buildLeaveApprovalEmailHtml = (options: LeaveApprovalEmailOptions):
 };
 
 export const buildLeaveApprovalEmailPlainText = (options: LeaveApprovalEmailOptions): string => {
-  const baseUrl = options.portalUrl || process.env.APP_PORTAL_URL || "http://localhost:5174/login";
+  const baseUrl = options.portalUrl || process.env.APP_PORTAL_URL || "https://mkxhrms.vercel.app";
   const portalUrl = `${baseUrl.replace(/\/login$/, "")}/leave-approval/${options.approvalToken}`;
 
   return `Leave Request Approval
@@ -599,11 +597,14 @@ Sent by MKX Technologies Pvt. Ltd.
 `;
 };
 
-export const sendLeaveApprovalEmail = async (options: LeaveApprovalEmailOptions): Promise<EmailSendResult> => {
+export const sendLeaveApprovalEmail = async (
+  options: LeaveApprovalEmailOptions,
+): Promise<EmailSendResult> => {
   try {
     const rawHost = process.env.SMTP_HOST || "smtp.gmail.com";
     const fromName = process.env.SMTP_FROM_NAME || "MKX HRMS Workplace";
-    const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USERNAME || "mkx.webs@gmail.com";
+    const fromEmail =
+      process.env.SMTP_FROM_EMAIL || process.env.SMTP_USERNAME || "mkx.webs@gmail.com";
 
     const mailOptions = {
       from: `"${fromName}" <${fromEmail}>`,
@@ -616,10 +617,14 @@ export const sendLeaveApprovalEmail = async (options: LeaveApprovalEmailOptions)
     if (transporterInstance) {
       try {
         const info = await transporterInstance.sendMail(mailOptions);
-        logger.info(`Leave approval email dispatched to ${options.managerEmail} (Message ID: ${info.messageId})`);
+        logger.info(
+          `Leave approval email dispatched to ${options.managerEmail} (Message ID: ${info.messageId})`,
+        );
         return { success: true, messageId: info.messageId };
       } catch (cachedErr) {
-        logger.warn(`Cached SMTP transporter failed, attempting re-resolution: ${String(cachedErr)}`);
+        logger.warn(
+          `Cached SMTP transporter failed, attempting re-resolution: ${String(cachedErr)}`,
+        );
         transporterInstance = null;
       }
     }
@@ -632,11 +637,15 @@ export const sendLeaveApprovalEmail = async (options: LeaveApprovalEmailOptions)
         const transporter = createTransporterForHost(hostAddress, rawHost);
         const info = await transporter.sendMail(mailOptions);
         transporterInstance = transporter;
-        logger.info(`Leave approval email dispatched to ${options.managerEmail} (Message ID: ${info.messageId}) [via IPv4: ${hostAddress}]`);
+        logger.info(
+          `Leave approval email dispatched to ${options.managerEmail} (Message ID: ${info.messageId}) [via IPv4: ${hostAddress}]`,
+        );
         return { success: true, messageId: info.messageId };
       } catch (err) {
         lastError = err;
-        logger.warn(`Failed sending leave approval email via [${hostAddress}], checking alternative address...`);
+        logger.warn(
+          `Failed sending leave approval email via [${hostAddress}], checking alternative address...`,
+        );
       }
     }
 
@@ -647,4 +656,3 @@ export const sendLeaveApprovalEmail = async (options: LeaveApprovalEmailOptions)
     return { success: false, error };
   }
 };
-
