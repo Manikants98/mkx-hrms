@@ -293,6 +293,16 @@ export const createEmployee = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
+    if (req.body.email) {
+      const existingUser = await prisma.user.findUnique({ where: { email: req.body.email } });
+      const existingEmployee = await prisma.employee.findUnique({ where: { email: req.body.email } });
+
+      if (existingUser || existingEmployee) {
+        res.sendError({ statusCode: 409, message: "An employee with this email already exists." });
+        return;
+      }
+    }
+
     let role_id: number | null =
       req.body.role_id !== undefined && req.body.role_id !== null && req.body.role_id !== ""
         ? Number(req.body.role_id)

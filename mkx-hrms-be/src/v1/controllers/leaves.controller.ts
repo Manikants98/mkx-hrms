@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import crypto from "node:crypto";
 import { prisma } from "../../libraries/prisma";
 import { generateExcelBuffer } from "../services/excel.service";
-import { sendLeaveApprovalEmail } from "../services/email.service";
+import { sendLeaveApprovalEmail, sendLeaveStatusUpdateEmail } from "../services/email.service";
 import { logger } from "../../utils/logger";
 
 /**
@@ -347,6 +347,20 @@ export const updateLeaveStatus = async (
         year,
         -existing.days_count,
       );
+    }
+
+    if ((status === "Approved" || status === "Rejected") && existing.status !== status && updated.employee?.email) {
+      sendLeaveStatusUpdateEmail({
+        employeeName: updated.employee.name,
+        employeeEmail: updated.employee.email,
+        status: status as "Approved" | "Rejected",
+        leaveType: updated.leave_type_rel.name,
+        startDate: new Date(updated.start_date).toISOString().split("T")[0],
+        endDate: new Date(updated.end_date).toISOString().split("T")[0],
+        daysCount: updated.days_count,
+      }).catch((err) => {
+        logger.error(`Background email task failed for leave ${updated.id}:`, err);
+      });
     }
 
     res.sendSuccess({
@@ -894,11 +908,26 @@ export const processLeaveApproval = async (
         approval_token: null,
         approval_token_expires: null,
       },
+      include: { leave_type_rel: true, employee: true },
     });
 
     if (status === "Approved") {
       const year = new Date(leave.start_date).getFullYear();
       await adjustLeaveBalance(leave.employee_id, leave.leave_type_id, year, leave.days_count);
+    }
+
+    if ((status === "Approved" || status === "Rejected") && updated.employee?.email) {
+      sendLeaveStatusUpdateEmail({
+        employeeName: updated.employee.name,
+        employeeEmail: updated.employee.email,
+        status: status as "Approved" | "Rejected",
+        leaveType: updated.leave_type_rel.name,
+        startDate: new Date(updated.start_date).toISOString().split("T")[0],
+        endDate: new Date(updated.end_date).toISOString().split("T")[0],
+        daysCount: updated.days_count,
+      }).catch((err) => {
+        logger.error(`Background email task failed for leave ${updated.id}:`, err);
+      });
     }
 
     res.sendSuccess({

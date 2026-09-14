@@ -194,7 +194,7 @@ export function Select<TFormValues = Record<string, unknown>>({
           value={option.value}
           disabled={option.disabled}
           style={option.hidden ? { display: "none" } : undefined}
-          className="!text-sm hover:!bg-secondary/80 focus:!bg-secondary !rounded-[5px] !mx-1 !my-0.5 transition-colors flex items-center gap-3 !py-2"
+          className="!text-sm hover:!bg-secondary/80 focus:!bg-secondary !rounded-[5px] !mx-1 !my-0.5 transition-colors flex items-center gap-3 !p-1"
         >
           {option.avatar && (
             <div className="w-8 h-8 rounded-[5px] bg-secondary border border-border flex items-center justify-center shrink-0 overflow-hidden text-foreground">

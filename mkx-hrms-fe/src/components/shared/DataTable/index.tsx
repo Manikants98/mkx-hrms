@@ -46,6 +46,8 @@ interface DataTableProps<T> {
   loading?: boolean;
   /** Number of animated skeleton placeholder rows to render while loading */
   skeletonRowCount?: number;
+  /** Whether to hide the pagination controls and show all data */
+  hidePagination?: boolean;
 }
 
 /**
@@ -64,6 +66,7 @@ export function DataTable<T>({
   rowsPerPageOptions = [10],
   loading = false,
   skeletonRowCount = 5,
+  hidePagination = false,
 }: DataTableProps<T>) {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(pageSize);
@@ -78,9 +81,10 @@ export function DataTable<T>({
   };
 
   const currentData = React.useMemo(() => {
+    if (hidePagination) return data;
     const start = page * rowsPerPage;
     return data.slice(start, start + rowsPerPage);
-  }, [data, page, rowsPerPage]);
+  }, [data, page, rowsPerPage, hidePagination]);
 
   return (
     <div
@@ -246,19 +250,21 @@ export function DataTable<T>({
         </Table>
       </TableContainer>
 
-      <Box className="border-t border-border/60 bg-card">
-        <TablePagination
-          rowsPerPageOptions={rowsPerPageOptions}
-          component="div"
-          count={data.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          showFirstButton
-          showLastButton
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-      </Box>
+      {!hidePagination && (
+        <Box className="border-t border-border/60 bg-card">
+          <TablePagination
+            rowsPerPageOptions={rowsPerPageOptions}
+            component="div"
+            count={data.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            showFirstButton
+            showLastButton
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        </Box>
+      )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
-import { Close, Edit, PersonAdd, Delete, Add, AccountBalanceWallet } from "@mui/icons-material";
+import { Add, Close, Delete, Edit, PersonAdd } from "@mui/icons-material";
 import { Button, CircularProgress, IconButton } from "@mui/material";
 import { useFormik } from "formik";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   useGetEmployeeFilters,
   useGetEmployees,
@@ -10,15 +10,16 @@ import {
 import {
   useGetMasterDepartments,
   useGetMasterRoles,
-  useGetMasterWorkShifts,
   useGetMasterSalaryStructures,
+  useGetMasterWorkShifts,
 } from "services/masters";
+import { ActiveInactiveField } from "shared/ActiveInactiveField";
+import { DataTable, type ColumnDef } from "shared/DataTable";
 import { CustomDatePicker } from "shared/DatePicker";
 import { AppDrawer } from "shared/Drawer";
 import { ImagePicker } from "shared/ImagePicker";
 import { Input } from "shared/Input";
 import { Select, type SelectOption } from "shared/Select";
-import { ActiveInactiveField } from "shared/ActiveInactiveField";
 import * as Yup from "yup";
 
 /**
@@ -196,9 +197,20 @@ export const ManageEmployee: React.FC<ManageEmployeeProps> = ({
     let gross = 0;
     let deductions = 0;
 
+    const baseItem = assignedStructures.find((item) => {
+      const m = masterSalaryStructures.find((m) => m.id === item.salary_structure_id);
+      return m?.is_base_salary;
+    });
+    const baseAmt = baseItem ? Number(baseItem.amount) || 0 : 0;
+
     assignedStructures.forEach((item) => {
       const master = masterSalaryStructures.find((m) => m.id === item.salary_structure_id);
-      const amt = Number(item.amount) || 0;
+      let amt = Number(item.amount) || 0;
+
+      if (master?.calculation_type === "Percentage") {
+        amt = (baseAmt * amt) / 100;
+      }
+
       if (master?.is_deduction) {
         deductions += amt;
       } else {
@@ -378,6 +390,84 @@ export const ManageEmployee: React.FC<ManageEmployeeProps> = ({
     return (departmentOptions[0]?.value as number) ?? "";
   }, [initialData?.department_id, initialData?.department, departmentOptions]);
 
+  const structureColumns = useMemo<ColumnDef<AssignedSalaryStructureRow>[]>(
+    () => [
+      {
+        header: "Structure Component",
+        width: "240px",
+        cell: (row) => {
+          const idx = assignedStructures.indexOf(row);
+          return (
+            <Select
+              name={`salary_structure_${idx}`}
+              options={structureOptions}
+              value={row.salary_structure_id}
+              onValueChange={(val) => handleRowStructureChange(idx, Number(val))}
+              size="small"
+              placeholder="Select component"
+            />
+          );
+        },
+      },
+      {
+        header: "Category",
+        width: "140px",
+        cell: (row) => {
+          const master = masterSalaryStructures.find((s) => s.id === row.salary_structure_id);
+          const isDeduction = master?.is_deduction;
+          return <div className="font-medium">{isDeduction ? "Deduction" : "Earning"}</div>;
+        },
+      },
+      {
+        header: "Calculation",
+        width: "120px",
+        cell: (row) => {
+          const master = masterSalaryStructures.find((s) => s.id === row.salary_structure_id);
+          return (
+            <span className="text-muted-foreground">{master?.calculation_type || "Fixed"}</span>
+          );
+        },
+      },
+      {
+        header: "Monthly Amount",
+        width: "150px",
+        cell: (row) => {
+          const idx = assignedStructures.indexOf(row);
+          return (
+            <Input
+              name={`amount_${idx}`}
+              type="number"
+              value={row.amount}
+              onChange={(e) => handleRowAmountChange(idx, Number(e.target.value) || 0)}
+              placeholder="0.00"
+              size="small"
+              className="w-28"
+            />
+          );
+        },
+      },
+      {
+        header: "Actions",
+        width: "80px",
+        align: "center",
+        cell: (row) => {
+          const idx = assignedStructures.indexOf(row);
+          return (
+            <IconButton
+              size="small"
+              onClick={() => handleRemoveRow(idx)}
+              className="!bg-red-50 dark:!bg-red-950/40 hover:!bg-red-100 dark:hover:!bg-red-900/60 !text-red-500 !border !border-red-100 dark:!border-red-900/40 !rounded-[5px] !w-9 !h-9 !p-0"
+              title="Delete Item"
+            >
+              <Delete className="!w-4 !h-4" />
+            </IconButton>
+          );
+        },
+      },
+    ],
+    [assignedStructures, masterSalaryStructures, structureOptions],
+  );
+
   const initialShiftId = useMemo(() => {
     if (initialData?.shift_id) return initialData.shift_id;
     if (initialData?.shift) {
@@ -415,14 +505,14 @@ export const ManageEmployee: React.FC<ManageEmployeeProps> = ({
           address: initialData.address || "",
           phone: initialData.phone || "",
           avatar: initialData.avatar || "",
-          salary_structures: assignedStructures,
+          salary_structures: initialData.salary_structures || [],
         }
       : {
           ...initialValues,
           department_id: (departmentOptions[0]?.value as number) ?? "",
           role_id: (roleOptions[0]?.value as number) ?? "",
           shift_id: (shiftOptions[0]?.value as number) ?? "",
-          salary_structures: assignedStructures,
+          salary_structures: [],
         },
     enableReinitialize: true,
     validationSchema: employeeValidationSchema,
@@ -505,8 +595,9 @@ export const ManageEmployee: React.FC<ManageEmployeeProps> = ({
           <Input<ManageEmployeeFormValues>
             name="name"
             label="Full Name"
-            placeholder="e.g. Sarah Connor"
+            placeholder="e.g. Sarah Connor "
             required
+            className="!col-span-2"
             formik={formik}
           />
 
@@ -516,6 +607,14 @@ export const ManageEmployee: React.FC<ManageEmployeeProps> = ({
             type="email"
             placeholder="e.g. sarah@mkx.com"
             required
+            formik={formik}
+          />
+
+          <Input<ManageEmployeeFormValues>
+            name="phone"
+            type="tel"
+            label="Phone Number"
+            placeholder="e.g. +1 234 567 8900"
             formik={formik}
           />
         </div>
@@ -568,153 +667,6 @@ export const ManageEmployee: React.FC<ManageEmployeeProps> = ({
             label="Date of Birth"
             formik={formik}
           />
-        </div>
-
-        <div className="border border-border/80 rounded-[5px] p-4 flex flex-col gap-3 bg-secondary/10">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="text-sm font-bold text-foreground">
-                Salary Structures & Compensation Items
-              </h4>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Configure earnings, allowances, deductions, and base pay for this employee.
-              </p>
-            </div>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={handleAddStructureRow}
-              startIcon={<Add className="!w-4 !h-4" />}
-              className="!text-xs !normal-case !border-primary !text-primary hover:!bg-primary/10 font-semibold !rounded-[5px] !px-3 !py-1.5"
-            >
-              Add Item
-            </Button>
-          </div>
-
-          <div className="border border-border rounded-lg overflow-hidden bg-card shadow-sm">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-50 dark:bg-zinc-900/70 border-b border-border text-xs font-semibold text-slate-700 dark:text-zinc-200">
-                    <th className="py-3 px-3.5 min-w-[240px]">Structure Component</th>
-                    <th className="py-3 px-3.5 min-w-[100px]">Category</th>
-                    <th className="py-3 px-3.5 min-w-[100px]">Tax Status</th>
-                    <th className="py-3 px-3.5 min-w-[110px]">Calculation</th>
-                    <th className="py-3 px-3.5 min-w-[130px]">Monthly Amount</th>
-                    <th className="py-3 px-3.5 text-center w-16">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {assignedStructures.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="py-8 text-center text-xs text-muted-foreground">
-                        <AccountBalanceWallet className="!w-10 !h-10 text-muted-foreground/30 mx-auto mb-2" />
-                        <span className="font-medium block">
-                          No compensation items assigned yet
-                        </span>
-                        <span className="text-[11px] text-muted-foreground/70 block mt-0.5">
-                          Click &quot;+ Add Item&quot; above to assign a salary structure.
-                        </span>
-                      </td>
-                    </tr>
-                  ) : (
-                    assignedStructures.map((row, idx) => {
-                      const master = masterSalaryStructures.find(
-                        (s) => s.id === row.salary_structure_id,
-                      );
-                      const isDeduction = master?.is_deduction;
-                      const isBase = master?.is_base_salary;
-
-                      return (
-                        <tr key={idx} className="hover:bg-secondary/20 transition-colors text-xs">
-                          <td className="py-2.5 px-3.5">
-                            <Select
-                              name={`salary_structure_${idx}`}
-                              options={structureOptions}
-                              value={row.salary_structure_id}
-                              onValueChange={(val) => handleRowStructureChange(idx, Number(val))}
-                              size="small"
-                              placeholder="Select component"
-                            />
-                          </td>
-                          <td className="py-2.5 px-3.5 whitespace-nowrap text-xs text-foreground font-medium">
-                            {isDeduction ? "Deduction" : "Earning"}
-                            {isBase && (
-                              <span className="ml-1.5 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
-                                Base
-                              </span>
-                            )}
-                          </td>
-                          <td className="py-2.5 px-3.5 whitespace-nowrap text-xs text-muted-foreground">
-                            {master?.is_taxable ? "Taxable" : "Exempt"}
-                          </td>
-                          <td className="py-2.5 px-3.5 whitespace-nowrap text-xs text-muted-foreground">
-                            {master?.calculation_type || "Fixed"}
-                          </td>
-                          <td className="py-2.5 px-3.5">
-                            <Input
-                              name={`amount_${idx}`}
-                              type="number"
-                              value={row.amount}
-                              onChange={(e) =>
-                                handleRowAmountChange(idx, Number(e.target.value) || 0)
-                              }
-                              placeholder="0.00"
-                              size="small"
-                              className="w-28"
-                            />
-                          </td>
-                          <td className="py-2.5 px-3.5 text-center">
-                            <IconButton
-                              size="small"
-                              onClick={() => handleRemoveRow(idx)}
-                              className="!bg-red-50 dark:!bg-red-950/40 hover:!bg-red-100 dark:hover:!bg-red-900/60 !text-red-500 !border !border-red-100 dark:!border-red-900/40 !rounded-[5px] !w-9 !h-9 !p-0"
-                              title="Delete Item"
-                            >
-                              <Delete className="!w-4 !h-4" />
-                            </IconButton>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {assignedStructures.length > 0 && (
-              <div className="grid grid-cols-3 gap-2 p-3 bg-secondary/30 border-t border-border text-xs">
-                <div>
-                  <span className="text-[11px] text-muted-foreground block">Total Gross Pay</span>
-                  <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm">
-                    ${totalGross.toLocaleString()}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-[11px] text-muted-foreground block">Total Deductions</span>
-                  <span className="font-bold text-rose-600 dark:text-rose-400 text-sm">
-                    -${totalDeductions.toLocaleString()}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-[11px] text-muted-foreground block">Net Monthly Pay</span>
-                  <span className="font-bold text-foreground text-sm">
-                    ${netSalary.toLocaleString()}
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Input<ManageEmployeeFormValues>
-            name="phone"
-            type="tel"
-            label="Phone Number"
-            placeholder="e.g. +1 234 567 8900"
-            formik={formik}
-          />
 
           <ActiveInactiveField<ManageEmployeeFormValues>
             name="status"
@@ -722,6 +674,71 @@ export const ManageEmployee: React.FC<ManageEmployeeProps> = ({
             formik={formik}
             required
           />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div>
+            <h4 className="text-sm font-bold text-foreground">
+              Salary Structures & Compensation Items
+            </h4>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Configure earnings, allowances, deductions, and base pay for this employee.
+            </p>
+          </div>
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={handleAddStructureRow}
+            startIcon={<Add className="!w-4 !h-4" />}
+            className="!text-xs !normal-case !border-primary !text-primary hover:!bg-primary/10 font-semibold !rounded-[5px] !px-3 !py-1.5"
+          >
+            Add Item
+          </Button>
+        </div>
+
+        <div className="rounded-lg overflow-hidden bg-card shadow-sm">
+          <DataTable
+            data={assignedStructures}
+            columns={structureColumns}
+            loading={false}
+            hidePagination
+          />
+          {assignedStructures.length > 0 && (
+            <div className="flex justify-end px-4 pt-4 bg-secondary/10">
+              <div className="w-full max-w-[280px] flex flex-col gap-2.5 text-sm">
+                <div className="flex justify-between items-center text-muted-foreground">
+                  <span>Total Gross Pay</span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                    ₹
+                    {totalGross.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-muted-foreground">
+                  <span>Total Deductions</span>
+                  <span className="font-semibold text-rose-600 dark:text-rose-400">
+                    -₹
+                    {totalDeductions.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </span>
+                </div>
+                <div className="border-t border-border/60 flex justify-between items-center">
+                  <span className="font-bold text-foreground">Net Monthly Pay</span>
+                  <span className="font-bold text-lg text-foreground">
+                    ₹
+                    {netSalary.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <Input<ManageEmployeeFormValues>

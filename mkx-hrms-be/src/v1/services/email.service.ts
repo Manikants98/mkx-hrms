@@ -656,3 +656,145 @@ export const sendLeaveApprovalEmail = async (
     return { success: false, error };
   }
 };
+
+export interface LeaveStatusUpdateEmailOptions {
+  employeeName: string;
+  employeeEmail: string;
+  status: "Approved" | "Rejected";
+  leaveType: string;
+  startDate: string;
+  endDate: string;
+  daysCount: number;
+}
+
+export const buildLeaveStatusUpdateEmailHtml = (options: LeaveStatusUpdateEmailOptions): string => {
+  const color = options.status === "Approved" ? "#10b981" : "#ef4444";
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leave Request ${options.status}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f9fafb; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .card { background: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); overflow: hidden; margin-top: 20px; }
+    .header { background: ${color}; color: white; padding: 24px; text-align: center; }
+    .header h1 { margin: 0; font-size: 24px; font-weight: 600; }
+    .content { padding: 32px; }
+    .greeting { font-size: 18px; font-weight: 600; margin-bottom: 24px; color: #111827; }
+    .details { background: #f3f4f6; border-radius: 6px; padding: 20px; margin-bottom: 24px; }
+    .details p { margin: 0 0 12px 0; font-size: 15px; }
+    .details p:last-child { margin: 0; }
+    .label { font-weight: 600; color: #4b5563; display: inline-block; width: 120px; }
+    .value { color: #111827; }
+    .footer { text-align: center; padding: 24px; color: #6b7280; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="header">
+        <h1>Leave Request ${options.status}</h1>
+      </div>
+      <div class="content">
+        <div class="greeting">Hi ${options.employeeName},</div>
+        <p style="margin-bottom: 24px; color: #4b5563;">Your manager has reviewed your recent leave request and it has been <strong style="color: ${color}">${options.status.toLowerCase()}</strong>.</p>
+        
+        <div class="details">
+          <p><span class="label">Leave Type:</span> <span class="value">${options.leaveType}</span></p>
+          <p><span class="label">Duration:</span> <span class="value">${options.startDate} to ${options.endDate}</span></p>
+          <p><span class="label">Days:</span> <span class="value">${options.daysCount}</span></p>
+        </div>
+        
+        <p style="color: #4b5563; margin-top: 24px;">If you have any questions, please contact your manager or HR.</p>
+      </div>
+    </div>
+    <div class="footer">
+      <p>&copy; ${new Date().getFullYear()} MKX Technologies Pvt. Ltd. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>`;
+};
+
+export const buildLeaveStatusUpdateEmailPlainText = (
+  options: LeaveStatusUpdateEmailOptions,
+): string => {
+  return `Leave Request ${options.status}
+
+Hi ${options.employeeName},
+
+Your manager has reviewed your recent leave request and it has been ${options.status.toLowerCase()}.
+
+Request Details:
+- Leave Type: ${options.leaveType}
+- Duration: ${options.startDate} to ${options.endDate}
+- Days: ${options.daysCount}
+
+If you have any questions, please contact your manager or HR.
+
+Best regards,
+MKX Technologies Pvt. Ltd.`;
+};
+
+export const sendLeaveStatusUpdateEmail = async (
+  options: LeaveStatusUpdateEmailOptions,
+): Promise<EmailSendResult> => {
+  try {
+    const rawHost = process.env.SMTP_HOST || "smtp.gmail.com";
+    const mailOptions = {
+      from: `"${process.env.SMTP_FROM_NAME || "HR System"}" <${
+        process.env.SMTP_FROM_EMAIL || "noreply@company.com"
+      }>`,
+      to: options.employeeEmail,
+      subject: `Leave Request ${options.status}`,
+      text: buildLeaveStatusUpdateEmailPlainText(options),
+      html: buildLeaveStatusUpdateEmailHtml(options),
+    };
+
+    if (transporterInstance) {
+      try {
+        const info = await transporterInstance.sendMail(mailOptions);
+        logger.info(
+          `Leave status update email dispatched to ${options.employeeEmail} (Message ID: ${info.messageId})`,
+        );
+        return { success: true, messageId: info.messageId };
+      } catch (cachedErr) {
+        logger.warn(
+          `Cached SMTP transporter failed, attempting re-resolution: ${String(cachedErr)}`,
+        );
+        transporterInstance = null;
+      }
+    }
+
+    const ipv4List = await resolveIpv4Addresses(rawHost);
+    let lastError: unknown = null;
+
+    for (const hostAddress of ipv4List) {
+      try {
+        const transporter = createTransporterForHost(hostAddress, rawHost);
+        const info = await transporter.sendMail(mailOptions);
+        transporterInstance = transporter;
+        logger.info(
+          `Leave status update email dispatched to ${options.employeeEmail} (Message ID: ${info.messageId}) [via IPv4: ${hostAddress}]`,
+        );
+        return { success: true, messageId: info.messageId };
+      } catch (err) {
+        lastError = err;
+        logger.warn(
+          `Failed sending leave status update email via [${hostAddress}], checking alternative address...`,
+        );
+      }
+    }
+
+    logger.error(
+      `Failed to send leave status update email to ${options.employeeEmail}:`,
+      lastError,
+    );
+    return { success: false, error: lastError };
+  } catch (error) {
+    logger.error(`Failed to send leave status update email to ${options.employeeEmail}:`, error);
+    return { success: false, error };
+  }
+};

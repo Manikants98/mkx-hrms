@@ -111,7 +111,8 @@ export function useCustomMutation<
             typeof activeToastMessages.error === "function"
               ? activeToastMessages.error(err)
               : activeToastMessages.error ||
-                (err as AxiosError<{ error?: string }>).response?.data?.error ||
+                (err as AxiosError<{ error?: string; message?: string }>).response?.data?.message ||
+                (err as AxiosError<{ error?: string; message?: string }>).response?.data?.error ||
                 err.message ||
                 "An error occurred",
         });
