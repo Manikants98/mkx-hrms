@@ -43,7 +43,7 @@ export function ActivityAuditDrawer({
       subtitle="Real-time audit tracking of system modifications and entity state changes"
       width={540}
     >
-      <div className="p-4 space-y-4">
+      <div className="space-y-4">
         <div className="flex items-center gap-2">
           <InputBase
             placeholder="Search activities by name, status, or change..."

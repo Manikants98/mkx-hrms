@@ -343,7 +343,7 @@ export const getWorkforceTrend = async (
      * Build a cumulative headcount snapshot per month of the current year.
      * An employee hired before month M still counts toward M's total.
      */
-    const trend = MONTH_LABELS.slice(0, currentMonth).map((label, idx) => {
+    const trend = MONTH_LABELS.map((label, idx) => {
       const month = idx + 1;
       const monthEnd = new Date(Date.UTC(currentYear, month, 1));
       const count = allEmployees.filter((e) => new Date(e.created_at) < monthEnd).length;
