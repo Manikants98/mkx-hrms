@@ -9,7 +9,7 @@ import {
   VisibilityOff,
 } from "@mui/icons-material";
 import { Button, CircularProgress, IconButton, InputAdornment, InputBase } from "@mui/material";
-import axios from "axios";
+import { api } from "libraries/axios";
 import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -47,7 +47,7 @@ export default function SetPassword() {
       return;
     }
     try {
-      const res = await axios.get(`/api/v1/auth/set-password?token=${token}`);
+      const res = await api.get(`/v1/auth/set-password?token=${token}`);
       setFirstName(res.data?.data?.firstName ?? "");
       setPageState("valid");
     } catch (err: unknown) {
@@ -80,7 +80,7 @@ export default function SetPassword() {
 
     setIsSubmitting(true);
     try {
-      await axios.post("/api/v1/auth/set-password", { token, password, confirmPassword });
+      await api.post("/v1/auth/set-password", { token, password, confirmPassword });
       toast.success("Password set successfully. Please sign in.");
       navigate("/login", { replace: true });
     } catch (err: unknown) {

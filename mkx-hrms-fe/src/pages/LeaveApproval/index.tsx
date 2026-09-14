@@ -38,6 +38,7 @@ export default function LeaveApproval() {
   const [leaveDetails, setLeaveDetails] = useState<LeaveDetails | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successAction, setSuccessAction] = useState<"Approved" | "Rejected" | "">("");
+  const [remark, setRemark] = useState("");
 
   const verifyToken = useCallback(async () => {
     if (!token) {
@@ -68,7 +69,7 @@ export default function LeaveApproval() {
   const handleAction = async (status: "Approved" | "Rejected") => {
     setIsSubmitting(true);
     try {
-      await api.post(`/v1/leaves/approval/${token}`, { status });
+      await api.post(`/v1/leaves/approval/${token}`, { status, remark: remark.trim() || undefined });
       toast.success(`Leave ${status.toLowerCase()} successfully.`);
       setSuccessAction(status);
       setPageState("success");
@@ -216,6 +217,20 @@ export default function LeaveApproval() {
                   <div className="text-sm text-foreground">{leaveDetails.reason}</div>
                 </div>
               </div>
+            </div>
+
+            <div className="mb-6">
+              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                Manager Remark (Optional)
+              </div>
+              <textarea
+                value={remark}
+                onChange={(e) => setRemark(e.target.value)}
+                placeholder="Enter a reason for approval/rejection..."
+                rows={3}
+                disabled={isSubmitting}
+                className="w-full bg-background border border-border rounded-[5px] p-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary transition-all resize-none"
+              />
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
