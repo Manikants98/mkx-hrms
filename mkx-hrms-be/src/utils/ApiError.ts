@@ -12,6 +12,7 @@ export class ApiError extends Error {
   /**
    * Initializes a new instance of ApiError
    *
+   *
    * @param statusCode - HTTP status code (e.g. 400, 404, 500)
    * @param message - Human-readable error description
    * @param errors - Optional array of additional error details
