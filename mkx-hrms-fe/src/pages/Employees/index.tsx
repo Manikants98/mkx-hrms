@@ -728,7 +728,7 @@ export default function Employees() {
           setIsAddDrawerOpen(false);
           setSelectedEmployee(null);
         }}
-        initialData={selectedEmployee}
+        initialData={selectedEmployee as any}
         onSubmit={handleSaveEmployee}
       />
 

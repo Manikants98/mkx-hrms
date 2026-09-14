@@ -873,7 +873,7 @@ export default function EmployeeDetail(): React.ReactElement {
       <ManageEmployee
         open={isEditDrawerOpen}
         onClose={() => setIsEditDrawerOpen(false)}
-        initialData={employee}
+        initialData={employee as any}
         onSubmit={handleSaveEdit}
       />
 
