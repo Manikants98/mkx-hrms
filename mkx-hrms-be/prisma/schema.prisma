@@ -155,6 +155,7 @@ model Leave {
   applied_on             DateTime  @default(now()) @db.Date
   approval_token         String?   @unique @db.VarChar(128)
   approval_token_expires DateTime?
+  manager_remark         String?   @db.Text
   created_at             DateTime  @default(now())
   updated_at             DateTime  @updatedAt
 

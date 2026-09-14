@@ -665,6 +665,7 @@ export interface LeaveStatusUpdateEmailOptions {
   startDate: string;
   endDate: string;
   daysCount: number;
+  remark?: string | null;
 }
 
 export const buildLeaveStatusUpdateEmailHtml = (options: LeaveStatusUpdateEmailOptions): string => {
@@ -705,6 +706,13 @@ export const buildLeaveStatusUpdateEmailHtml = (options: LeaveStatusUpdateEmailO
           <p><span class="label">Leave Type:</span> <span class="value">${options.leaveType}</span></p>
           <p><span class="label">Duration:</span> <span class="value">${options.startDate} to ${options.endDate}</span></p>
           <p><span class="label">Days:</span> <span class="value">${options.daysCount}</span></p>
+          ${
+            options.remark
+              ? `<div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+                   <p><span class="label">Manager Remark:</span> <span class="value" style="color: #4b5563; font-style: italic;">"${options.remark}"</span></p>
+                 </div>`
+              : ""
+          }
         </div>
         
         <p style="color: #4b5563; margin-top: 24px;">If you have any questions, please contact your manager or HR.</p>
@@ -731,7 +739,7 @@ Request Details:
 - Leave Type: ${options.leaveType}
 - Duration: ${options.startDate} to ${options.endDate}
 - Days: ${options.daysCount}
-
+${options.remark ? `\nManager Remark:\n"${options.remark}"\n` : ""}
 If you have any questions, please contact your manager or HR.
 
 Best regards,

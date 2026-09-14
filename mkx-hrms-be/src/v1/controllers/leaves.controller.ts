@@ -309,7 +309,7 @@ export const updateLeaveStatus = async (
 ): Promise<void> => {
   try {
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-    const { status } = req.body;
+    const { status, remark } = req.body;
 
     const existing = await prisma.leave.findFirst({
       where: {
@@ -327,7 +327,7 @@ export const updateLeaveStatus = async (
 
     const updated = await prisma.leave.update({
       where: { id: existing.id },
-      data: { status },
+      data: { status, manager_remark: remark !== undefined ? remark : existing.manager_remark },
       include: { leave_type_rel: true, employee: true },
     });
 
@@ -358,6 +358,7 @@ export const updateLeaveStatus = async (
         startDate: new Date(updated.start_date).toISOString().split("T")[0],
         endDate: new Date(updated.end_date).toISOString().split("T")[0],
         daysCount: updated.days_count,
+        remark: updated.manager_remark,
       }).catch((err) => {
         logger.error(`Background email task failed for leave ${updated.id}:`, err);
       });
@@ -870,7 +871,7 @@ export const processLeaveApproval = async (
 ): Promise<void> => {
   try {
     const token = req.params.token as string;
-    const { status } = req.body;
+    const { status, remark } = req.body;
 
     if (!token) {
       res.sendError({ statusCode: 400, message: "Token is required" });
@@ -905,6 +906,7 @@ export const processLeaveApproval = async (
       where: { id: leave.id },
       data: {
         status,
+        manager_remark: remark || null,
         approval_token: null,
         approval_token_expires: null,
       },
@@ -925,6 +927,7 @@ export const processLeaveApproval = async (
         startDate: new Date(updated.start_date).toISOString().split("T")[0],
         endDate: new Date(updated.end_date).toISOString().split("T")[0],
         daysCount: updated.days_count,
+        remark: updated.manager_remark,
       }).catch((err) => {
         logger.error(`Background email task failed for leave ${updated.id}:`, err);
       });
