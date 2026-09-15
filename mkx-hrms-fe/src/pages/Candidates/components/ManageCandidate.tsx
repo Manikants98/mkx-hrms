@@ -31,6 +31,7 @@ export interface ManageCandidateProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (candidate: ManageCandidateFormValues) => Promise<void> | void;
+  initialData?: any;
 }
 
 const candidateValidationSchema = Yup.object({
@@ -64,7 +65,12 @@ const initialValues: ManageCandidateFormValues = {
   avatar: "",
 };
 
-export const ManageCandidate: React.FC<ManageCandidateProps> = ({ open, onClose, onSubmit }) => {
+export const ManageCandidate: React.FC<ManageCandidateProps> = ({
+  open,
+  onClose,
+  onSubmit,
+  initialData,
+}) => {
   const { data: masterDepartmentsResponse } = useGetMasterDepartments();
   const { data: jobPostingsResponse } = useGetJobPostings();
 
@@ -122,10 +128,33 @@ export const ManageCandidate: React.FC<ManageCandidateProps> = ({ open, onClose,
     onClose();
   };
 
+  // Populate initial values when initialData is provided
+  React.useEffect(() => {
+    if (open) {
+      if (initialData) {
+        formik.setValues({
+          name: initialData.name || "",
+          email: initialData.email || "",
+          phone: initialData.phone || "",
+          position: initialData.position || "",
+          department: initialData.department || "",
+          experience: initialData.experience || "Mid-Level",
+          rating: initialData.rating || "",
+          source: initialData.source || "Company Website",
+          resume_url: initialData.resume_url || "",
+          job_posting_id: initialData.job_posting?.id || "",
+          avatar: initialData.avatar || "",
+        });
+      } else {
+        formik.resetForm();
+      }
+    }
+  }, [open, initialData]);
+
   // Auto-fill position and department when a job posting is selected
   React.useEffect(() => {
     const jobId = formik.values.job_posting_id;
-    if (jobId) {
+    if (jobId && (!initialData || jobId !== initialData.job_posting?.id)) {
       const job = (jobPostingsResponse?.data || []).find((j) => j.id === jobId);
       if (job) {
         if (!formik.touched.position) formik.setFieldValue("position", job.title);
@@ -134,14 +163,18 @@ export const ManageCandidate: React.FC<ManageCandidateProps> = ({ open, onClose,
         }
       }
     }
-  }, [formik.values.job_posting_id, formik.touched, jobPostingsResponse?.data]);
+  }, [formik.values.job_posting_id, formik.touched, jobPostingsResponse?.data, initialData]);
 
   return (
     <AppDrawer
       open={open}
       onClose={handleClose}
-      title="Add New Candidate"
-      subtitle="Manually add a candidate to the recruitment pipeline for evaluation."
+      title={initialData ? "Edit Candidate" : "Add New Candidate"}
+      subtitle={
+        initialData
+          ? "Update candidate details in the recruitment pipeline."
+          : "Manually add a candidate to the recruitment pipeline for evaluation."
+      }
       width={700}
       footer={
         <>

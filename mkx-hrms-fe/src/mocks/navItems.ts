@@ -16,6 +16,7 @@ import {
   SettingsOutlined,
   TuneOutlined,
   WorkHistory,
+  WorkOutlineOutlined,
 } from "@mui/icons-material";
 
 /**
@@ -69,6 +70,7 @@ export const navItems: NavItem[] = [
       },
       { title: "Leave Types", href: "/masters/leave-types", icon: EventNoteOutlined },
       { title: "Work Shifts", href: "/masters/shifts", icon: AccessTimeOutlined },
+      { title: "Job Postings", href: "/masters/job-postings", icon: WorkOutlineOutlined },
     ],
   },
   { title: "Reports", href: "/reports", icon: BarChartOutlined },

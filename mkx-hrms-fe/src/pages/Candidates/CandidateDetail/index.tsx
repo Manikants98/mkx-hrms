@@ -1,10 +1,21 @@
 import { ArrowBack, Badge, Email, EventNote, Person, Star, Work } from "@mui/icons-material";
 import { Avatar, Button, Chip, Skeleton, Tab, Tabs } from "@mui/material";
+import dayjs from "dayjs";
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useGetCandidateById, useUpdateCandidateStatus } from "services/recruitment";
 
 type CandidateDetailTab = "overview" | "interviews";
+
+/**
+ * Formats a date string to a readable format
+ * @param {unknown} date - The date to format
+ * @returns {string} The formatted date string
+ */
+const formatDate = (date: unknown): string => {
+  if (!date) return "N/A";
+  return dayjs(date as string).format("DD MMMM YYYY");
+};
 
 export default function CandidateDetail(): React.ReactElement {
   const { id } = useParams<{ id: string }>();
@@ -55,16 +66,8 @@ export default function CandidateDetail(): React.ReactElement {
 
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto pb-10">
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 bg-card/40 border border-border p-5 rounded-[8px]">
         <div className="flex items-start gap-4">
-          <Button
-            variant="text"
-            className="!min-w-0 !p-2 !rounded-full !text-muted-foreground hover:!bg-secondary mt-1"
-            onClick={() => navigate("/candidates")}
-          >
-            <ArrowBack className="!w-5 !h-5" />
-          </Button>
-
           <Avatar
             src={candidate.avatar || undefined}
             className="!w-16 !h-16 !bg-primary/20 !text-primary !text-2xl !font-bold"
@@ -99,7 +102,7 @@ export default function CandidateDetail(): React.ReactElement {
               {candidate.position} • {candidate.department}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Applied on {candidate.applied_date}
+              Applied on {formatDate(candidate.applied_date)}
             </p>
           </div>
         </div>

@@ -37,7 +37,8 @@
     "pdfmake": "^0.3.11",
     "pg": "^8.23.0",
     "tsx": "^4.23.13",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

@@ -619,3 +619,64 @@ export const createCandidate = async (
     next(err);
   }
 };
+
+/**
+ * Controller to update candidate details
+ */
+export const updateCandidateDetails = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const {
+      name,
+      email,
+      phone,
+      position,
+      department,
+      experience,
+      rating,
+      avatar,
+      resume_url,
+      source,
+      job_posting_id,
+    } = req.body;
+
+    const candidate = await prisma.candidate.findFirst({
+      where: {
+        OR: [{ candidate_code: id }, { id: !isNaN(Number(id)) ? Number(id) : undefined }],
+      },
+    });
+
+    if (!candidate) {
+      res.status(404).json({ error: "Candidate not found" });
+      return;
+    }
+
+    const updatedCandidate = await prisma.candidate.update({
+      where: { id: candidate.id },
+      data: {
+        name: name !== undefined ? name : candidate.name,
+        email: email !== undefined ? email : candidate.email,
+        phone: phone !== undefined ? phone : candidate.phone,
+        position: position !== undefined ? position : candidate.position,
+        department: department !== undefined ? department : candidate.department,
+        experience: experience !== undefined ? experience : candidate.experience,
+        rating: rating !== undefined ? rating : candidate.rating,
+        avatar: avatar !== undefined ? avatar : candidate.avatar,
+        resume_url: resume_url !== undefined ? resume_url : candidate.resume_url,
+        source: source !== undefined ? source : candidate.source,
+        job_posting_id: job_posting_id !== undefined ? job_posting_id : candidate.job_posting_id,
+      },
+    });
+
+    res.json({
+      message: "Candidate updated successfully",
+      data: updatedCandidate,
+    });
+  } catch (err) {
+    next(err);
+  }
+};

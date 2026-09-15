@@ -9,6 +9,12 @@ import {
   getMyAttendance,
   triggerDailyAttendanceCron,
 } from "../controllers/attendance.controller";
+import { validate } from "../../middlewares/validate.middleware";
+import {
+  updateAttendanceStatusSchema,
+  punchAttendanceSchema,
+  triggerDailyAttendanceCronSchema,
+} from "../schemas/attendance.schema";
 
 const router = Router();
 
@@ -17,8 +23,12 @@ router.get("/my", getMyAttendance);
 router.get("/stats", getAttendanceStats);
 router.get("/filters", getAttendanceFilters);
 router.get("/export", exportAttendance);
-router.patch("/:id/status", updateAttendanceStatus);
-router.post("/punch", punchAttendance);
-router.post("/generate-daily", triggerDailyAttendanceCron);
+router.patch("/:id/status", validate(updateAttendanceStatusSchema), updateAttendanceStatus);
+router.post("/punch", validate(punchAttendanceSchema), punchAttendance);
+router.post(
+  "/generate-daily",
+  validate(triggerDailyAttendanceCronSchema),
+  triggerDailyAttendanceCron,
+);
 
 export default router;

@@ -90,7 +90,7 @@ export const useGetCandidateById = (id: string | number) => {
   return useCustomQuery<ApiResponse<CandidateRecord>>(
     ["candidate", id],
     `/v1/recruitment/candidates/${id}`,
-    { enabled: !!id }
+    { enabled: !!id },
   );
 };
 
@@ -279,6 +279,44 @@ export const useCreateCandidate = (onSuccessCallback?: () => void) => {
       mutation.mutate({
         url: "/v1/recruitment/candidates",
         method: "POST",
+        data,
+      }),
+  };
+};
+
+/**
+ * Hook to update candidate details
+ *
+ * @param onSuccessCallback - Optional callback on success
+ * @returns Mutation trigger
+ */
+export const useUpdateCandidateDetails = (onSuccessCallback?: () => void) => {
+  const mutation = useCustomMutation<
+    ApiResponse<CandidateRecord>,
+    unknown,
+    Partial<CandidateRecord>
+  >({
+    toastMessages: {
+      loading: "Updating candidate...",
+      success: "Candidate successfully updated!",
+    },
+    onSuccess: () => {
+      if (onSuccessCallback) onSuccessCallback();
+    },
+  });
+
+  return {
+    ...mutation,
+    mutateAsync: ({ id, data }: { id: string; data: Partial<CandidateRecord> }) =>
+      mutation.mutateAsync({
+        url: `/v1/recruitment/candidates/${id}`,
+        method: "PUT",
+        data,
+      }),
+    mutate: ({ id, data }: { id: string; data: Partial<CandidateRecord> }) =>
+      mutation.mutate({
+        url: `/v1/recruitment/candidates/${id}`,
+        method: "PUT",
         data,
       }),
   };

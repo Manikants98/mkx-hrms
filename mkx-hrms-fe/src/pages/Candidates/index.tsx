@@ -7,6 +7,7 @@ import {
   MoreHoriz,
   Star,
   Visibility,
+  Edit,
 } from "@mui/icons-material";
 import {
   Avatar,
@@ -54,6 +55,7 @@ import {
   useGetRecruitmentStats,
   useOnboardCandidate,
   useUpdateCandidateStatus,
+  useUpdateCandidateDetails,
   type CandidateRecord,
 } from "services/recruitment";
 
@@ -88,6 +90,7 @@ interface CandidateRowActionsProps {
   onOnboard: (candidate: CandidateRecord) => void;
   onDelete: (candidate: CandidateRecord) => void;
   onView: (candidate: CandidateRecord) => void;
+  onEdit: (candidate: CandidateRecord) => void;
 }
 
 /**
@@ -102,6 +105,7 @@ function CandidateRowActions({
   onOnboard,
   onDelete,
   onView,
+  onEdit,
 }: CandidateRowActionsProps): React.ReactElement {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -130,6 +134,17 @@ function CandidateRowActions({
         >
           <Visibility className="!w-4 !h-4" />
           View Candidate
+        </MenuItem>
+
+        <MenuItem
+          onClick={() => {
+            setAnchorEl(null);
+            onEdit(row);
+          }}
+          className="!text-xs !py-2 !px-3 !gap-2 !rounded-[5px] !text-muted-foreground hover:!text-foreground hover:!bg-secondary/70"
+        >
+          <Edit className="!w-4 !h-4" />
+          Edit Candidate
         </MenuItem>
 
         {!row.onboarded_at && (row.stage === "Offered" || row.stage === "Hired") && (
@@ -230,6 +245,7 @@ function getCandidateColumns(
   onOnboard: (candidate: CandidateRecord) => void,
   onDelete: (candidate: CandidateRecord) => void,
   onView: (candidate: CandidateRecord) => void,
+  onEdit: (candidate: CandidateRecord) => void,
 ): ColumnDef<CandidateRecord>[] {
   return [
     {
@@ -343,6 +359,7 @@ function getCandidateColumns(
           onOnboard={onOnboard}
           onDelete={onDelete}
           onView={onView}
+          onEdit={onEdit}
         />
       ),
       width: "5%",
@@ -363,6 +380,7 @@ export default function Candidates() {
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [isManageCandidateOpen, setIsManageCandidateOpen] = useState(false);
+  const [editingCandidate, setEditingCandidate] = useState<CandidateRecord | null>(null);
   const navigate = useNavigate();
 
   const {
@@ -392,6 +410,12 @@ export default function Candidates() {
   const updateCandidateStatusMutation = useUpdateCandidateStatus(() => {
     refetch();
     refetchStats();
+  });
+
+  const updateCandidateDetailsMutation = useUpdateCandidateDetails(() => {
+    refetch();
+    refetchStats();
+    setIsManageCandidateOpen(false);
   });
 
   const onboardCandidateMutation = useOnboardCandidate(() => {
@@ -440,9 +464,29 @@ export default function Candidates() {
     navigate(`/candidates/${candidate.id}`);
   };
 
+  /**
+   * Opens manage candidate dialog in edit mode
+   */
+  const handleEdit = (candidate: CandidateRecord) => {
+    setEditingCandidate(candidate);
+    setIsManageCandidateOpen(true);
+  };
+
+  const handleAddCandidate = () => {
+    setEditingCandidate(null);
+    setIsManageCandidateOpen(true);
+  };
+
   const candidateColumns = useMemo(
-    () => getCandidateColumns(handleUpdateStageStatus, handleOnboard, handleDelete, handleView),
-    [handleUpdateStageStatus, handleOnboard, handleDelete, handleView],
+    () =>
+      getCandidateColumns(
+        handleUpdateStageStatus,
+        handleOnboard,
+        handleDelete,
+        handleView,
+        handleEdit,
+      ),
+    [handleUpdateStageStatus, handleOnboard, handleDelete, handleView, handleEdit],
   );
 
   const candidates = useMemo(() => candidatesResponse?.data || [], [candidatesResponse]);
@@ -493,9 +537,7 @@ export default function Candidates() {
         candidate.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         candidate.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
         candidate.department.toLowerCase().includes(searchTerm.toLowerCase());
-
       const matchesStage = stageFilter === "All" || candidate.stage === stageFilter;
-
       return matchesSearch && matchesStage;
     });
   }, [candidates, searchTerm, stageFilter]);
@@ -559,7 +601,7 @@ export default function Candidates() {
             variant="contained"
             size="small"
             startIcon={<Plus className="w-3.5 h-3.5" />}
-            onClick={() => setIsManageCandidateOpen(true)}
+            onClick={handleAddCandidate}
             className="!bg-primary !text-primary-foreground hover:!bg-primary/90 !text-xs !normal-case !font-semibold !px-3.5 !py-2 !rounded-[5px] shadow-sm"
           >
             Add Candidate
@@ -684,9 +726,20 @@ export default function Candidates() {
 
       <ManageCandidate
         open={isManageCandidateOpen}
-        onClose={() => setIsManageCandidateOpen(false)}
-        onSubmit={async (candidate) => {
-          await createCandidateMutation.mutateAsync(candidate);
+        onClose={() => {
+          setIsManageCandidateOpen(false);
+          setEditingCandidate(null);
+        }}
+        initialData={editingCandidate}
+        onSubmit={async (candidateForm) => {
+          if (editingCandidate) {
+            await updateCandidateDetailsMutation.mutateAsync({
+              id: editingCandidate.id,
+              data: candidateForm,
+            });
+          } else {
+            await createCandidateMutation.mutateAsync(candidateForm);
+          }
         }}
       />
     </StaggerContainer>
