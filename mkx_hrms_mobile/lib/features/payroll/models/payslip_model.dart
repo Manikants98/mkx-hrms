@@ -95,7 +95,7 @@ class Payslip {
     final gross = json['gross_pay'] is num
         ? json['gross_pay']
         : (num.tryParse(json['gross_pay']?.toString() ?? '') ??
-            (json['base_salary'] is num ? json['base_salary'] : 0));
+              (json['base_salary'] is num ? json['base_salary'] : 0));
 
     final deductions = json['total_deductions'] is num
         ? json['total_deductions']
@@ -105,9 +105,13 @@ class Payslip {
     final earnings = parsedItems.where((i) => i.category == 'Earning').toList();
     num computedBase = 0;
     num computedAllowance = 0;
-    
+
     if (earnings.isNotEmpty) {
-      final baseItemIndex = earnings.indexWhere((e) => e.name.toLowerCase().contains('base') || e.name.toLowerCase().contains('basic'));
+      final baseItemIndex = earnings.indexWhere(
+        (e) =>
+            e.name.toLowerCase().contains('base') ||
+            e.name.toLowerCase().contains('basic'),
+      );
       if (baseItemIndex != -1) {
         computedBase = earnings[baseItemIndex].amount;
         for (int i = 0; i < earnings.length; i++) {
@@ -127,10 +131,11 @@ class Payslip {
 
     final finalAllowance = json['allowance'] is num
         ? json['allowance']
-        : (num.tryParse(json['allowance']?.toString() ?? '') ?? computedAllowance);
+        : (num.tryParse(json['allowance']?.toString() ?? '') ??
+              computedAllowance);
 
     String formatCurrency(num amount) {
-      return '\$${amount.toStringAsFixed(0).replaceAll(RegExp(r'\B(?=(\d{3})+(?!\d))'), ',')}';
+      return '₹${amount.toStringAsFixed(0).replaceAll(RegExp(r'\B(?=(\d{3})+(?!\d))'), ',')}';
     }
 
     return Payslip(
@@ -138,7 +143,8 @@ class Payslip {
       dbId: json['db_id'] is int
           ? json['db_id']
           : int.tryParse(json['db_id']?.toString() ?? ''),
-      payrollCode: json['payroll_code']?.toString() ?? json['id']?.toString() ?? '',
+      payrollCode:
+          json['payroll_code']?.toString() ?? json['id']?.toString() ?? '',
       baseSalary: finalBase,
       allowance: finalAllowance,
       grossPay: gross,
@@ -146,10 +152,14 @@ class Payslip {
       netPay: json['net_pay'] is num
           ? json['net_pay']
           : (num.tryParse(json['net_pay']?.toString() ?? '') ?? 0),
-      formattedBase: json['formatted_base']?.toString() ?? formatCurrency(finalBase),
-      formattedAllowance: json['formatted_allowance']?.toString() ?? formatCurrency(finalAllowance),
-      formattedGross: json['formatted_gross']?.toString() ?? '\$$gross',
-      formattedDeductions: json['formatted_deductions']?.toString() ?? '\$$deductions',
+      formattedBase:
+          json['formatted_base']?.toString() ?? formatCurrency(finalBase),
+      formattedAllowance:
+          json['formatted_allowance']?.toString() ??
+          formatCurrency(finalAllowance),
+      formattedGross: json['formatted_gross']?.toString() ?? '₹$gross',
+      formattedDeductions:
+          json['formatted_deductions']?.toString() ?? '₹$deductions',
       formattedNetPay: json['formatted_net_pay']?.toString() ?? '\$0',
       workingDays: json['working_days'] is int
           ? json['working_days']

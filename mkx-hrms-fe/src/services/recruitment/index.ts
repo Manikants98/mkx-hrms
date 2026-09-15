@@ -10,6 +10,7 @@ export interface CandidateRecord {
   db_id?: number;
   name: string;
   email: string;
+  phone?: string | null;
   position: string;
   department: string;
   stage: "Screening" | "Interviewing" | "Offered" | "Hired";
@@ -17,9 +18,13 @@ export interface CandidateRecord {
   rating: string;
   status: "Active" | "In Review" | "Offered" | "Rejected";
   applied_date: string;
-  avatar?: string;
+  avatar?: string | null;
+  resume_url?: string | null;
+  source?: string | null;
   onboarded_at?: string | null;
   employee_id?: number | null;
+  interviews?: any[];
+  job_posting?: any;
 }
 
 /**
@@ -75,6 +80,17 @@ export const useGetCandidates = (params?: {
       params?.endDate,
     ],
     `/v1/recruitment/candidates${queryString}`,
+  );
+};
+
+/**
+ * Hook to retrieve a single candidate by ID
+ */
+export const useGetCandidateById = (id: string | number) => {
+  return useCustomQuery<ApiResponse<CandidateRecord>>(
+    ["candidate", id],
+    `/v1/recruitment/candidates/${id}`,
+    { enabled: !!id }
   );
 };
 
@@ -229,6 +245,41 @@ export const useDeleteCandidate = (onSuccessCallback?: () => void) => {
       mutation.mutateAsync({
         url: `/v1/recruitment/candidates/${id}`,
         method: "DELETE",
+      }),
+  };
+};
+
+/**
+ * Hook to create a new candidate
+ */
+export const useCreateCandidate = (onSuccessCallback?: () => void) => {
+  const mutation = useCustomMutation<
+    ApiResponse<CandidateRecord>,
+    unknown,
+    Partial<CandidateRecord>
+  >({
+    toastMessages: {
+      loading: "Creating candidate...",
+      success: "Candidate successfully created!",
+    },
+    onSuccess: () => {
+      if (onSuccessCallback) onSuccessCallback();
+    },
+  });
+
+  return {
+    ...mutation,
+    mutateAsync: (data: Partial<CandidateRecord>) =>
+      mutation.mutateAsync({
+        url: "/v1/recruitment/candidates",
+        method: "POST",
+        data,
+      }),
+    mutate: (data: Partial<CandidateRecord>) =>
+      mutation.mutate({
+        url: "/v1/recruitment/candidates",
+        method: "POST",
+        data,
       }),
   };
 };

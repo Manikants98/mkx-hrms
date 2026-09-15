@@ -8,6 +8,7 @@ import {
   BusinessOutlined,
   EventNoteOutlined,
   TuneOutlined,
+  WorkOutlineOutlined,
 } from "@mui/icons-material";
 import { FadeUpItem, StaggerContainer } from "shared/animations";
 import { DepartmentMasterTab } from "./components/DepartmentMasterTab";
@@ -16,6 +17,7 @@ import { DesignationMasterTab } from "./components/DesignationMasterTab";
 import { SalaryStructureMasterTab } from "./components/SalaryStructureMasterTab";
 import { LeaveTypeMasterTab } from "./components/LeaveTypeMasterTab";
 import { WorkShiftMasterTab } from "./components/WorkShiftMasterTab";
+import { JobPostingMasterTab } from "./components/JobPostingMasterTab";
 
 /**
  * Definition of a master tab configuration
@@ -73,6 +75,13 @@ const masterTabs: MasterTabDef[] = [
     href: "/masters/shifts",
     icon: AccessTimeOutlined,
     description: "Operational working hours, daily schedules, and grace period rules",
+  },
+  {
+    key: "job-postings",
+    label: "Job Postings",
+    href: "/masters/job-postings",
+    icon: WorkOutlineOutlined,
+    description: "Open vacancies, job descriptions, and hiring requisitions",
   },
 ];
 
@@ -148,6 +157,7 @@ export const Masters: React.FC = () => {
         {activeTabKey === "salary-structures" && <SalaryStructureMasterTab />}
         {activeTabKey === "leave-types" && <LeaveTypeMasterTab />}
         {activeTabKey === "shifts" && <WorkShiftMasterTab />}
+        {activeTabKey === "job-postings" && <JobPostingMasterTab />}
       </FadeUpItem>
     </StaggerContainer>
   );

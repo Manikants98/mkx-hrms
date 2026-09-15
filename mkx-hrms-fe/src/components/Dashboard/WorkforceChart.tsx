@@ -1,12 +1,4 @@
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import { LineChart } from "@mui/x-charts/LineChart";
 import type { WorkforceTrendPoint } from "services/dashboard";
 
 /**
@@ -53,52 +45,53 @@ export function WorkforceChart({ data, isLoading }: WorkforceChartProps) {
             No workforce data available yet
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+          <div className="w-full h-full relative">
+            <LineChart
+              dataset={data as any}
+              xAxis={[
+                {
+                  scaleType: "point",
+                  dataKey: "name",
+                  tickLabelStyle: { fontSize: 12, fill: "var(--muted-foreground)" },
+                },
+              ]}
+              yAxis={[
+                {
+                  tickLabelStyle: { fontSize: 12, fill: "var(--muted-foreground)" },
+                },
+              ]}
+              series={[
+                {
+                  dataKey: "employees",
+                  area: true,
+                  color: "var(--chart-1)",
+                  showMark: false,
+                },
+              ]}
+              margin={{ top: 10, right: 10, bottom: 20, left: 0 }}
+              grid={{ horizontal: true }}
+              sx={{
+                "& .MuiAreaElement-root": {
+                  fill: "url(#colorEmployees)",
+                },
+                "& .MuiChartsGrid-line": {
+                  strokeDasharray: "3 3",
+                  stroke: "var(--border)",
+                  opacity: 0.5,
+                },
+                "& .MuiChartsAxis-line, & .MuiChartsAxis-tick": {
+                  display: "none",
+                },
+              }}
+            >
               <defs>
                 <linearGradient id="colorEmployees" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="var(--chart-1)" stopOpacity={0.3} />
                   <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                vertical={false}
-                stroke="var(--border)"
-                opacity={0.5}
-              />
-              <XAxis
-                dataKey="name"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
-                dy={10}
-              />
-              <YAxis
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
-                allowDecimals={false}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "var(--card)",
-                  borderColor: "var(--border)",
-                  borderRadius: "8px",
-                  color: "var(--foreground)",
-                }}
-                itemStyle={{ color: "var(--foreground)" }}
-              />
-              <Area
-                type="monotone"
-                dataKey="employees"
-                stroke="var(--chart-1)"
-                strokeWidth={2}
-                fillOpacity={1}
-                fill="url(#colorEmployees)"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+            </LineChart>
+          </div>
         )}
       </div>
     </div>

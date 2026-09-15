@@ -30,15 +30,9 @@ export interface RecentReportItem {
  */
 export interface ReportAnalytics {
   summary_cards: ReportCardItem[];
-  headcount_growth: Array<{
-    month: string;
-    engineering: number;
-    sales: number;
-    product: number;
-    hr: number;
-  }>;
+  headcount_growth: Array<Record<string, string | number>>;
   retention_trend: Array<{ month: string; rate: number }>;
-  recruitment_sources: Array<{ name: string; value: number; color: string }>;
+  department_distribution: Array<{ name: string; value: number; color: string }>;
   department_compensation: Array<{ dept: string; current: number; budget: number }>;
 }
 

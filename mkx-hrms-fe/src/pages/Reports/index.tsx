@@ -1,27 +1,17 @@
 import {
   Users,
   UserCheck,
-  Briefcase,
   Wallet,
   TrendingUp,
   FileText,
   Download,
+  Calendar,
   type LucideIcon,
 } from "lucide-react";
 import { AccessTime, ChevronRight } from "@mui/icons-material";
 import { Button } from "@mui/material";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-} from "recharts";
+import { LineChart } from "@mui/x-charts/LineChart";
+import { PieChart } from "@mui/x-charts/PieChart";
 import { StaggerContainer, FadeUpItem } from "shared/animations";
 
 /**
@@ -57,10 +47,10 @@ const reportCards: ReportCardItem[] = [
     icon_bg: "bg-[#45ba50]/10",
   },
   {
-    id: "recruitment-sources",
-    title: "Recruitment Sources",
-    description: "Hiring channel attribution & pipeline breakdown",
-    icon: Briefcase,
+    id: "leave-operations",
+    title: "Leave Operations",
+    description: "Pending leave requests and approvals status",
+    icon: Calendar,
     icon_color: "text-[#ff8b25]",
     icon_bg: "bg-[#ff8b25]/10",
   },
@@ -85,7 +75,7 @@ export default function Reports() {
 
   const reportsList = reportsResponse?.data || [];
   const activeTrendData = analyticsResponse?.data?.retention_trend || [];
-  const activeSourcesData = analyticsResponse?.data?.recruitment_sources || [];
+  const activeDistributionData = analyticsResponse?.data?.department_distribution || [];
 
   return (
     <StaggerContainer className="space-y-4">
@@ -117,7 +107,7 @@ export default function Reports() {
         })}
       </FadeUpItem>
 
-      {/* Analytics Charts Grid: Retention Rate Trend & Recruitment Sources */}
+      {/* Analytics Charts Grid: Retention Rate Trend & Department Distribution */}
       <FadeUpItem className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Retention Rate Trend (Left - 7 Cols) */}
         <div className="lg:col-span-7 bg-card border border-border rounded-xl p-4 flex flex-col justify-between">
@@ -134,108 +124,83 @@ export default function Reports() {
             </div>
           </div>
 
-          <div className="h-[280px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={activeTrendData}
-                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-              >
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  vertical={false}
-                  stroke="var(--border)"
-                  opacity={0.5}
-                />
-                <XAxis
-                  dataKey="month"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
-                  dy={10}
-                />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
-                  ticks={[70, 80, 90, 100]}
-                  tickFormatter={(val: number) => `${val}%`}
-                  domain={[65, 100]}
-                />
-                <Tooltip
-                  formatter={(val: unknown) => [
-                    `${typeof val === "number" || typeof val === "string" ? val : 0}%`,
-                    "Retention Rate",
-                  ]}
-                  contentStyle={{
-                    backgroundColor: "var(--card)",
-                    borderColor: "var(--border)",
-                    borderRadius: "8px",
-                    color: "var(--foreground)",
-                    fontSize: "12px",
-                  }}
-                  itemStyle={{ color: "var(--foreground)" }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="rate"
-                  stroke="#45ba50"
-                  strokeWidth={2.5}
-                  dot={false}
-                  activeDot={{ r: 5, fill: "#45ba50" }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+          <div className="h-[280px] w-full" style={{ marginLeft: "-10px" }}>
+            <LineChart
+              dataset={activeTrendData}
+              xAxis={[
+                {
+                  scaleType: "point",
+                  dataKey: "month",
+                  tickLabelStyle: { fontSize: 12, fill: "var(--muted-foreground)" },
+                },
+              ]}
+              yAxis={[
+                {
+                  min: 65,
+                  max: 100,
+                  tickLabelStyle: { fontSize: 12, fill: "var(--muted-foreground)" },
+                  valueFormatter: (val: number | null) => `${val}%`,
+                },
+              ]}
+              series={[
+                {
+                  dataKey: "rate",
+                  color: "#45ba50",
+                  showMark: true,
+                },
+              ]}
+              margin={{ top: 10, right: 10, left: 30, bottom: 20 }}
+              grid={{ horizontal: true }}
+              sx={{
+                "& .MuiChartsGrid-line": {
+                  strokeDasharray: "3 3",
+                  stroke: "var(--border)",
+                  opacity: 0.5,
+                },
+                "& .MuiChartsAxis-line, & .MuiChartsAxis-tick": {
+                  display: "none",
+                },
+              }}
+            />
           </div>
         </div>
 
-        {/* Recruitment Sources Donut Chart (Right - 5 Cols) */}
+        {/* Department Distribution Donut Chart (Right - 5 Cols) */}
         <div className="lg:col-span-5 bg-card border border-border rounded-xl p-4 flex flex-col justify-between">
           <div>
-            <h3 className="text-base font-semibold text-foreground">Recruitment Sources</h3>
+            <h3 className="text-base font-semibold text-foreground">Department Distribution</h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Where your newly hired talent comes from
+              Headcount breakdown across organizational units
             </p>
           </div>
 
           <div className="flex items-center justify-between mt-4">
             {/* Donut Chart */}
             <div className="w-[180px] h-[200px] flex items-center justify-center shrink-0">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Tooltip
-                    formatter={(val: unknown) => [
-                      `${typeof val === "number" || typeof val === "string" ? val : 0}%`,
-                      "Share",
-                    ]}
-                    contentStyle={{
-                      backgroundColor: "var(--card)",
-                      borderColor: "var(--border)",
-                      borderRadius: "8px",
-                      color: "var(--foreground)",
-                      fontSize: "12px",
-                    }}
-                    itemStyle={{ color: "var(--foreground)" }}
-                  />
-                  <Pie
-                    data={activeSourcesData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={55}
-                    outerRadius={85}
-                    paddingAngle={2}
-                    dataKey="value"
-                  >
-                    {activeSourcesData.map((entry) => (
-                      <Cell key={entry.name} fill={entry.color} stroke="transparent" />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
+              <PieChart
+                series={[
+                  {
+                    data: activeDistributionData.map((item) => ({
+                      id: item.name,
+                      value: item.value,
+                      label: item.name,
+                      color: item.color,
+                    })),
+                    innerRadius: 55,
+                    outerRadius: 85,
+                    paddingAngle: 2,
+                  },
+                ]}
+                margin={{ right: 0 }}
+                slotProps={{
+                  legend: { hidden: true } as any,
+                }}
+              />
             </div>
 
             {/* Legend List */}
             <div className="flex-1 pl-6 space-y-3">
-              {activeSourcesData.map((item) => (
+              {activeDistributionData.map((item: any) => (
                 <div key={item.name} className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
                     <span
@@ -244,7 +209,7 @@ export default function Reports() {
                     />
                     <span className="text-foreground font-medium">{item.name}</span>
                   </div>
-                  <span className="font-semibold text-foreground">{item.value}%</span>
+                  <span className="font-semibold text-foreground">{item.value}</span>
                 </div>
               ))}
             </div>

@@ -48,22 +48,143 @@ export const getReportAnalytics = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const totalEmployees = await prisma.employee.count();
+    /** 1. Summary Cards Data */
+    const totalEmployees = await prisma.employee.count({
+      where: { status: "Active" },
+    });
+
     const inactiveEmployees = await prisma.employee.count({
       where: { status: "Inactive" },
     });
-    const retentionRate =
-      totalEmployees > 0
-        ? `${(((totalEmployees - inactiveEmployees) / totalEmployees) * 100).toFixed(1)}%`
-        : "100.0%";
 
+    const totalAllTime = totalEmployees + inactiveEmployees;
+    const retentionRate =
+      totalAllTime > 0 ? `${((totalEmployees / totalAllTime) * 100).toFixed(1)}%` : "0.0%";
+
+    /** Pending Leaves Calculation (Replaces Time to Hire) */
+    const pendingLeaves = await prisma.leave.count({
+      where: { status: "Pending" }
+    });
+    
+    /** Monthly Compensation Calculation */
     const payrollRecords = await prisma.payroll.findMany();
     const totalMonthlyCompensation = payrollRecords.reduce(
-      (acc, curr) => acc + Number(curr.net_pay),
+      (acc, curr) => acc + Number(curr.net_pay || 0),
       0,
     );
     const compensationStr =
-      totalMonthlyCompensation > 0 ? `$${(totalMonthlyCompensation / 1000).toFixed(1)}k` : "$0";
+      totalMonthlyCompensation > 0 ? `₹${(totalMonthlyCompensation / 1000).toFixed(1)}k` : "₹0";
+
+    /** 2. Headcount Growth & Retention Trend (Last 6 Months) */
+    const months = [];
+    const now = new Date();
+    const monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      months.push({
+        label: monthNames[d.getMonth()],
+        year: d.getFullYear(),
+        monthIndex: d.getMonth(),
+        endOfDate: new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59),
+      });
+    }
+
+    const allEmployees = await prisma.employee.findMany({
+      select: {
+        join_date: true,
+        status: true,
+        department_rel: { select: { name: true } },
+      },
+    });
+
+    /** Dynamically collect all unique department names for the chart keys */
+    const allDeptKeys = new Set<string>();
+    allEmployees.forEach((emp) => {
+      const deptName = emp.department_rel?.name?.toLowerCase().replace(/[^a-z0-9]/g, "") || "other";
+      allDeptKeys.add(deptName);
+    });
+
+    const headcount_growth = months.map((m) => {
+      const entry: Record<string, any> = { month: m.label };
+      allDeptKeys.forEach((k) => {
+        entry[k] = 0;
+      });
+
+      allEmployees.forEach((emp) => {
+        const deptName =
+          emp.department_rel?.name?.toLowerCase().replace(/[^a-z0-9]/g, "") || "other";
+        if (emp.join_date <= m.endOfDate) {
+          entry[deptName] += 1;
+        }
+      });
+      return entry;
+    });
+
+    const retention_trend = months.map((m) => {
+      const totalTillMonth = allEmployees.filter((e) => e.join_date <= m.endOfDate).length;
+      const inactiveTillMonth = allEmployees.filter(
+        (e) => e.join_date <= m.endOfDate && e.status === "Inactive",
+      ).length;
+      const activeTillMonth = totalTillMonth - inactiveTillMonth;
+      const rate = totalTillMonth > 0 ? (activeTillMonth / totalTillMonth) * 100 : 0;
+      return { month: m.label, rate: Number(rate.toFixed(1)) };
+    });
+
+    /** 4. Department Distribution (Replaces Recruitment Sources) */
+    const activeEmployees = allEmployees.filter(e => e.status === "Active");
+    const currentDeptMap: Record<string, number> = {};
+    
+    activeEmployees.forEach(e => {
+      const dName = e.department_rel?.name || "Unassigned";
+      currentDeptMap[dName] = (currentDeptMap[dName] || 0) + 1;
+    });
+    
+    const colors = ["#00b1d8", "#45ba50", "#ff8b25", "#ad87ed", "#f43f5e", "#8b5cf6"];
+    const department_distribution = Object.keys(currentDeptMap).map((name, i) => ({
+      name,
+      value: currentDeptMap[name],
+      color: colors[i % colors.length],
+    }));
+
+    /** 5. Department Compensation (Using recent payrolls approx) */
+    const payrollsWithDept = await prisma.payroll.findMany({
+      include: {
+        employee: {
+          include: { department_rel: true },
+        },
+      },
+    });
+
+    const deptCompMap: Record<string, number> = {};
+    payrollsWithDept.forEach((p) => {
+      const dName = p.employee?.department_rel?.name || "Unassigned";
+      deptCompMap[dName] = (deptCompMap[dName] || 0) + Number(p.net_pay || 0);
+    });
+
+    const department_compensation = Object.keys(deptCompMap)
+      .map((dept) => {
+        const current = deptCompMap[dept];
+        return {
+          dept,
+          current,
+          budget: Math.round(current * 1.1),
+        };
+      })
+      .sort((a, b) => b.current - a.current)
+      .slice(0, 5);
 
     const data = {
       summary_cards: [
@@ -71,7 +192,7 @@ export const getReportAnalytics = async (
           id: "headcount",
           title: "Total Headcount",
           value: String(totalEmployees),
-          change: "+12.4% vs last quarter",
+          change: "Dynamic active count",
           positive: true,
           icon_color: "text-[#00b1d8]",
           icon_bg: "bg-[#00b1d8]/10",
@@ -80,17 +201,17 @@ export const getReportAnalytics = async (
           id: "retention",
           title: "Retention Rate",
           value: retentionRate,
-          change: "+1.8% vs last year",
+          change: "Dynamic calculated rate",
           positive: true,
           icon_color: "text-[#45ba50]",
           icon_bg: "bg-[#45ba50]/10",
         },
         {
-          id: "time-to-hire",
-          title: "Avg Time to Hire",
-          value: "18 Days",
-          change: "-3 days improvement",
-          positive: true,
+          id: "leave-requests",
+          title: "Active Leave Requests",
+          value: String(pendingLeaves),
+          change: "Pending approvals",
+          positive: pendingLeaves === 0,
           icon_color: "text-[#ff8b25]",
           icon_bg: "bg-[#ff8b25]/10",
         },
@@ -98,40 +219,16 @@ export const getReportAnalytics = async (
           id: "compensation",
           title: "Monthly Compensation",
           value: compensationStr,
-          change: "+4.1% planned adjustment",
+          change: "Based on active base salaries",
           positive: false,
           icon_color: "text-[#ad87ed]",
           icon_bg: "bg-[#ad87ed]/10",
         },
       ],
-      headcount_growth: [
-        { month: "Jan", engineering: 45, sales: 28, product: 18, hr: 8 },
-        { month: "Feb", engineering: 48, sales: 30, product: 20, hr: 8 },
-        { month: "Mar", engineering: 52, sales: 31, product: 22, hr: 9 },
-        { month: "Apr", engineering: 55, sales: 34, product: 23, hr: 9 },
-        { month: "May", engineering: 60, sales: 36, product: 25, hr: 10 },
-        { month: "Jun", engineering: 64, sales: 38, product: 26, hr: 10 },
-      ],
-      retention_trend: [
-        { month: "Jan", rate: 94.8 },
-        { month: "Feb", rate: 95.2 },
-        { month: "Mar", rate: 95.0 },
-        { month: "Apr", rate: 95.8 },
-        { month: "May", rate: 96.0 },
-        { month: "Jun", rate: 96.2 },
-      ],
-      recruitment_sources: [
-        { name: "Direct / Careers", value: 38, color: "#00b1d8" },
-        { name: "LinkedIn & Social", value: 28, color: "#45ba50" },
-        { name: "Referrals", value: 22, color: "#ff8b25" },
-        { name: "Agency Partners", value: 12, color: "#ad87ed" },
-      ],
-      department_compensation: [
-        { dept: "Engineering", current: 820000, budget: 850000 },
-        { dept: "Sales & Mktg", current: 420000, budget: 440000 },
-        { dept: "Product & UX", current: 340000, budget: 350000 },
-        { dept: "Operations & HR", current: 240000, budget: 250000 },
-      ],
+      headcount_growth,
+      retention_trend,
+      department_distribution,
+      department_compensation,
     };
 
     res.sendSuccess({

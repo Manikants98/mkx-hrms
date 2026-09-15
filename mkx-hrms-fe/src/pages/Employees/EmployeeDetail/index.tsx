@@ -322,7 +322,7 @@ export default function EmployeeDetail(): React.ReactElement {
       <div className="flex flex-col gap-6 pb-12 animate-pulse">
         {/* Hero Card Skeleton */}
         <div className="p-6 rounded-[5px] bg-card border border-border shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <Skeleton variant="circular" width={80} height={80} />
+          <Skeleton variant="rounded" width={80} height={80} />
           <div className="flex flex-col gap-2 w-full">
             <Skeleton width="30%" height={24} />
             <Skeleton width="50%" height={20} />
@@ -639,11 +639,10 @@ export default function EmployeeDetail(): React.ReactElement {
               </p>
             </div>
             <Button
-              variant="outlined"
               size="small"
+              variant="contained"
               onClick={() => setIsEditDrawerOpen(true)}
-              startIcon={<Edit className="!w-4 !h-4" />}
-              className="!text-xs !normal-case !border-primary !text-primary hover:!bg-primary/10 font-semibold !rounded-[5px] !px-3.5 !py-1.5"
+              startIcon={<Edit />}
             >
               Modify Structure Items
             </Button>
@@ -695,9 +694,9 @@ export default function EmployeeDetail(): React.ReactElement {
             <Button
               variant="contained"
               size="small"
+              color="primary"
               onClick={() => setIsSalaryDialogOpen(true)}
-              startIcon={<Paid className="!w-4 !h-4" />}
-              className="!bg-primary !text-primary-foreground hover:!bg-primary/90 !text-xs !normal-case !font-semibold !rounded-[5px] !px-3.5 !py-1.5 shadow-sm"
+              startIcon={<Paid />}
             >
               Generate New Salary
             </Button>

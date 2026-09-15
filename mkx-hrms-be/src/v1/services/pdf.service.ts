@@ -38,7 +38,7 @@ const parseAmt = (val: string | number | undefined) =>
  * Format currency
  */
 const formatCurrency = (val: number) =>
-  "Rs. " +
+  "₹" +
   val.toLocaleString("en-IN", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,

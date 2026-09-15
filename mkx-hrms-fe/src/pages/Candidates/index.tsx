@@ -32,13 +32,14 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ArrowMenu } from "shared/ArrowMenu";
-import { CustomDialog } from "shared/CustomDialog";
 import { DataTable, type ColumnDef } from "shared/DataTable";
 import { CustomDateRangePicker } from "shared/DatePicker";
 import { StatsCard } from "shared/StatsCard";
 import { FadeUpItem, StaggerContainer } from "shared/animations";
 import { downloadExcelFromApi } from "src/utils/exportToExcel";
+import ManageCandidate from "./components/ManageCandidate";
 
 /**
  * Type representing recruitment pipeline stage filter categories
@@ -46,6 +47,7 @@ import { downloadExcelFromApi } from "src/utils/exportToExcel";
 type RecruitmentStageFilter = "All" | "Screening" | "Interviewing" | "Offered" | "Hired";
 
 import {
+  useCreateCandidate,
   useDeleteCandidate,
   useGetCandidates,
   useGetRecruitmentFilters,
@@ -352,7 +354,7 @@ function getCandidateColumns(
 /**
  * Recruitment page component providing hiring pipeline tracking and candidate evaluation.
  */
-export default function Recruitment() {
+export default function Candidates() {
   const [searchTerm, setSearchTerm] = useState("");
   const [stageFilter, setStageFilter] = useState<RecruitmentStageFilter>("All");
   const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(null);
@@ -360,7 +362,8 @@ export default function Recruitment() {
   const [positionFilter, setPositionFilter] = useState<string>("All");
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
-  const [viewingCandidate, setViewingCandidate] = useState<CandidateRecord | null>(null);
+  const [isManageCandidateOpen, setIsManageCandidateOpen] = useState(false);
+  const navigate = useNavigate();
 
   const {
     data: candidatesResponse,
@@ -379,6 +382,12 @@ export default function Recruitment() {
   const { data: filtersResponse } = useGetRecruitmentFilters();
   const filterOptions = filtersResponse?.data;
   const { data: statsResponse, refetch: refetchStats } = useGetRecruitmentStats();
+
+  const createCandidateMutation = useCreateCandidate(() => {
+    refetch();
+    refetchStats();
+    setIsManageCandidateOpen(false);
+  });
 
   const updateCandidateStatusMutation = useUpdateCandidateStatus(() => {
     refetch();
@@ -408,17 +417,6 @@ export default function Recruitment() {
       stage,
       status: status || (stage === "Hired" ? "Offered" : "In Review"),
     });
-    if (viewingCandidate?.id === candidate.id) {
-      setViewingCandidate((prev) =>
-        prev
-          ? {
-              ...prev,
-              stage,
-              status: status || (stage === "Hired" ? "Offered" : "In Review"),
-            }
-          : null,
-      );
-    }
   };
 
   /**
@@ -426,11 +424,6 @@ export default function Recruitment() {
    */
   const handleOnboard = async (candidate: CandidateRecord) => {
     await onboardCandidateMutation.mutateAsync({ id: candidate.id });
-    if (viewingCandidate?.id === candidate.id) {
-      setViewingCandidate((prev) =>
-        prev ? { ...prev, onboarded_at: new Date().toISOString() } : null,
-      );
-    }
   };
 
   /**
@@ -438,16 +431,13 @@ export default function Recruitment() {
    */
   const handleDelete = async (candidate: CandidateRecord) => {
     await deleteCandidateMutation.mutateAsync(candidate.id);
-    if (viewingCandidate?.id === candidate.id) {
-      setViewingCandidate(null);
-    }
   };
 
   /**
    * Opens detailed candidate profile dialog
    */
   const handleView = (candidate: CandidateRecord) => {
-    setViewingCandidate(candidate);
+    navigate(`/candidates/${candidate.id}`);
   };
 
   const candidateColumns = useMemo(
@@ -569,9 +559,10 @@ export default function Recruitment() {
             variant="contained"
             size="small"
             startIcon={<Plus className="w-3.5 h-3.5" />}
+            onClick={() => setIsManageCandidateOpen(true)}
             className="!bg-primary !text-primary-foreground hover:!bg-primary/90 !text-xs !normal-case !font-semibold !px-3.5 !py-2 !rounded-[5px] shadow-sm"
           >
-            Post New Job
+            Add Candidate
           </Button>
           <Button
             variant="outlined"
@@ -691,164 +682,13 @@ export default function Recruitment() {
         />
       </FadeUpItem>
 
-      {viewingCandidate && (
-        <CustomDialog
-          open={Boolean(viewingCandidate)}
-          onClose={() => setViewingCandidate(null)}
-          title="Candidate Application Profile"
-          maxWidth="xs"
-          actions={
-            <div className="flex items-center justify-between w-full">
-              <Button
-                variant="outlined"
-                size="small"
-                color="error"
-                onClick={() => handleDelete(viewingCandidate)}
-                className="!text-xs !normal-case"
-              >
-                Delete Candidate
-              </Button>
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => setViewingCandidate(null)}
-                className="!text-xs !normal-case !text-muted-foreground"
-              >
-                Close
-              </Button>
-            </div>
-          }
-        >
-          <div className="flex items-center gap-3 pb-4 border-b border-border">
-            <Avatar
-              src={viewingCandidate.avatar || undefined}
-              className="!w-12 !h-12 !bg-primary/20 !text-primary !text-lg !font-bold"
-            >
-              {viewingCandidate.name.charAt(0)}
-            </Avatar>
-            <div>
-              <h4 className="text-base font-semibold text-foreground">{viewingCandidate.name}</h4>
-              <p className="text-xs text-muted-foreground">{viewingCandidate.email}</p>
-              <p className="text-xs font-medium text-foreground mt-0.5">
-                {viewingCandidate.position} • {viewingCandidate.department}
-              </p>
-            </div>
-            <div className="ml-auto flex flex-col items-end gap-1">
-              <Chip
-                label={viewingCandidate.stage}
-                size="small"
-                className="!bg-primary/10 !text-primary !font-medium !text-xs"
-              />
-              <Chip
-                label={viewingCandidate.status}
-                size="small"
-                color={
-                  viewingCandidate.status === "Offered" || viewingCandidate.status === "Active"
-                    ? "success"
-                    : viewingCandidate.status === "In Review"
-                      ? "warning"
-                      : "error"
-                }
-                variant="outlined"
-                className="!text-[10px] !h-5"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3 text-xs">
-            <div className="p-3 bg-secondary/50 rounded-[5px]">
-              <span className="text-muted-foreground">Experience</span>
-              <p className="font-semibold text-foreground mt-0.5">{viewingCandidate.experience}</p>
-            </div>
-            <div className="p-3 bg-secondary/50 rounded-[5px]">
-              <span className="text-muted-foreground">Interview Rating</span>
-              <p className="font-semibold text-amber-500 mt-0.5 flex items-center gap-1">
-                <Star className="!w-3.5 !h-3.5" />
-                {viewingCandidate.rating} / 5.0
-              </p>
-            </div>
-            <div className="p-3 bg-secondary/50 rounded-[5px]">
-              <span className="text-muted-foreground">Applied Date</span>
-              <p className="font-semibold text-foreground mt-0.5">
-                {viewingCandidate.applied_date}
-              </p>
-            </div>
-            <div className="p-3 bg-secondary/50 rounded-[5px]">
-              <span className="text-muted-foreground">Onboarding Status</span>
-              <p className="font-semibold text-foreground mt-0.5">
-                {viewingCandidate.onboarded_at ? "Onboarded Employee" : "Candidate"}
-              </p>
-            </div>
-          </div>
-
-          <div className="pt-2 border-t border-border space-y-2">
-            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-              Pipeline Stage Actions
-            </span>
-            <div className="flex flex-wrap gap-2">
-              {viewingCandidate.stage !== "Interviewing" && (
-                <Button
-                  size="small"
-                  variant="outlined"
-                  color="warning"
-                  onClick={() =>
-                    handleUpdateStageStatus(viewingCandidate, "Interviewing", "In Review")
-                  }
-                  className="!text-xs !normal-case"
-                >
-                  Move to Interview
-                </Button>
-              )}
-              {viewingCandidate.stage !== "Offered" && (
-                <Button
-                  size="small"
-                  variant="outlined"
-                  color="success"
-                  onClick={() => handleUpdateStageStatus(viewingCandidate, "Offered", "Offered")}
-                  className="!text-xs !normal-case"
-                >
-                  Extend Offer
-                </Button>
-              )}
-              {viewingCandidate.stage !== "Hired" && (
-                <Button
-                  size="small"
-                  variant="contained"
-                  color="success"
-                  onClick={() => handleUpdateStageStatus(viewingCandidate, "Hired", "Offered")}
-                  className="!text-xs !normal-case"
-                >
-                  Mark Hired
-                </Button>
-              )}
-              {!viewingCandidate.onboarded_at &&
-                (viewingCandidate.stage === "Offered" || viewingCandidate.stage === "Hired") && (
-                  <Button
-                    size="small"
-                    variant="contained"
-                    onClick={() => handleOnboard(viewingCandidate)}
-                    className="!text-xs !normal-case !bg-primary !text-primary-foreground"
-                  >
-                    Onboard Employee
-                  </Button>
-                )}
-              {viewingCandidate.status !== "Rejected" && (
-                <Button
-                  size="small"
-                  variant="outlined"
-                  color="error"
-                  onClick={() =>
-                    handleUpdateStageStatus(viewingCandidate, viewingCandidate.stage, "Rejected")
-                  }
-                  className="!text-xs !normal-case"
-                >
-                  Reject
-                </Button>
-              )}
-            </div>
-          </div>
-        </CustomDialog>
-      )}
+      <ManageCandidate
+        open={isManageCandidateOpen}
+        onClose={() => setIsManageCandidateOpen(false)}
+        onSubmit={async (candidate) => {
+          await createCandidateMutation.mutateAsync(candidate);
+        }}
+      />
     </StaggerContainer>
   );
 }

@@ -5,13 +5,7 @@ import { useGetMasterDepartments } from "services/masters";
 /**
  * Chart color palette cycle for dynamic department bars
  */
-const chartColors = [
-  "bg-chart-1",
-  "bg-chart-2",
-  "bg-chart-3",
-  "bg-chart-4",
-  "bg-chart-5",
-];
+const chartColors = ["bg-chart-1", "bg-chart-2", "bg-chart-3", "bg-chart-4", "bg-chart-5"];
 
 /**
  * Dynamic Department Distribution widget displaying real workforce allocation by department
@@ -70,7 +64,7 @@ export function DepartmentDistribution(): React.ReactElement {
         <p className="text-sm text-muted-foreground mt-0.5">Workforce allocation by department</p>
       </div>
 
-      <div className="space-y-5 flex-1 overflow-y-auto pr-1">
+      <div className="space-y-3 flex-1 overflow-y-auto pr-1">
         {isLoading ? (
           <div className="flex flex-col gap-4 py-8">
             <div className="h-4 bg-muted animate-pulse rounded" />
@@ -96,7 +90,10 @@ export function DepartmentDistribution(): React.ReactElement {
               <div className="h-2 bg-secondary rounded-full overflow-hidden">
                 <div
                   className={`h-full ${dept.color} rounded-full transition-all duration-1000 ease-out`}
-                  style={{ width: `${Math.max(dept.percentage, dept.count > 0 ? 4 : 0)}%`, transitionDelay: `${dept.delay}ms` }}
+                  style={{
+                    width: `${Math.max(dept.percentage, dept.count > 0 ? 4 : 0)}%`,
+                    transitionDelay: `${dept.delay}ms`,
+                  }}
                 />
               </div>
             </div>
@@ -104,7 +101,7 @@ export function DepartmentDistribution(): React.ReactElement {
         )}
       </div>
 
-      <div className="mt-6 pt-5 border-t border-border">
+      <div className="border-t border-border">
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">Total Workforce</span>
           <span className="text-xl font-bold text-foreground">{totalCount}</span>

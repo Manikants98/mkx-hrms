@@ -162,6 +162,9 @@ export function Select<TFormValues = Record<string, unknown>>({
       required={required}
       disabled={disabled}
       slotProps={{
+        inputLabel: {
+          shrink: placeholder ? true : undefined,
+        },
         htmlInput: {
           required: false,
         },

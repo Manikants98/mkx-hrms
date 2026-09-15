@@ -206,7 +206,7 @@ function getPayrollColumns(
       header: "DEDUCTIONS",
       cell: (row) => (
         <span className="text-sm font-medium text-rose-600 dark:text-rose-400">
-          {row.total_deductions ? `-${row.total_deductions}` : "$0"}
+          {row.total_deductions ? `${row.total_deductions}` : "₹0"}
         </span>
       ),
       width: "12%",
@@ -342,10 +342,7 @@ export default function Payroll() {
 
   const records = useMemo(() => payrollResponse?.data || [], [payrollResponse]);
 
-  const pendingRecords = useMemo(
-    () => records.filter((r) => r.status === "Pending"),
-    [records],
-  );
+  const pendingRecords = useMemo(() => records.filter((r) => r.status === "Pending"), [records]);
 
   /**
    * Approves all pending disbursements in the current batch
@@ -395,7 +392,6 @@ export default function Payroll() {
         item.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.department.toLowerCase().includes(searchTerm.toLowerCase());
-
       const matchesStatus = statusFilter === "All" || item.status === statusFilter;
 
       return matchesSearch && matchesStatus;
@@ -616,15 +612,21 @@ export default function Payroll() {
             <div className="grid grid-cols-3 gap-2 p-2.5 bg-secondary/30 rounded-[5px] text-xs">
               <div>
                 <span className="text-[10px] text-muted-foreground block">Working Days</span>
-                <span className="font-semibold text-foreground">{viewingPayroll.working_days ?? 30} d</span>
+                <span className="font-semibold text-foreground">
+                  {viewingPayroll.working_days ?? 30} d
+                </span>
               </div>
               <div>
                 <span className="text-[10px] text-muted-foreground block">Paid Days</span>
-                <span className="font-semibold text-emerald-600 dark:text-emerald-400">{viewingPayroll.paid_days ?? 30} d</span>
+                <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                  {viewingPayroll.paid_days ?? 30} d
+                </span>
               </div>
               <div>
                 <span className="text-[10px] text-muted-foreground block">LOP Days</span>
-                <span className="font-semibold text-rose-600 dark:text-rose-400">{viewingPayroll.lop_days ?? 0} d</span>
+                <span className="font-semibold text-rose-600 dark:text-rose-400">
+                  {viewingPayroll.lop_days ?? 0} d
+                </span>
               </div>
             </div>
 
@@ -639,10 +641,13 @@ export default function Payroll() {
                     {viewingPayroll.items
                       .filter((it) => it.category === "Earning")
                       .map((it, idx) => (
-                        <div key={idx} className="flex justify-between items-center text-xs p-2 bg-secondary/40 rounded-[4px]">
+                        <div
+                          key={idx}
+                          className="flex justify-between items-center text-xs p-2 bg-secondary/40 rounded-[4px]"
+                        >
                           <span className="text-foreground font-medium">{it.name}</span>
                           <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                            +${Number(it.amount).toLocaleString()}
+                            +₹{Number(it.amount).toLocaleString()}
                           </span>
                         </div>
                       ))}
@@ -658,10 +663,13 @@ export default function Payroll() {
                       {viewingPayroll.items
                         .filter((it) => it.category === "Deduction")
                         .map((it, idx) => (
-                          <div key={idx} className="flex justify-between items-center text-xs p-2 bg-secondary/40 rounded-[4px]">
+                          <div
+                            key={idx}
+                            className="flex justify-between items-center text-xs p-2 bg-secondary/40 rounded-[4px]"
+                          >
                             <span className="text-foreground font-medium">{it.name}</span>
                             <span className="font-semibold text-rose-600 dark:text-rose-400">
-                              -${Number(it.amount).toLocaleString()}
+                              -₹{Number(it.amount).toLocaleString()}
                             </span>
                           </div>
                         ))}
@@ -673,11 +681,15 @@ export default function Payroll() {
               <div className="space-y-2">
                 <div className="flex justify-between items-center text-xs p-2.5 bg-secondary/40 rounded-[5px]">
                   <span className="text-muted-foreground">Base Salary</span>
-                  <span className="font-semibold text-foreground">{viewingPayroll.gross_pay || viewingPayroll.base_salary}</span>
+                  <span className="font-semibold text-foreground">
+                    {viewingPayroll.gross_pay || viewingPayroll.base_salary}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center text-xs p-2.5 bg-secondary/40 rounded-[5px]">
                   <span className="text-muted-foreground">Allowance</span>
-                  <span className="font-semibold text-emerald-500">+{viewingPayroll.allowance || "$0"}</span>
+                  <span className="font-semibold text-emerald-500">
+                    +{viewingPayroll.allowance || "₹0"}
+                  </span>
                 </div>
               </div>
             )}
@@ -686,7 +698,9 @@ export default function Payroll() {
             <div className="flex justify-between items-center text-xs p-3 bg-primary/10 border border-primary/20 rounded-[5px]">
               <div>
                 <span className="font-bold text-foreground block">Net Disbursed Pay</span>
-                <span className="text-[10px] text-muted-foreground">Pay Date: {viewingPayroll.pay_date}</span>
+                <span className="text-[10px] text-muted-foreground">
+                  Pay Date: {viewingPayroll.pay_date}
+                </span>
               </div>
               <span className="text-base font-bold text-primary">{viewingPayroll.net_pay}</span>
             </div>

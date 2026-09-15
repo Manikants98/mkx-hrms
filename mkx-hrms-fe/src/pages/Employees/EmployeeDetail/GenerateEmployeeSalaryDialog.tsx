@@ -133,50 +133,37 @@ export const GenerateEmployeeSalaryDialog: React.FC<GenerateEmployeeSalaryDialog
       title={`Generate Salary — ${employee.name}`}
       width={600}
       footer={
-        <div className="flex items-center justify-between w-full">
+        <div className="flex items-center justify-end gap-2 w-full">
           <Button
             variant="outlined"
             size="small"
-            onClick={onClose}
-            disabled={generatePayroll.isPending}
-            className="!border-border !text-muted-foreground hover:!text-foreground !text-xs !normal-case !rounded-[5px]"
+            onClick={handleCalculatePreview}
+            disabled={isPreviewing || generatePayroll.isPending}
+            startIcon={
+              isPreviewing ? (
+                <CircularProgress size={14} color="inherit" />
+              ) : (
+                <Visibility className="!w-4 !h-4" />
+              )
+            }
           >
-            Cancel
+            {isPreviewing ? "Calculating..." : "Preview Calculation"}
           </Button>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={handleCalculatePreview}
-              disabled={isPreviewing || generatePayroll.isPending}
-              startIcon={
-                isPreviewing ? (
-                  <CircularProgress size={14} color="inherit" />
-                ) : (
-                  <Visibility className="!w-4 !h-4" />
-                )
-              }
-              className="!border-primary !text-primary hover:!bg-primary/10 !text-xs !normal-case !font-medium !rounded-[5px]"
-            >
-              {isPreviewing ? "Calculating..." : "Preview Calculation"}
-            </Button>
-            <Button
-              variant="contained"
-              size="small"
-              onClick={handleConfirmGenerate}
-              disabled={generatePayroll.isPending}
-              startIcon={
-                generatePayroll.isPending ? (
-                  <CircularProgress size={14} color="inherit" />
-                ) : (
-                  <Paid className="!w-4 !h-4" />
-                )
-              }
-              className="!bg-primary !text-primary-foreground hover:!bg-primary/90 !text-xs !normal-case !font-semibold !rounded-[5px] shadow-sm"
-            >
-              {generatePayroll.isPending ? "Generating..." : "Generate & Save"}
-            </Button>
-          </div>
+          <Button
+            variant="contained"
+            size="small"
+            onClick={handleConfirmGenerate}
+            disabled={generatePayroll.isPending}
+            startIcon={
+              generatePayroll.isPending ? (
+                <CircularProgress size={14} color="inherit" />
+              ) : (
+                <Paid className="!w-4 !h-4" />
+              )
+            }
+          >
+            {generatePayroll.isPending ? "Generating..." : "Generate & Save"}
+          </Button>
         </div>
       }
     >
@@ -225,7 +212,7 @@ export const GenerateEmployeeSalaryDialog: React.FC<GenerateEmployeeSalaryDialog
         )}
 
         {previewItem ? (
-          <div className="flex flex-col gap-3 p-3.5 rounded-[5px] bg-secondary/20 border border-border">
+          <div className="flex flex-col gap-3 p-3 rounded-[5px] bg-secondary/20 border border-border">
             <div className="flex items-center justify-between border-b border-border pb-2.5">
               <div className="flex items-center gap-2">
                 <CheckCircle className="!w-4 !h-4 text-emerald-500" />

@@ -274,7 +274,7 @@ export const SalaryStructureMasterTab: React.FC = () => {
           <span className="font-semibold">
             {row.calculation_type === "Percentage"
               ? `${Number(row.default_value || 0)}%`
-              : `$${Number(row.default_value || 0).toLocaleString()}`}
+              : `₹${Number(row.default_value || 0).toLocaleString()}`}
           </span>
         </div>
       ),

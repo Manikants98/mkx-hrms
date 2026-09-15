@@ -55,6 +55,7 @@ model Department {
 
   employees    Employee[]
   designations Designation[]
+  job_postings JobPosting[]
 
   @@map("departments")
 }
@@ -120,6 +121,7 @@ model Employee {
   activity_logs            ActivityLog[]
   notification_preferences NotificationPreference[]
   candidate                Candidate?
+  interviews_conducted     CandidateInterview[]
 
   @@map("employees")
 }
@@ -230,6 +232,7 @@ model Candidate {
   candidate_code String   @unique @db.VarChar(50)
   name           String   @db.VarChar(150)
   email          String   @db.VarChar(255)
+  phone          String?  @db.VarChar(20)
   position       String   @db.VarChar(100)
   department     String   @db.VarChar(100)
   stage          String   @default("Screening") @db.VarChar(50)
@@ -238,12 +241,17 @@ model Candidate {
   status         String   @default("Active") @db.VarChar(50)
   applied_date   DateTime @default(now()) @db.Date
   avatar         String?  @db.Text
+  resume_url     String?  @db.Text
+  source         String?  @db.VarChar(100)
   onboarded_at   DateTime?
   employee_id    Int?      @unique
+  job_posting_id Int?
   created_at     DateTime  @default(now())
   updated_at     DateTime  @updatedAt
 
   employee       Employee? @relation(fields: [employee_id], references: [id], onDelete: SetNull)
+  job_posting    JobPosting? @relation(fields: [job_posting_id], references: [id], onDelete: SetNull)
+  interviews     CandidateInterview[]
 
   @@map("candidates")
 }
@@ -422,3 +430,41 @@ model WorkShift {
   @@map("work_shifts")
 }
 
+
+model JobPosting {
+  id               Int        @id @default(autoincrement())
+  job_code         String     @unique @db.VarChar(50)
+  title            String     @db.VarChar(150)
+  department_id    Int?
+  location         String     @db.VarChar(100)
+  employment_type  String     @db.VarChar(50)
+  experience_level String     @db.VarChar(50)
+  salary_range     String?    @db.VarChar(100)
+  description      String?    @db.Text
+  vacancies        Int        @default(1)
+  status           String     @default("Active") @db.VarChar(50)
+  created_at       DateTime   @default(now())
+  updated_at       DateTime   @updatedAt
+
+  department_rel   Department? @relation(fields: [department_id], references: [id], onDelete: SetNull)
+  candidates       Candidate[]
+
+  @@map("job_postings")
+}
+
+model CandidateInterview {
+  id             Int       @id @default(autoincrement())
+  candidate_id   Int
+  interviewer_id Int?
+  scheduled_at   DateTime
+  status         String    @default("Scheduled") @db.VarChar(50)
+  notes          String?   @db.Text
+  rating         Decimal?  @db.Decimal(3, 1)
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  candidate      Candidate @relation(fields: [candidate_id], references: [id], onDelete: Cascade)
+  interviewer    Employee? @relation(fields: [interviewer_id], references: [id], onDelete: SetNull)
+
+  @@map("candidate_interviews")
+}

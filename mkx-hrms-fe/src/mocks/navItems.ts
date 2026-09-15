@@ -52,8 +52,8 @@ export const navItems: NavItem[] = [
   { title: "Employees", href: "/employees", icon: PeopleOutlined },
   { title: "Attendance", href: "/attendance", icon: HowToRegOutlined },
   { title: "Leaves", href: "/leaves", icon: EventBusyOutlined },
-  { title: "Recruitment", href: "/recruitment", icon: WorkHistory },
   { title: "Payroll", href: "/payroll", icon: PaymentsOutlined },
+  { title: "Candidates", href: "/candidates", icon: WorkHistory },
   {
     title: "Masters",
     href: "/masters",
@@ -62,7 +62,11 @@ export const navItems: NavItem[] = [
       { title: "Departments", href: "/masters/departments", icon: BusinessOutlined },
       { title: "Roles & Permissions", href: "/masters/roles", icon: AdminPanelSettingsOutlined },
       { title: "Designations", href: "/masters/designations", icon: BadgeOutlined },
-      { title: "Salary Structures", href: "/masters/salary-structures", icon: AccountBalanceWalletOutlined },
+      {
+        title: "Salary Structures",
+        href: "/masters/salary-structures",
+        icon: AccountBalanceWalletOutlined,
+      },
       { title: "Leave Types", href: "/masters/leave-types", icon: EventNoteOutlined },
       { title: "Work Shifts", href: "/masters/shifts", icon: AccessTimeOutlined },
     ],

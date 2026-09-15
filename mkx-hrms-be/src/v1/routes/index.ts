@@ -11,6 +11,7 @@ import dashboardRoutes from "./dashboard.routes";
 import settingsRoutes from "./settings.routes";
 import blogsRoutes from "./blogs.routes";
 import mastersRoutes from "./masters.routes";
+import jobPostingsRoutes from "./job-postings.routes";
 
 const router = Router();
 
@@ -27,5 +28,6 @@ router.use("/dashboard", dashboardRoutes);
 router.use("/settings", settingsRoutes);
 router.use("/blogs", blogsRoutes);
 router.use("/masters", mastersRoutes);
+router.use("/job-postings", jobPostingsRoutes);
 
 export default router;

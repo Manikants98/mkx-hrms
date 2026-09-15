@@ -80,6 +80,12 @@ export const getCandidates = async (
     const records = await prisma.candidate.findMany({
       where: whereClause,
       orderBy: { created_at: "desc" },
+      include: {
+        interviews: {
+          include: { interviewer: true },
+        },
+        job_posting: true,
+      },
     });
 
     const formatted = records.map((item) => ({
@@ -101,6 +107,8 @@ export const getCandidates = async (
       avatar: item.avatar || undefined,
       onboarded_at: item.onboarded_at,
       employee_id: item.employee_id,
+      job_posting: item.job_posting,
+      interviews: item.interviews,
     }));
 
     res.sendSuccess({
@@ -228,10 +236,12 @@ export const onboardCandidate = async (
 
     if (result.temporaryPassword && result.employee.email) {
       const resolvedRole = result.employee.role_id
-        ? (await prisma.role.findUnique({ where: { id: result.employee.role_id } }))?.name || "Employee"
+        ? (await prisma.role.findUnique({ where: { id: result.employee.role_id } }))?.name ||
+          "Employee"
         : candidate.position || "Employee";
       const resolvedDept = result.employee.department_id
-        ? (await prisma.department.findUnique({ where: { id: result.employee.department_id } }))?.name || "General"
+        ? (await prisma.department.findUnique({ where: { id: result.employee.department_id } }))
+            ?.name || "General"
         : candidate.department || "General";
 
       sendEmployeeWelcomeEmail({
@@ -442,6 +452,168 @@ export const deleteCandidate = async (
     res.sendSuccess({
       message: `Candidate ${candidate.name} deleted successfully`,
       data: { id: candidate.id },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getCandidateById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const candidate = await prisma.candidate.findFirst({
+      where: {
+        OR: [{ candidate_code: id }, { id: !isNaN(Number(id)) ? Number(id) : undefined }],
+      },
+      include: {
+        interviews: {
+          include: { interviewer: true },
+        },
+        job_posting: true,
+      },
+    });
+
+    if (!candidate) {
+      res.status(404).json({ error: "Candidate not found" });
+      return;
+    }
+    res.json({ data: candidate });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const createCandidateInterview = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const { candidate_id } = req.params;
+    const { interviewer_id, scheduled_at, notes } = req.body;
+
+    const interview = await prisma.candidateInterview.create({
+      data: {
+        candidate_id: Number(candidate_id),
+        interviewer_id: interviewer_id ? Number(interviewer_id) : null,
+        scheduled_at: new Date(scheduled_at),
+        notes,
+      },
+      include: { interviewer: true },
+    });
+
+    res.status(201).json({ message: "Interview scheduled", data: interview });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const updateCandidateInterview = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const { interview_id } = req.params;
+    const { status, notes, rating, scheduled_at, interviewer_id } = req.body;
+
+    const interview = await prisma.candidateInterview.update({
+      where: { id: Number(interview_id) },
+      data: {
+        status,
+        notes,
+        rating: rating ? Number(rating) : undefined,
+        scheduled_at: scheduled_at ? new Date(scheduled_at) : undefined,
+        interviewer_id: interviewer_id ? Number(interviewer_id) : undefined,
+      },
+      include: { interviewer: true },
+    });
+
+    res.json({ message: "Interview updated", data: interview });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deleteCandidateInterview = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const { interview_id } = req.params;
+    await prisma.candidateInterview.delete({
+      where: { id: Number(interview_id) },
+    });
+    res.json({ message: "Interview deleted successfully" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * Controller to create a new candidate
+ */
+export const createCandidate = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const {
+      name,
+      email,
+      phone,
+      position,
+      department,
+      experience,
+      rating,
+      avatar,
+      resume_url,
+      source,
+      job_posting_id,
+    } = req.body;
+
+    // Generate CAN-XXX code
+    const lastCandidate = await prisma.candidate.findFirst({
+      orderBy: { id: "desc" },
+    });
+
+    let codeNum = 1;
+    if (lastCandidate && lastCandidate.candidate_code) {
+      const match = lastCandidate.candidate_code.match(/CAN-(\d+)/);
+      if (match) {
+        codeNum = parseInt(match[1], 10) + 1;
+      }
+    }
+    const candidateCode = `CAN-${codeNum.toString().padStart(3, "0")}`;
+
+    const newCandidate = await prisma.candidate.create({
+      data: {
+        candidate_code: candidateCode,
+        name,
+        email,
+        phone: phone || null,
+        position,
+        department,
+        experience,
+        rating: rating || null,
+        avatar: avatar || null,
+        resume_url: resume_url || null,
+        source: source || null,
+        job_posting_id: job_posting_id || null,
+        stage: "Screening",
+        status: "Active",
+      },
+    });
+
+    res.status(201).json({
+      message: "Candidate created successfully",
+      data: newCandidate,
     });
   } catch (err) {
     next(err);

@@ -8,7 +8,7 @@ import {
   TrendingUp,
   People,
 } from "@mui/icons-material";
-import { CustomDialog } from "shared/CustomDialog";
+import { AppDrawer } from "shared/Drawer";
 import { Select, type SelectOption } from "shared/Select";
 import { StatsCard } from "shared/StatsCard";
 import {
@@ -43,7 +43,7 @@ const months = [
 ];
 
 /**
- * Modern interactive dialog for executing payroll batches with preview dry-run and itemized inspection
+ * Modern interactive drawer for executing payroll batches with preview dry-run and itemized inspection
  *
  * @param props - Dialog props
  * @returns The rendered RunPayrollDialog
@@ -102,11 +102,6 @@ export const RunPayrollDialog: React.FC<RunPayrollDialogProps> = ({ open, onClos
     });
   };
 
-  const selectedMonthLabel = useMemo(
-    () => months.find((m) => m.value === selectedMonth)?.label || "Selected Month",
-    [selectedMonth],
-  );
-
   const monthOptions: SelectOption[] = useMemo(
     () =>
       months.map((m) => ({
@@ -137,28 +132,13 @@ export const RunPayrollDialog: React.FC<RunPayrollDialogProps> = ({ open, onClos
   );
 
   return (
-    <CustomDialog
+    <AppDrawer
       open={open}
       onClose={handleClose}
-      maxWidth="md"
-      fullWidth
-      paperClassName="!rounded-lg !border !border-border !bg-card !text-foreground shadow-2xl overflow-hidden"
-      contentClassName="!p-6 space-y-6"
-      title={
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-            <AccountBalanceWallet className="!w-5 !h-5" />
-          </div>
-          <div>
-            <h3 className="text-base font-bold text-foreground">Run Monthly Payroll Batch</h3>
-            <p className="text-xs text-muted-foreground">
-              Calculate salary components, pro-rated loss of pay (LOP), and generate itemized
-              payslips
-            </p>
-          </div>
-        </div>
-      }
-      actions={
+      title="Run Monthly Payroll Batch"
+      subtitle="Calculate salary components, pro-rated loss of pay (LOP), and generate itemized payslips"
+      width={760}
+      footer={
         <div className="flex items-center justify-between w-full">
           <Button
             variant="outlined"
@@ -198,70 +178,74 @@ export const RunPayrollDialog: React.FC<RunPayrollDialogProps> = ({ open, onClos
                     <CheckCircle className="!w-4 !h-4" />
                   )
                 }
-                className="!text-xs !normal-case !bg-primary !text-primary-foreground hover:!bg-primary/90 font-semibold"
+                className="!text-xs !normal-case !bg-emerald-600 hover:!bg-emerald-700 !text-white"
               >
-                {generateMutation.isPending
-                  ? "Disbursing..."
-                  : `Confirm & Generate (${selectedMonthLabel} ${selectedYear})`}
+                {generateMutation.isPending ? "Processing..." : "Commit & Generate"}
               </Button>
             )}
           </div>
         </div>
       }
     >
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-lg bg-secondary/30 border border-border">
-          <Select
-            name="month"
-            label="Payroll Cycle Month"
-            options={monthOptions}
-            value={selectedMonth}
-            onValueChange={(val) => {
-              setSelectedMonth(Number(val));
-              setPreviewData(null);
-            }}
-          />
+      <div className="flex flex-col gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="flex flex-col gap-1.5 relative z-20">
+            <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-1">
+              Payroll Cycle Month
+            </label>
+            <Select
+              name="month"
+              options={monthOptions}
+              value={selectedMonth}
+              onValueChange={(v: string | number) => setSelectedMonth(Number(v))}
+              placeholder="Select Month"
+            />
+          </div>
 
-          <Select
-            name="year"
-            label="Payroll Cycle Year"
-            options={yearOptions}
-            value={selectedYear}
-            onValueChange={(val) => {
-              setSelectedYear(Number(val));
-              setPreviewData(null);
-            }}
-          />
+          <div className="flex flex-col gap-1.5 relative z-20">
+            <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-1">
+              Payroll Cycle Year
+            </label>
+            <Select
+              name="year"
+              options={yearOptions}
+              value={selectedYear}
+              onValueChange={(v: string | number) => setSelectedYear(Number(v))}
+              placeholder="Select Year"
+            />
+          </div>
 
-          <Select
-            name="department_id"
-            label="Filter Department"
-            options={departmentOptions}
-            value={selectedDeptId}
-            onValueChange={(val) => {
-              setSelectedDeptId(String(val));
-              setPreviewData(null);
-            }}
-          />
+          <div className="flex flex-col gap-1.5 relative z-10">
+            <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-1 invisible">
+              Filter
+            </label>
+            <Select
+              name="department_id"
+              options={departmentOptions}
+              value={selectedDeptId}
+              onValueChange={(v: string | number) => setSelectedDeptId(String(v))}
+              placeholder="Filter Department"
+            />
+          </div>
         </div>
 
         {previewData && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <StatsCard
-                title="Eligible Staff"
+                title="Employees Processed"
                 value={previewData.employee_count}
-                subtext="Active workforce"
+                subtext="Total workforce calculated"
                 icon={People}
-                iconColor="text-primary"
-                iconBg="bg-primary/10"
+                iconColor="text-[#00b1d8]"
+                iconBg="bg-[#00b1d8]/10"
                 className="p-3.5 !rounded-lg"
               />
 
               <StatsCard
-                title="Total Gross"
-                value={`$${previewData.total_gross.toLocaleString()}`}
-                subtext="Earnings & allowances"
+                title="Gross Pay Estimate"
+                value={`₹${previewData.total_gross.toLocaleString()}`}
+                subtext="Total base + allowances"
                 icon={TrendingUp}
                 iconColor="text-emerald-500"
                 iconBg="bg-emerald-500/10"
@@ -270,7 +254,7 @@ export const RunPayrollDialog: React.FC<RunPayrollDialogProps> = ({ open, onClos
 
               <StatsCard
                 title="Deductions & LOP"
-                value={`-$${previewData.total_deductions.toLocaleString()}`}
+                value={`-₹${previewData.total_deductions.toLocaleString()}`}
                 subtext="Statutory & unpaid leave"
                 icon={TrendingDown}
                 iconColor="text-rose-500"
@@ -280,7 +264,7 @@ export const RunPayrollDialog: React.FC<RunPayrollDialogProps> = ({ open, onClos
 
               <StatsCard
                 title="Net Disbursed"
-                value={`$${previewData.total_net.toLocaleString()}`}
+                value={`₹${previewData.total_net.toLocaleString()}`}
                 subtext="Final payout total"
                 icon={AccountBalanceWallet}
                 iconColor="text-primary"
@@ -330,7 +314,7 @@ export const RunPayrollDialog: React.FC<RunPayrollDialogProps> = ({ open, onClos
                               Gross Pay
                             </span>
                             <span className="font-medium text-emerald-600 dark:text-emerald-400">
-                              ${emp.gross_pay.toLocaleString()}
+                              ₹{emp.gross_pay.toLocaleString()}
                             </span>
                           </div>
 
@@ -339,14 +323,14 @@ export const RunPayrollDialog: React.FC<RunPayrollDialogProps> = ({ open, onClos
                               Deductions
                             </span>
                             <span className="font-medium text-rose-600 dark:text-rose-400">
-                              -${emp.total_deductions.toLocaleString()}
+                              -₹{emp.total_deductions.toLocaleString()}
                             </span>
                           </div>
 
                           <div className="text-right min-w-[80px]">
                             <span className="text-[11px] text-muted-foreground block">Net Pay</span>
                             <span className="font-bold text-foreground">
-                              ${emp.net_pay.toLocaleString()}
+                              ₹{emp.net_pay.toLocaleString()}
                             </span>
                           </div>
 
@@ -405,7 +389,7 @@ export const RunPayrollDialog: React.FC<RunPayrollDialogProps> = ({ open, onClos
                                       : "text-foreground"
                                   }`}
                                 >
-                                  {it.category === "Deduction" ? "-" : ""}$
+                                  {it.category === "Deduction" ? "-" : ""}₹
                                   {Number(it.amount).toLocaleString()}
                                 </span>
                               </div>
@@ -432,7 +416,7 @@ export const RunPayrollDialog: React.FC<RunPayrollDialogProps> = ({ open, onClos
           </Alert>
         )}
       </div>
-    </CustomDialog>
+    </AppDrawer>
   );
 };
 

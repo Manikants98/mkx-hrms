@@ -79,7 +79,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
 
       {/* Sticky Footer Actions Area */}
       {footer && (
-        <div className="px-5 py-3.5 border-t border-border dark:border-zinc-800 bg-white dark:bg-black backdrop-blur-sm shrink-0 flex items-center justify-end gap-3">
+        <div className="p-3 border-t border-border dark:border-zinc-800 bg-white dark:bg-black backdrop-blur-sm shrink-0 flex items-center justify-end gap-3">
           {footer}
         </div>
       )}

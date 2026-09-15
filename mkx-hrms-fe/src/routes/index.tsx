@@ -11,7 +11,8 @@ import Employees from "pages/Employees";
 import EmployeeDetail from "pages/Employees/EmployeeDetail";
 import Attendance from "pages/Attendance";
 import Leaves from "pages/Leaves";
-import Recruitment from "pages/Recruitment";
+import Candidates from "pages/Candidates";
+import CandidateDetail from "pages/Candidates/CandidateDetail";
 import Payroll from "pages/Payroll";
 import Reports from "pages/Reports";
 import Settings from "pages/Settings";
@@ -53,8 +54,12 @@ export const appRoutes: AppRouteItem[] = [
     element: <Leaves />,
   },
   {
-    path: "/recruitment",
-    element: <Recruitment />,
+    path: "/candidates",
+    element: <Candidates />,
+  },
+  {
+    path: "/candidates/:id",
+    element: <CandidateDetail />,
   },
   {
     path: "/payroll",
@@ -78,6 +83,10 @@ export const appRoutes: AppRouteItem[] = [
   },
   {
     path: "/masters/salary-structures",
+    element: <Masters />,
+  },
+  {
+    path: "/masters/job-postings",
     element: <Masters />,
   },
   {

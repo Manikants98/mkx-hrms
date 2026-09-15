@@ -120,7 +120,7 @@ export default function Dashboard(): React.ReactElement {
             </button>
           </div>
 
-          <StaggerContainer className="space-y-3">
+          <StaggerContainer className="space-y-1">
             {recentActivitiesList.length === 0 ? (
               <div className="py-8 text-center text-muted-foreground text-sm">
                 No recent activity logs recorded yet.

@@ -140,9 +140,9 @@ export const getPayroll = async (
         department: item.employee.department_rel?.name || "General",
         month: item.month,
         year: item.year,
-        gross_pay: `$${gross.toLocaleString()}`,
-        total_deductions: `$${deductions.toLocaleString()}`,
-        net_pay: `$${net.toLocaleString()}`,
+        gross_pay: `₹${gross.toLocaleString()}`,
+        total_deductions: `₹${deductions.toLocaleString()}`,
+        net_pay: `₹${net.toLocaleString()}`,
         raw_gross: gross,
         raw_deductions: deductions,
         raw_net: net,
@@ -232,7 +232,7 @@ export const getPayrollStats = async (
       {
         id: "total-payroll",
         title: "Total Monthly Payroll",
-        value: `$${totalNet.toLocaleString()}`,
+        value: `₹${totalNet.toLocaleString()}`,
         subtext: "Calculated across active workforce",
         icon_name: "Wallet",
         icon_color: "text-[#00b1d8]",
@@ -241,7 +241,7 @@ export const getPayrollStats = async (
       {
         id: "avg-salary",
         title: "Average Salary",
-        value: `$${avgSalary.toLocaleString()}`,
+        value: `₹${avgSalary.toLocaleString()}`,
         subtext: "Annualized compensation benchmark",
         icon_name: "TrendingUp",
         icon_color: "text-[#45ba50]",
@@ -250,7 +250,7 @@ export const getPayrollStats = async (
       {
         id: "pending-disbursements",
         title: "Pending Approval",
-        value: `$${pendingTotal.toLocaleString()}`,
+        value: `₹${pendingTotal.toLocaleString()}`,
         subtext: `${pendingCount} payroll batch cycles awaiting signoff`,
         icon_name: "Clock",
         icon_color: "text-[#ff8b25]",
@@ -690,11 +690,11 @@ export const exportPayroll = async (
         Employee: pay.employee?.name || "Unknown",
         Department: pay.employee?.department_rel?.name || "General",
         Role: pay.employee?.role_rel?.name || "General",
-        "Gross Pay": `$${gross.toLocaleString()}`,
-        Deductions: `$${deductions.toLocaleString()}`,
+        "Gross Pay": `₹${gross.toLocaleString()}`,
+        Deductions: `₹${deductions.toLocaleString()}`,
         "LOP Days": Number(pay.lop_days || 0),
-        "LOP Deductions": `$${Number(pay.lop_amount || 0).toLocaleString()}`,
-        "Net Salary": `$${net.toLocaleString()}`,
+        "LOP Deductions": `₹${Number(pay.lop_amount || 0).toLocaleString()}`,
+        "Net Salary": `₹${net.toLocaleString()}`,
         Status: pay.status,
         "Pay Date": pay.pay_date ? pay.pay_date.toISOString().split("T")[0] : "",
       };
@@ -928,9 +928,9 @@ export const getMyPayroll = async (
         paid_days: Number(item.paid_days ?? 30),
         lop_days: Number(item.lop_days ?? 0),
         lop_amount: Number(item.lop_amount ?? 0),
-        formatted_gross: `$${grossNum.toLocaleString()}`,
-        formatted_deductions: `$${deductionsNum.toLocaleString()}`,
-        formatted_net_pay: `$${netNum.toLocaleString()}`,
+        formatted_gross: `₹${grossNum.toLocaleString()}`,
+        formatted_deductions: `₹${deductionsNum.toLocaleString()}`,
+        formatted_net_pay: `₹${netNum.toLocaleString()}`,
         items:
           item.items?.map((it) => ({
             id: it.id,
@@ -959,7 +959,7 @@ export const getMyPayroll = async (
       message: "Personal payroll records retrieved successfully",
       data: {
         latest: formattedSlips[0] || null,
-        ytd_earnings: `$${ytdTotal.toLocaleString()}`,
+        ytd_earnings: `₹${ytdTotal.toLocaleString()}`,
         slips: formattedSlips,
       },
     });
