@@ -19,6 +19,12 @@ import Settings from "pages/Settings";
 import Blogs from "pages/Blogs";
 import Masters from "pages/Masters";
 
+// Public Website Imports
+import { PublicLayout } from "pages/PublicWebsite/PublicLayout";
+import Home from "pages/PublicWebsite/Home";
+import Careers from "pages/PublicWebsite/Careers";
+import PublicBlogs from "pages/PublicWebsite/Blogs";
+
 /**
  * Contract representing an application route item
  */
@@ -147,13 +153,19 @@ export function AppRoutes() {
       {/* Public Leave Approval Route */}
       <Route path="/leave-approval/:token" element={<LeaveApproval />} />
 
+      {/* Public Website Routes */}
+      <Route element={<PublicLayout />}>
+        <Route path="/" element={<Home />} />
+        <Route path="/careers" element={<Careers />} />
+        <Route path="/blogs" element={<PublicBlogs />} />
+      </Route>
+
       {/* Protected HRMS Application Views */}
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>
           {appRoutes.map((route) => (
             <Route key={route.path} path={route.path} element={route.element} />
           ))}
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>
       </Route>

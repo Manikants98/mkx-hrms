@@ -11,13 +11,12 @@ import {
   buildLeaveApprovalEmailPlainText,
   LeaveStatusUpdateEmailOptions,
   buildLeaveStatusUpdateEmailHtml,
-  buildLeaveStatusUpdateEmailPlainText
+  buildLeaveStatusUpdateEmailPlainText,
 } from "../templates/email.templates";
 
 /**
  * Configuration payload required to send a welcome email to an employee
  */
-
 
 /**
  * Result returned following an email delivery attempt
@@ -106,20 +105,6 @@ const createTransporterForHost = (hostAddress: string, servername: string): Tran
 };
 
 /**
- * Retrieves or initializes the singleton Nodemailer transport instance
- *
- * @returns Configured Nodemailer Transporter
- */
-const getMailTransporter = async (): Promise<Transporter> => {
-  if (!transporterInstance) {
-    const rawHost = process.env.SMTP_HOST || "smtp.gmail.com";
-    const ipv4List = await resolveIpv4Addresses(rawHost);
-    transporterInstance = createTransporterForHost(ipv4List[0], rawHost);
-  }
-  return transporterInstance;
-};
-
-/**
  * Generates an executive-grade, responsive HTML email template for new employee onboarding
  *
  * @param options - Welcome email attributes
@@ -146,7 +131,7 @@ export const sendEmployeeWelcomeEmail = async (
     const rawHost = process.env.SMTP_HOST || "smtp.gmail.com";
     const fromName = process.env.SMTP_FROM_NAME || "MKX HRMS Workplace";
     const fromEmail =
-      process.env.SMTP_FROM_EMAIL || process.env.SMTP_USERNAME || "mkx.webs@gmail.com";
+      process.env.SMTP_FROM_EMAIL || process.env.SMTP_USERNAME || "no-reply@mkx.monster";
 
     const mailOptions = {
       from: `"${fromName}" <${fromEmail}>`,
@@ -259,9 +244,6 @@ export const verifySmtpConnection = async (): Promise<boolean> => {
  * Configuration payload required to send a leave approval email to a manager
  */
 
-
-
-
 export const sendLeaveApprovalEmail = async (
   options: LeaveApprovalEmailOptions,
 ): Promise<EmailSendResult> => {
@@ -322,10 +304,6 @@ export const sendLeaveApprovalEmail = async (
   }
 };
 
-
-
-
-
 export const sendLeaveStatusUpdateEmail = async (
   options: LeaveStatusUpdateEmailOptions,
 ): Promise<EmailSendResult> => {
@@ -383,6 +361,87 @@ export const sendLeaveStatusUpdateEmail = async (
     return { success: false, error: lastError };
   } catch (error) {
     logger.error(`Failed to send leave status update email to ${options.employeeEmail}:`, error);
+    return { success: false, error };
+  }
+};
+
+export interface ContactUsEmailOptions {
+  name: string;
+  email: string;
+  number?: string;
+  subject: string;
+  message: string;
+}
+
+export const sendContactUsEmail = async (
+  options: ContactUsEmailOptions,
+): Promise<EmailSendResult> => {
+  try {
+    const rawHost = process.env.SMTP_HOST || "smtp.gmail.com";
+    const fromEmail =
+      process.env.SMTP_FROM_EMAIL || process.env.SMTP_USERNAME || "no-reply@mkx.monster";
+
+    const mailOptions = {
+      from: `"${options.name} (via Website)" <${fromEmail}>`,
+      to: "mkxtechnologies@gmail.com",
+      replyTo: options.email,
+      subject: `New Contact Request: ${options.subject}`,
+      text: `You have received a new message from ${options.name} (${options.email}).\n\nPhone Number: ${options.number || "N/A"}\nSubject: ${options.subject}\n\nMessage:\n${options.message}`,
+      html: `
+        <h2>New Contact Request</h2>
+        <p><strong>Name:</strong> ${options.name}</p>
+        <p><strong>Email:</strong> ${options.email}</p>
+        <p><strong>Phone Number:</strong> ${options.number || "N/A"}</p>
+        <p><strong>Subject:</strong> ${options.subject}</p>
+        <hr />
+        <p><strong>Message:</strong></p>
+        <p>${options.message.replace(/\n/g, "<br/>")}</p>
+      `,
+    };
+
+    if (transporterInstance) {
+      try {
+        const info = await transporterInstance.sendMail(mailOptions);
+        logger.info(
+          `Contact Us email dispatched to mkxtechnologies@gmail.com (Message ID: ${info.messageId})`,
+        );
+        logger.info(`SMTP Response: ${info.response}`);
+        logger.info(`SMTP Envelope: ${JSON.stringify(info.envelope)}`);
+        return { success: true, messageId: info.messageId };
+      } catch (cachedErr) {
+        logger.warn(
+          `Cached SMTP transporter failed, attempting re-resolution: ${String(cachedErr)}`,
+        );
+        transporterInstance = null;
+      }
+    }
+
+    const ipv4List = await resolveIpv4Addresses(rawHost);
+    let lastError: unknown = null;
+
+    for (const hostAddress of ipv4List) {
+      try {
+        const transporter = createTransporterForHost(hostAddress, rawHost);
+        const info = await transporter.sendMail(mailOptions);
+        transporterInstance = transporter;
+        logger.info(
+          `Contact Us email dispatched to mkxtechnologies@gmail.com (Message ID: ${info.messageId}) [via IPv4: ${hostAddress}]`,
+        );
+        logger.info(`SMTP Response: ${info.response}`);
+        logger.info(`SMTP Envelope: ${JSON.stringify(info.envelope)}`);
+        return { success: true, messageId: info.messageId };
+      } catch (err) {
+        lastError = err;
+        logger.warn(
+          `Failed sending Contact Us email via [${hostAddress}], checking alternative address...`,
+        );
+      }
+    }
+
+    logger.error(`Failed to send Contact Us email to mkxtechnologies@gmail.com:`, lastError);
+    return { success: false, error: lastError };
+  } catch (error) {
+    logger.error(`Failed to send Contact Us email to mkxtechnologies@gmail.com:`, error);
     return { success: false, error };
   }
 };

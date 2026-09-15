@@ -209,6 +209,34 @@
     -moz-appearance: textfield !important;
     appearance: textfield !important;
   }
+
+  /* Premium Public Website Utilities */
+  .glass-panel {
+    background: color-mix(in srgb, var(--card) 60%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  .text-gradient {
+    background: linear-gradient(135deg, var(--chart-1), var(--chart-2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .bg-gradient-premium {
+    background: linear-gradient(135deg, var(--chart-1) 0%, var(--chart-2) 100%);
+  }
+
+  .hover-lift {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  }
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.1);
+  }
 }
 
 /* Base animations that tailwind v4 can use or we can manually apply */

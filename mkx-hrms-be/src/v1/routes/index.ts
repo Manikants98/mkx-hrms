@@ -12,6 +12,7 @@ import settingsRoutes from "./settings.routes";
 import blogsRoutes from "./blogs.routes";
 import mastersRoutes from "./masters.routes";
 import jobPostingsRoutes from "./job-postings.routes";
+import contactRoutes from "./contact.routes";
 
 const router = Router();
 
@@ -29,5 +30,6 @@ router.use("/settings", settingsRoutes);
 router.use("/blogs", blogsRoutes);
 router.use("/masters", mastersRoutes);
 router.use("/job-postings", jobPostingsRoutes);
+router.use("/contact", contactRoutes);
 
 export default router;
