@@ -1,5 +1,6 @@
 import { useCustomQuery } from "hooks/useCustomQuery";
 import { useCustomMutation } from "hooks/useCustomMutation";
+import { api } from "libraries/axios";
 import { type ApiResponse } from "../api.types";
 
 /**
@@ -230,7 +231,9 @@ export interface PayrollPreviewData {
  * @returns Mutation trigger
  */
 export const useGeneratePayroll = (
-  onSuccessCallback?: (data: ApiResponse<PayrollPreviewData | { month: number; year: number; count: number }>) => void,
+  onSuccessCallback?: (
+    data: ApiResponse<PayrollPreviewData | { month: number; year: number; count: number }>,
+  ) => void,
 ) => {
   const mutation = useCustomMutation<
     ApiResponse<PayrollPreviewData | { month: number; year: number; count: number }>,
@@ -286,17 +289,50 @@ export const useProcessBatchPayroll = (onSuccessCallback?: () => void) => {
 
   return {
     ...mutation,
-    mutate: (data: { payroll_ids: number[]; status?: "Processed" | "Paid" | "Pending" | "On Hold" }) =>
+    mutate: (data: {
+      payroll_ids: number[];
+      status?: "Processed" | "Paid" | "Pending" | "On Hold";
+    }) =>
       mutation.mutate({
         url: "/v1/payroll/process-batch",
         method: "POST",
         data,
       }),
-    mutateAsync: (data: { payroll_ids: number[]; status?: "Processed" | "Paid" | "Pending" | "On Hold" }) =>
+    mutateAsync: (data: {
+      payroll_ids: number[];
+      status?: "Processed" | "Paid" | "Pending" | "On Hold";
+    }) =>
       mutation.mutateAsync({
         url: "/v1/payroll/process-batch",
         method: "POST",
         data,
       }),
   };
+};
+
+/**
+ * Downloads the Payslip PDF from the backend
+ */
+export const exportPayslipPdf = async (payrollId: number | string) => {
+  try {
+    const response = await api.get(`/v1/payroll/${payrollId}/pdf`, {
+      responseType: "blob",
+    });
+
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `Payslip_${payrollId}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+
+    // Clean up
+    if (link.parentNode) link.parentNode.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
+    return true;
+  } catch (error) {
+    console.error("Error downloading PDF", error);
+    throw error;
+  }
 };

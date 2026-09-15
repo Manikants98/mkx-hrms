@@ -7,3 +7,4 @@ trigger: always_on
 1. Never write normal comments if a comment is required; only write JSDoc comments.
 2. Never write the type `any` while defining types. Always use specific types or `unknown` if absolutely necessary.
 3. Write code like a professional developer.
+4. Dont make any script to change the code you can only direct edit.

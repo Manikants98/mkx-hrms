@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { prisma } from "../../libraries/prisma";
 import { generateExcelBuffer } from "../services/excel.service";
+import { generatePayslipPdf, PayslipData } from "../services/pdf.service";
 import { PayrollPreviewItem } from "../../types/payroll.types";
 
 /**
@@ -344,6 +345,7 @@ export const generatePayroll = async (
                 is_deduction: boolean;
                 is_taxable: boolean;
                 is_base_salary: boolean;
+                calculation_type: string;
               };
             }>;
             leaves: Array<{
@@ -385,16 +387,11 @@ export const generatePayroll = async (
     const calculatedRecords: PayrollPreviewItem[] = [];
 
     for (const emp of employees) {
-      const earnings = emp.salary_structures.filter(
-        (s) => !s.salary_structure.is_deduction,
-      );
-      const deductions = emp.salary_structures.filter(
-        (s) => s.salary_structure.is_deduction,
-      );
+      const earnings = emp.salary_structures.filter((s) => !s.salary_structure.is_deduction);
+      const deductions = emp.salary_structures.filter((s) => s.salary_structure.is_deduction);
 
       const baseSalaryComponent =
-        emp.salary_structures.find((s) => s.salary_structure.is_base_salary) ||
-        earnings[0];
+        emp.salary_structures.find((s) => s.salary_structure.is_base_salary) || earnings[0];
 
       const baseSalaryAmount = baseSalaryComponent ? Number(baseSalaryComponent.amount) : 0;
       const perDayBaseRate = daysInMonth > 0 ? baseSalaryAmount / daysInMonth : 0;
@@ -404,10 +401,18 @@ export const generatePayroll = async (
       const paidDays = Math.max(0, daysInMonth - lopDays);
       const lopAmount = Math.round(lopDays * perDayBaseRate * 100) / 100;
 
+      const calculateAmount = (item: any) => {
+        const rawAmount = Number(item.amount);
+        if (item.salary_structure.calculation_type === "Percentage") {
+          return (baseSalaryAmount * rawAmount) / 100;
+        }
+        return rawAmount;
+      };
+
       const grossPay =
-        Math.round(earnings.reduce((sum, e) => sum + Number(e.amount), 0) * 100) / 100;
+        Math.round(earnings.reduce((sum, e) => sum + calculateAmount(e), 0) * 100) / 100;
       const regularDeductions =
-        Math.round(deductions.reduce((sum, d) => sum + Number(d.amount), 0) * 100) / 100;
+        Math.round(deductions.reduce((sum, d) => sum + calculateAmount(d), 0) * 100) / 100;
       const totalDeductions = Math.round((regularDeductions + lopAmount) * 100) / 100;
       const netPay = Math.max(0, Math.round((grossPay - totalDeductions) * 100) / 100);
 
@@ -418,7 +423,7 @@ export const generatePayroll = async (
           name: e.salary_structure.name,
           code: e.salary_structure.code,
           category: "Earning",
-          amount: Number(e.amount),
+          amount: calculateAmount(e),
           is_taxable: e.salary_structure.is_taxable,
           salary_structure_id: e.salary_structure.id,
         });
@@ -429,7 +434,7 @@ export const generatePayroll = async (
           name: d.salary_structure.name,
           code: d.salary_structure.code,
           category: "Deduction",
-          amount: Number(d.amount),
+          amount: calculateAmount(d),
           is_taxable: false,
           salary_structure_id: d.salary_structure.id,
         });
@@ -960,5 +965,103 @@ export const getMyPayroll = async (
     });
   } catch (err) {
     next(err);
+  }
+};
+
+/**
+ * Generate and export PDF for a specific payroll record
+ */
+export const exportPayrollPdf = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const paramId = Array.isArray(id) ? id[0] : id;
+    const numId = Number(paramId);
+
+    const payroll = await prisma.payroll.findUnique({
+      where: isNaN(numId) ? { payroll_code: paramId } : { id: numId },
+      include: {
+        employee: {
+          include: {
+            role_rel: true,
+            department_rel: true,
+            salary_structures: {
+              include: {
+                salary_structure: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!payroll) {
+      res.sendError({ statusCode: 404, message: "Payroll record not found" });
+      return;
+    }
+
+    const { employee } = payroll as any;
+    if (!employee) {
+      res.sendError({ statusCode: 404, message: "Employee not found for this payroll" });
+      return;
+    }
+
+    const baseSalaryComponent = employee.salary_structures.find(
+      (s: any) => s.salary_structure?.is_base_salary,
+    );
+    const baseSalaryAmount = baseSalaryComponent ? Number(baseSalaryComponent.amount) : 0;
+
+    const calculateAmount = (item: any) => {
+      const rawAmount = Number(item.amount);
+      if (item.salary_structure?.calculation_type === "Percentage") {
+        return (baseSalaryAmount * rawAmount) / 100;
+      }
+      return rawAmount;
+    };
+
+    const earnings = employee.salary_structures
+      .filter((s: any) => !s.salary_structure?.is_deduction)
+      .map((s: any) => ({
+        name: s.salary_structure?.name || `Structure #${s.salary_structure_id}`,
+        amount: calculateAmount(s),
+      }));
+
+    const deductions = employee.salary_structures
+      .filter((s: any) => s.salary_structure?.is_deduction)
+      .map((s: any) => ({
+        name: s.salary_structure?.name || `Structure #${s.salary_structure_id}`,
+        amount: calculateAmount(s),
+      }));
+
+    const data: PayslipData = {
+      id: payroll.payroll_code,
+      month: payroll.month || 0,
+      year: payroll.year || 0,
+      payDate: payroll.pay_date ? payroll.pay_date.toLocaleDateString("en-CA") : "",
+      status: payroll.status,
+      employeeName: employee.name,
+      employeeId: employee.id.toString(),
+      department: employee.department_rel?.name || "N/A",
+      designation: employee.role_rel?.name || "N/A",
+      grossPay: Number(payroll.gross_pay) || 0,
+      totalDeductions: Number(payroll.total_deductions) || 0,
+      netPay: Number(payroll.net_pay) || 0,
+      earnings,
+      deductions,
+    };
+
+    const pdfBuffer = await generatePayslipPdf(data);
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=Payslip_${payroll.payroll_code}.pdf`,
+    );
+    res.send(pdfBuffer);
+  } catch (error) {
+    next(error);
   }
 };

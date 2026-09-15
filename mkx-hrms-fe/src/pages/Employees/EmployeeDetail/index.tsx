@@ -11,12 +11,12 @@ import {
   Paid,
   Person,
   Phone,
-  ReceiptLong,
   Schedule,
   SupervisorAccount,
+  Visibility,
   Work,
 } from "@mui/icons-material";
-import { Avatar, Button, Chip, Tab, Tabs, Skeleton } from "@mui/material";
+import { Avatar, Button, Chip, IconButton, Skeleton, Tab, Tabs } from "@mui/material";
 import React, { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -25,7 +25,13 @@ import {
   type Employee,
   type LeaveBalance,
 } from "services/employees";
-import { CustomDialog } from "shared/CustomDialog";
+import { exportPayslipPdf } from "services/payroll";
+import { DataTable, type ColumnDef } from "shared/DataTable";
+import { AppDrawer } from "shared/Drawer";
+
+const parseAmt = (val: string | number | undefined) =>
+  Number(String(val || 0).replace(/[^0-9.-]+/g, "")) || 0;
+
 import { StatsCard } from "shared/StatsCard";
 import { ManageEmployee, type ManageEmployeeFormValues } from "../ManageEmployee";
 import { GenerateEmployeeSalaryDialog } from "./GenerateEmployeeSalaryDialog";
@@ -49,6 +55,7 @@ export default function EmployeeDetail(): React.ReactElement {
   const [activeTab, setActiveTab] = useState<DetailTab>("overview");
   const [isSalaryDialogOpen, setIsSalaryDialogOpen] = useState<boolean>(false);
   const [isEditDrawerOpen, setIsEditDrawerOpen] = useState<boolean>(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [viewingPayslip, setViewingPayslip] = useState<
     NonNullable<Employee["payrolls"]>[number] | null
   >(null);
@@ -61,6 +68,45 @@ export default function EmployeeDetail(): React.ReactElement {
     setIsEditDrawerOpen(false);
   });
 
+  const handleDownloadPdf = async () => {
+    if (!viewingPayslip) return;
+    try {
+      setIsDownloadingPdf(true);
+      await exportPayslipPdf(viewingPayslip.db_id || viewingPayslip.id);
+    } catch (error) {
+      console.error("Failed to download PDF", error);
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
+
+  const payslipItems = useMemo(() => {
+    if (viewingPayslip?.items && viewingPayslip.items.length > 0) {
+      return viewingPayslip.items;
+    }
+    if (!employee?.salary_structures) return [];
+
+    const baseStructure = employee.salary_structures.find(
+      (s) => s.salary_structure?.is_base_salary,
+    );
+    const baseAmount = baseStructure ? Number(baseStructure.amount) : 0;
+
+    return employee.salary_structures.map((ss) => {
+      const isDed = ss.salary_structure?.is_deduction;
+      const rawAmt = Number(ss.amount) || 0;
+      let finalAmt = rawAmt;
+      if (ss.salary_structure?.calculation_type === "Percentage") {
+        finalAmt = (baseAmount * rawAmt) / 100;
+      }
+
+      return {
+        name: ss.salary_structure?.name || `Structure #${ss.salary_structure_id}`,
+        amount: finalAmt,
+        category: isDed ? "Deduction" : "Earning",
+      } as const;
+    });
+  }, [viewingPayslip, employee?.salary_structures]);
+
   /**
    * Financial summary metrics calculated across employee's active salary structures
    */
@@ -71,8 +117,17 @@ export default function EmployeeDetail(): React.ReactElement {
     let ded = 0;
 
     const structures = employee?.salary_structures || [];
+
+    const baseStructure = structures.find((s) => s.salary_structure?.is_base_salary);
+    const baseAmount = baseStructure ? Number(baseStructure.amount) : 0;
+
     structures.forEach((item) => {
-      const amt = Number(item.amount) || 0;
+      const rawAmt = Number(item.amount) || 0;
+      let amt = rawAmt;
+      if (item.salary_structure?.calculation_type === "Percentage") {
+        amt = (baseAmount * rawAmt) / 100;
+      }
+
       if (item.salary_structure?.is_deduction) {
         deductions += amt;
         ded += 1;
@@ -114,6 +169,153 @@ export default function EmployeeDetail(): React.ReactElement {
       salary_structures: values.salary_structures,
     });
   };
+
+  const salaryColumns = useMemo<
+    ColumnDef<NonNullable<Employee["salary_structures"]>[number]>[]
+  >(() => {
+    const baseStructure = employee?.salary_structures?.find(
+      (s) => s.salary_structure?.is_base_salary,
+    );
+    const baseAmount = baseStructure ? Number(baseStructure.amount) : 0;
+    return [
+      {
+        header: "Structure Component",
+        cell: (row) => {
+          const master = row.salary_structure;
+          return (
+            <div className="flex items-center gap-3 py-1">
+              <Avatar
+                variant="rounded"
+                className="!bg-secondary !text-foreground !border !border-border shrink-0"
+              >
+                {master?.name ? master.name.charAt(0).toUpperCase() : "S"}
+              </Avatar>
+              <div className="flex flex-col">
+                <span className="font-semibold text-foreground">
+                  {master?.name || `Structure #${row.salary_structure_id}`}
+                </span>
+                <span className="text-[11px] text-muted-foreground">{master?.code}</span>
+              </div>
+            </div>
+          );
+        },
+      },
+      {
+        header: "Category",
+        cell: (row) => {
+          const isDeduction = row.salary_structure?.is_deduction;
+          const isBase = row.salary_structure?.is_base_salary;
+          return (
+            <div className="flex items-center gap-1.5 py-1">
+              <Chip
+                label={isDeduction ? "Deduction" : "Earning"}
+                size="small"
+                color={isDeduction ? "error" : "success"}
+                variant="outlined"
+              />
+              {isBase && <Chip label="Base" size="small" color="primary" variant="outlined" />}
+            </div>
+          );
+        },
+      },
+      {
+        header: "Tax Status",
+        cell: (row) => (
+          <span className="text-xs text-muted-foreground">
+            {row.salary_structure?.is_taxable ? "Taxable" : "Exempt"}
+          </span>
+        ),
+      },
+      {
+        header: "Calculation",
+        cell: (row) => (
+          <span className="text-xs text-muted-foreground">
+            {row.salary_structure?.calculation_type || "Fixed"}
+          </span>
+        ),
+      },
+      {
+        header: "Monthly Amount (₹)",
+        align: "right",
+        cell: (row) => {
+          const rawAmt = Number(row.amount) || 0;
+          const isPercentage = row.salary_structure?.calculation_type === "Percentage";
+          const finalAmt = isPercentage ? (baseAmount * rawAmt) / 100 : rawAmt;
+          return (
+            <span className="font-semibold text-foreground">₹{finalAmt.toLocaleString()}</span>
+          );
+        },
+      },
+    ];
+  }, [employee?.salary_structures]);
+
+  const payrollColumns = useMemo<ColumnDef<NonNullable<Employee["payrolls"]>[number]>[]>(() => {
+    return [
+      {
+        header: "Payslip Code",
+        cell: (row) => <span className="font-mono font-semibold text-primary">{row.id}</span>,
+      },
+      {
+        header: "Period",
+        cell: (row) => (
+          <span className="font-medium text-foreground">
+            {row.month}/{row.year}
+          </span>
+        ),
+      },
+      {
+        header: "Working Days",
+        cell: (row) => (
+          <span className="text-muted-foreground">{row.working_days ?? "—"} days</span>
+        ),
+      },
+      {
+        header: "LOP Days",
+        cell: (row) => (
+          <span
+            className={`font-medium ${(row.lop_days || 0) > 0 ? "text-rose-500" : "text-muted-foreground"}`}
+          >
+            {row.lop_days || 0} days
+          </span>
+        ),
+      },
+      {
+        header: "Gross Pay",
+        cell: (row) => <span className="text-foreground font-medium">{row.gross_pay}</span>,
+      },
+      {
+        header: "Deductions",
+        cell: (row) => <span className="text-rose-500 font-medium">-{row.total_deductions}</span>,
+      },
+      {
+        header: "Net Salary",
+        cell: (row) => <span className="text-foreground font-bold text-sm">{row.net_pay}</span>,
+      },
+      {
+        header: "Status",
+        cell: (row) => (
+          <Chip
+            label={row.status}
+            size="small"
+            color={
+              row.status === "Paid" ? "success" : row.status === "Processed" ? "success" : "warning"
+            }
+            variant="outlined"
+            className="!h-6 !text-[11px]"
+          />
+        ),
+      },
+      {
+        header: "Action",
+        align: "center",
+        cell: (row) => (
+          <IconButton size="small" onClick={() => setViewingPayslip(row)}>
+            <Visibility fontSize="small" />
+          </IconButton>
+        ),
+      },
+    ];
+  }, []);
 
   if (isLoading) {
     return (
@@ -182,7 +384,6 @@ export default function EmployeeDetail(): React.ReactElement {
                 size="small"
                 color={employee.status === "Active" ? "success" : "error"}
                 variant="outlined"
-                className="!h-5 !text-[11px] !font-medium"
               />
             </div>
 
@@ -448,109 +649,36 @@ export default function EmployeeDetail(): React.ReactElement {
             </Button>
           </div>
 
-          <div className="border border-border rounded-lg overflow-hidden bg-card shadow-xs">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-50 dark:bg-zinc-900/70 border-b border-border text-xs font-semibold text-slate-700 dark:text-zinc-200">
-                    <th className="py-3 px-4 min-w-[240px]">Structure Component</th>
-                    <th className="py-3 px-4 min-w-[100px]">Category</th>
-                    <th className="py-3 px-4 min-w-[100px]">Tax Status</th>
-                    <th className="py-3 px-4 min-w-[110px]">Calculation</th>
-                    <th className="py-3 px-4 text-right min-w-[130px]">Monthly Amount (₹)</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {!employee.salary_structures || employee.salary_structures.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="py-8 text-center text-xs text-muted-foreground">
-                        <AccountBalanceWallet className="!w-10 !h-10 text-muted-foreground/30 mx-auto mb-2" />
-                        <span className="font-medium block">No salary structures assigned yet</span>
-                        <span className="text-[11px] text-muted-foreground/70 block mt-0.5">
-                          Click &quot;Modify Structure Items&quot; above to configure compensation
-                          for this employee.
-                        </span>
-                      </td>
-                    </tr>
-                  ) : (
-                    employee.salary_structures.map((item, idx) => {
-                      const master = item.salary_structure;
-                      const isDeduction = master?.is_deduction;
-                      const isBase = master?.is_base_salary;
+          <DataTable
+            data={employee.salary_structures || []}
+            columns={salaryColumns}
+            hidePagination={true}
+          />
 
-                      return (
-                        <tr key={idx} className="hover:bg-secondary/20 transition-colors text-xs">
-                          <td className="py-3 px-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-[5px] bg-secondary border border-border flex items-center justify-center font-bold text-xs text-foreground shrink-0">
-                                {master?.name ? master.name.charAt(0).toUpperCase() : "S"}
-                              </div>
-                              <div className="flex flex-col">
-                                <span className="font-semibold text-foreground">
-                                  {master?.name || `Structure #${item.salary_structure_id}`}
-                                </span>
-                                <span className="text-[11px] text-muted-foreground">
-                                  {master?.code}
-                                </span>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="py-3 px-4 whitespace-nowrap text-xs">
-                            <span
-                              className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                                isDeduction
-                                  ? "bg-rose-500/10 text-rose-500 border border-rose-500/20"
-                                  : "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
-                              }`}
-                            >
-                              {isDeduction ? "Deduction" : "Earning"}
-                            </span>
-                            {isBase && (
-                              <span className="ml-1.5 text-[9px] font-semibold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
-                                Base
-                              </span>
-                            )}
-                          </td>
-                          <td className="py-3 px-4 whitespace-nowrap text-xs text-muted-foreground">
-                            {master?.is_taxable ? "Taxable" : "Exempt"}
-                          </td>
-                          <td className="py-3 px-4 whitespace-nowrap text-xs text-muted-foreground">
-                            {master?.calculation_type || "Fixed"}
-                          </td>
-                          <td className="py-3 px-4 text-right font-semibold text-foreground">
-                            ₹{Number(item.amount).toLocaleString()}
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {employee.salary_structures && employee.salary_structures.length > 0 && (
-              <div className="grid grid-cols-3 gap-2 p-4 bg-secondary/30 border-t border-border text-xs">
-                <div>
-                  <span className="text-[11px] text-muted-foreground block">Total Gross Pay</span>
-                  <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm">
+          {employee.salary_structures && employee.salary_structures.length > 0 && (
+            <div className="flex justify-end p-4 bg-secondary/30 border border-border rounded-md text-xs">
+              <div className="w-full max-w-[280px] flex flex-col gap-2.5">
+                <div className="flex justify-between items-center text-muted-foreground">
+                  <span>Total Gross Pay</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">
                     ₹{totalGross.toLocaleString()}
                   </span>
                 </div>
-                <div>
-                  <span className="text-[11px] text-muted-foreground block">Total Deductions</span>
-                  <span className="font-bold text-rose-600 dark:text-rose-400 text-sm">
+                <div className="flex justify-between items-center text-muted-foreground">
+                  <span>Total Deductions</span>
+                  <span className="font-bold text-rose-600 dark:text-rose-400">
                     -₹{totalDeductions.toLocaleString()}
                   </span>
                 </div>
-                <div>
-                  <span className="text-[11px] text-muted-foreground block">Net Monthly Pay</span>
-                  <span className="font-bold text-primary text-sm">
+                <div className="border-t border-border/60 pt-1 flex justify-between items-center">
+                  <span className="font-bold text-foreground text-sm">Net Monthly Pay</span>
+                  <span className="font-bold text-primary text-base">
                     ₹{netSalary.toLocaleString()}
                   </span>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -575,101 +703,11 @@ export default function EmployeeDetail(): React.ReactElement {
             </Button>
           </div>
 
-          <div className="border border-border rounded-lg overflow-hidden bg-card shadow-xs">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-50 dark:bg-zinc-900/70 border-b border-border text-xs font-semibold text-slate-700 dark:text-zinc-200">
-                    <th className="py-3 px-4 min-w-[130px]">Payslip Code</th>
-                    <th className="py-3 px-4 min-w-[120px]">Period</th>
-                    <th className="py-3 px-4 min-w-[100px]">Working Days</th>
-                    <th className="py-3 px-4 min-w-[100px]">LOP Days</th>
-                    <th className="py-3 px-4 min-w-[120px]">Gross Pay</th>
-                    <th className="py-3 px-4 min-w-[120px]">Deductions</th>
-                    <th className="py-3 px-4 min-w-[120px]">Net Salary</th>
-                    <th className="py-3 px-4 min-w-[100px]">Status</th>
-                    <th className="py-3 px-4 text-center w-20">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {!employee.payrolls || employee.payrolls.length === 0 ? (
-                    <tr>
-                      <td colSpan={9} className="py-8 text-center text-xs text-muted-foreground">
-                        <ReceiptLong className="!w-10 !h-10 text-muted-foreground/30 mx-auto mb-2" />
-                        <span className="font-medium block">No payroll records generated yet</span>
-                        <span className="text-[11px] text-muted-foreground/70 block mt-0.5">
-                          Click &quot;Generate New Salary&quot; above to calculate and issue a
-                          payslip for this employee.
-                        </span>
-                      </td>
-                    </tr>
-                  ) : (
-                    employee.payrolls.map((payroll) => (
-                      <tr
-                        key={payroll.id}
-                        className="hover:bg-secondary/20 transition-colors text-xs"
-                      >
-                        <td className="py-3 px-4 font-mono font-semibold text-primary">
-                          {payroll.id}
-                        </td>
-                        <td className="py-3 px-4 font-medium text-foreground">
-                          {payroll.month}/{payroll.year}
-                        </td>
-                        <td className="py-3 px-4 text-muted-foreground">
-                          {payroll.working_days ?? "—"} days
-                        </td>
-                        <td className="py-3 px-4">
-                          <span
-                            className={`font-medium ${
-                              (payroll.lop_days || 0) > 0
-                                ? "text-rose-500"
-                                : "text-muted-foreground"
-                            }`}
-                          >
-                            {payroll.lop_days || 0} days
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-foreground font-medium">
-                          {payroll.gross_pay}
-                        </td>
-                        <td className="py-3 px-4 text-rose-500 font-medium">
-                          -{payroll.total_deductions}
-                        </td>
-                        <td className="py-3 px-4 text-foreground font-bold text-sm">
-                          {payroll.net_pay}
-                        </td>
-                        <td className="py-3 px-4">
-                          <Chip
-                            label={payroll.status}
-                            size="small"
-                            color={
-                              payroll.status === "Paid"
-                                ? "success"
-                                : payroll.status === "Processed"
-                                  ? "info"
-                                  : "warning"
-                            }
-                            variant="outlined"
-                            className="!h-5 !text-[11px] !font-medium"
-                          />
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            onClick={() => setViewingPayslip(payroll)}
-                            className="!text-[11px] !normal-case !py-0.5 !px-2 !rounded-[4px] !border-border !text-muted-foreground hover:!text-foreground"
-                          >
-                            View
-                          </Button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <DataTable
+            data={employee.payrolls || []}
+            columns={payrollColumns}
+            hidePagination={true}
+          />
         </div>
       )}
 
@@ -879,12 +917,12 @@ export default function EmployeeDetail(): React.ReactElement {
 
       {/* Payslip View Dialog */}
       {viewingPayslip && (
-        <CustomDialog
+        <AppDrawer
           open={Boolean(viewingPayslip)}
           onClose={() => setViewingPayslip(null)}
           title={`Payslip Details — ${viewingPayslip.id}`}
-          maxWidth="sm"
-          actions={
+          width={600}
+          footer={
             <Button
               variant="outlined"
               size="small"
@@ -895,82 +933,185 @@ export default function EmployeeDetail(): React.ReactElement {
             </Button>
           }
         >
-          <div className="flex flex-col gap-4 text-xs">
-            <div className="p-3 bg-secondary/30 rounded-[5px] border border-border flex items-center justify-between">
+          <div className="flex flex-col gap-6 text-xs bg-background/50 rounded-md ">
+            {/* Header */}
+            <div className="flex justify-between items-start border-b border-border pb-4">
               <div>
-                <span className="text-[10px] text-muted-foreground block">Period</span>
-                <span className="font-bold text-foreground">
-                  {viewingPayslip.month}/{viewingPayslip.year}
-                </span>
+                <h2 className="text-xl font-bold tracking-tight text-foreground">
+                  MKX Technologies Pvt. Ltd.
+                </h2>
+                <p className="text-muted-foreground text-[11px] mt-1">
+                  129, Block A, Street Number 13,
+                </p>
+                <p className="text-muted-foreground text-[11px]">
+                  New Ashok Nagar, New Delhi, India - 110096
+                </p>
               </div>
-              <div>
-                <span className="text-[10px] text-muted-foreground block">Pay Date</span>
-                <span className="font-bold text-foreground">{viewingPayslip.pay_date}</span>
-              </div>
-              <div>
-                <span className="text-[10px] text-muted-foreground block">Status</span>
-                <Chip
-                  label={viewingPayslip.status}
-                  size="small"
-                  color="success"
-                  variant="outlined"
-                  className="!h-5 !text-[10px]"
-                />
+              <div className="text-right">
+                <h3 className="text-lg font-semibold text-primary uppercase tracking-widest">
+                  Payslip
+                </h3>
+                <p className="font-medium text-foreground mt-1">
+                  For the month of {viewingPayslip.month}/{viewingPayslip.year}
+                </p>
+                <p className="text-muted-foreground text-[11px] mt-0.5">
+                  Pay Date: {viewingPayslip.pay_date}
+                </p>
+                <div className="mt-2 inline-block">
+                  <Chip
+                    label={viewingPayslip.status}
+                    size="small"
+                    color="success"
+                    variant="outlined"
+                  />
+                </div>
               </div>
             </div>
 
-            {viewingPayslip.items && viewingPayslip.items.length > 0 && (
-              <div className="border border-border rounded overflow-hidden">
-                <div className="bg-secondary/40 px-3 py-1.5 font-semibold text-[11px] text-muted-foreground border-b border-border flex justify-between">
-                  <span>Structure Item</span>
+            {/* Employee Details Grid */}
+            <div className="grid grid-cols-2 gap-y-3 gap-x-6 p-4 bg-secondary/20 rounded-[5px] border border-border/60">
+              <div className="flex flex-col">
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                  Employee Name
+                </span>
+                <span className="font-semibold text-sm text-foreground">{employee?.name}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                  Employee ID
+                </span>
+                <span className="font-medium text-foreground">{employee?.id}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                  Department
+                </span>
+                <span className="font-medium text-foreground">{employee?.department || "N/A"}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                  Designation
+                </span>
+                <span className="font-medium text-foreground">{employee?.role || "N/A"}</span>
+              </div>
+            </div>
+
+            {/* Earnings & Deductions Table */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="border border-border rounded-[5px] overflow-hidden">
+                <div className="bg-secondary/40 px-3 py-2 font-semibold text-[11px] text-muted-foreground border-b border-border flex justify-between uppercase tracking-wider">
+                  <span>Earnings</span>
                   <span>Amount</span>
                 </div>
-                <div className="divide-y divide-border/60 max-h-48 overflow-y-auto">
-                  {viewingPayslip.items.map((item, idx) => (
-                    <div key={idx} className="px-3 py-1.5 flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <span
-                          className={`text-[9px] font-bold px-1 py-0.2 rounded ${
-                            item.category === "Deduction"
-                              ? "bg-rose-500/10 text-rose-500"
-                              : "bg-emerald-500/10 text-emerald-500"
-                          }`}
-                        >
-                          {item.category === "Deduction" ? "DED" : "EARN"}
-                        </span>
-                        <span>{item.name}</span>
-                      </div>
-                      <span
-                        className={
-                          item.category === "Deduction"
-                            ? "text-rose-500 font-medium"
-                            : "text-emerald-600 dark:text-emerald-400 font-medium"
-                        }
-                      >
-                        {item.category === "Deduction" ? "-" : ""}₹{item.amount.toLocaleString()}
-                      </span>
+                <div className="divide-y divide-border/60">
+                  {payslipItems.filter((i) => i.category === "Earning").length > 0 ? (
+                    payslipItems
+                      .filter((i) => i.category === "Earning")
+                      .map((item, idx) => (
+                        <div key={idx} className="px-3 py-2 flex items-center justify-between">
+                          <span className="text-foreground">{item.name}</span>
+                          <span className="font-medium text-emerald-600 dark:text-emerald-400">
+                            ₹
+                            {parseAmt(item.amount).toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </span>
+                        </div>
+                      ))
+                  ) : (
+                    <div className="px-3 py-4 text-center text-muted-foreground text-[11px] italic">
+                      No Earnings
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
-            )}
 
-            <div className="grid grid-cols-3 gap-2 p-3 rounded-[5px] bg-secondary/20 border border-border">
-              <div>
-                <span className="text-[10px] text-muted-foreground block">Gross Pay</span>
-                <span className="font-bold text-foreground">{viewingPayslip.gross_pay}</span>
+              <div className="border border-border rounded-[5px] overflow-hidden">
+                <div className="bg-secondary/40 px-3 py-2 font-semibold text-[11px] text-muted-foreground border-b border-border flex justify-between uppercase tracking-wider">
+                  <span>Deductions</span>
+                  <span>Amount</span>
+                </div>
+                <div className="divide-y divide-border/60">
+                  {payslipItems.filter((i) => i.category === "Deduction").length > 0 ? (
+                    payslipItems
+                      .filter((i) => i.category === "Deduction")
+                      .map((item, idx) => (
+                        <div key={idx} className="px-3 py-2 flex items-center justify-between">
+                          <span className="text-foreground">{item.name}</span>
+                          <span className="font-medium text-rose-500">
+                            ₹
+                            {parseAmt(item.amount).toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </span>
+                        </div>
+                      ))
+                  ) : (
+                    <div className="px-3 py-4 text-center text-muted-foreground text-[11px] italic">
+                      No Deductions
+                    </div>
+                  )}
+                </div>
               </div>
-              <div>
-                <span className="text-[10px] text-muted-foreground block">Total Deductions</span>
-                <span className="font-bold text-rose-500">-{viewingPayslip.total_deductions}</span>
+            </div>
+
+            {/* Totals Summary */}
+            <div className="flex justify-end border-t border-border/80">
+              <div className="w-full max-w-[320px] flex flex-col gap-2.5 text-sm">
+                <div className="flex justify-between items-center text-muted-foreground">
+                  <span>Total Earnings (Gross Pay)</span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                    ₹
+                    {parseAmt(viewingPayslip.gross_pay).toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-muted-foreground">
+                  <span>Total Deductions</span>
+                  <span className="font-semibold text-rose-600 dark:text-rose-400">
+                    ₹
+                    {parseAmt(viewingPayslip.total_deductions).toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </span>
+                </div>
+                <div className="border-t border-border/60 flex justify-between items-center">
+                  <span className="font-bold text-foreground text-base">Net Disbursed</span>
+                  <span className="font-bold text-primary text-xl">
+                    ₹
+                    {parseAmt(viewingPayslip.net_pay).toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </span>
+                </div>
               </div>
-              <div>
-                <span className="text-[10px] text-muted-foreground block">Net Disbursed</span>
-                <span className="font-bold text-primary text-sm">{viewingPayslip.net_pay}</span>
+            </div>
+
+            {/* Action Buttons & Footer Notes */}
+            <div className="pt-6 border-t border-border flex flex-col items-center gap-4">
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={handleDownloadPdf}
+                disabled={isDownloadingPdf}
+                sx={{ textTransform: "none", borderRadius: "6px" }}
+              >
+                {isDownloadingPdf ? "Generating PDF..." : "Download PDF"}
+              </Button>
+              <div className="text-center text-[10px] text-muted-foreground">
+                <p>
+                  This is a computer generated document and does not require a physical signature.
+                </p>
               </div>
             </div>
           </div>
-        </CustomDialog>
+        </AppDrawer>
       )}
     </div>
   );

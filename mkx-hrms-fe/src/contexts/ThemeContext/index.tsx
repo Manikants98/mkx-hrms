@@ -148,7 +148,7 @@ export function ThemeProvider({
               root: {
                 borderRadius: "5px",
                 fontWeight: 500,
-                padding: "0 5px",
+                padding: "0 1.5px 2.5px 1.5px",
               },
               outlined: {
                 borderWidth: "1px",

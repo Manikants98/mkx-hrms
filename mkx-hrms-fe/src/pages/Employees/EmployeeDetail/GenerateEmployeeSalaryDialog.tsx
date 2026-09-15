@@ -1,10 +1,4 @@
-import {
-  CalendarMonth,
-  CheckCircle,
-  Paid,
-  Visibility,
-  WarningAmber,
-} from "@mui/icons-material";
+import { CalendarMonth, CheckCircle, Paid, Visibility, WarningAmber } from "@mui/icons-material";
 import { Button, CircularProgress } from "@mui/material";
 import React, { useState } from "react";
 import { type Employee } from "services/employees";
@@ -13,7 +7,7 @@ import {
   type PayrollPreviewData,
   type PayrollPreviewItem,
 } from "services/payroll";
-import { CustomDialog } from "shared/CustomDialog";
+import { AppDrawer } from "shared/Drawer";
 import { Select, type SelectOption } from "shared/Select";
 
 /**
@@ -133,12 +127,12 @@ export const GenerateEmployeeSalaryDialog: React.FC<GenerateEmployeeSalaryDialog
   };
 
   return (
-    <CustomDialog
+    <AppDrawer
       open={open}
       onClose={onClose}
       title={`Generate Salary — ${employee.name}`}
-      maxWidth="sm"
-      actions={
+      width={600}
+      footer={
         <div className="flex items-center justify-between w-full">
           <Button
             variant="outlined"
@@ -293,7 +287,7 @@ export const GenerateEmployeeSalaryDialog: React.FC<GenerateEmployeeSalaryDialog
                             : "text-emerald-600 dark:text-emerald-400"
                         }`}
                       >
-                        {item.category === "Deduction" ? "-" : ""}${item.amount.toLocaleString()}
+                        {item.category === "Deduction" ? "-" : ""}₹{item.amount.toLocaleString()}
                       </span>
                     </div>
                   ))}
@@ -308,7 +302,7 @@ export const GenerateEmployeeSalaryDialog: React.FC<GenerateEmployeeSalaryDialog
                         </span>
                       </div>
                       <span className="font-medium text-rose-500">
-                        -${previewItem.lop_amount.toLocaleString()}
+                        -₹{previewItem.lop_amount.toLocaleString()}
                       </span>
                     </div>
                   )}
@@ -316,24 +310,38 @@ export const GenerateEmployeeSalaryDialog: React.FC<GenerateEmployeeSalaryDialog
               </div>
             )}
 
-            <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border text-xs">
-              <div>
-                <span className="text-[10px] text-muted-foreground block">Gross Pay</span>
-                <span className="font-bold text-foreground">
-                  ${previewItem.gross_pay.toLocaleString()}
-                </span>
-              </div>
-              <div>
-                <span className="text-[10px] text-muted-foreground block">Total Deductions</span>
-                <span className="font-bold text-rose-500">
-                  -${previewItem.total_deductions.toLocaleString()}
-                </span>
-              </div>
-              <div>
-                <span className="text-[10px] text-muted-foreground block">Net Monthly Salary</span>
-                <span className="font-bold text-primary text-sm">
-                  ${previewItem.net_pay.toLocaleString()}
-                </span>
+            <div className="flex justify-end border-t border-border/70">
+              <div className="w-full max-w-[280px] flex flex-col gap-2 text-sm">
+                <div className="flex justify-between items-center text-muted-foreground">
+                  <span>Gross Pay</span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                    ₹
+                    {previewItem.gross_pay.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-muted-foreground">
+                  <span>Total Deductions</span>
+                  <span className="font-semibold text-rose-600 dark:text-rose-400">
+                    -₹
+                    {previewItem.total_deductions.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-foreground">Net Monthly Salary</span>
+                  <span className="font-bold text-primary text-lg">
+                    ₹
+                    {previewItem.net_pay.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -341,12 +349,12 @@ export const GenerateEmployeeSalaryDialog: React.FC<GenerateEmployeeSalaryDialog
           <div className="p-6 text-center border border-dashed border-border rounded-[5px] bg-secondary/10 flex flex-col items-center justify-center gap-2 text-xs text-muted-foreground">
             <CalendarMonth className="!w-8 !h-8 text-muted-foreground/40" />
             <span>
-              Select the payroll month and year, then click &quot;Preview Calculation&quot; to inspect
-              attendance days, LOP, and salary components before generation.
+              Select the payroll month and year, then click &quot;Preview Calculation&quot; to
+              inspect attendance days, LOP, and salary components before generation.
             </span>
           </div>
         )}
       </div>
-    </CustomDialog>
+    </AppDrawer>
   );
 };
