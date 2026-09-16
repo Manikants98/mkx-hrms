@@ -382,7 +382,7 @@ export const sendContactUsEmail = async (
       process.env.SMTP_FROM_EMAIL || process.env.SMTP_USERNAME || "no-reply@mkx.monster";
 
     const mailOptions = {
-      from: `"${options.name} (via Website)" <${fromEmail}>`,
+      from: `"${options.name} (via Web)" <${fromEmail}>`,
       to: "mkxtechnologies@gmail.com",
       replyTo: options.email,
       subject: `New Contact Request: ${options.subject}`,
