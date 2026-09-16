@@ -2,8 +2,8 @@
 class ApiEndpoints {
   ApiEndpoints._();
 
-  /// Production Live Render backend base URL
-  static const String liveBaseUrl = 'https://mkx-hrms-be.onrender.com/api/v1';
+  /// Production Live API backend base URL
+  static const String liveBaseUrl = 'https://api.mkx.monster/api/v1';
 
   /// Local development URL for Android emulator
   static const String emulatorBaseUrl = 'http://10.0.2.2:3000/api/v1';
