@@ -108,7 +108,7 @@ export const appRoutes: AppRouteItem[] = [
     element: <Reports />,
   },
   {
-    path: "/blogs",
+    path: "/company-blogs",
     element: <Blogs />,
   },
   {

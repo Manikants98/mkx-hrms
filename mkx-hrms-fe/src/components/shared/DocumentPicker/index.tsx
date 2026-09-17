@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useMemo } from "react";
+import React, { useRef, useCallback, useMemo, useState } from "react";
 import { Button, Typography, Box } from "@mui/material";
 import { CloudUpload, Delete, InsertDriveFile } from "@mui/icons-material";
 import { getIn, type FormikProps } from "formik";
@@ -43,6 +43,7 @@ export function DocumentPicker<TFormValues = Record<string, unknown>>({
   accept = ".pdf,.doc,.docx",
 }: DocumentPickerProps<TFormValues>): React.ReactElement {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [fileName, setFileName] = useState<string>("");
 
   /**
    * Resolve active document value from Formik or prop
@@ -74,6 +75,8 @@ export function DocumentPicker<TFormValues = Record<string, unknown>>({
       const file = event.target.files?.[0];
       if (!file) return;
 
+      setFileName(file.name);
+
       const reader = new FileReader();
       reader.onload = (e) => {
         const result = e.target?.result as string;
@@ -102,6 +105,7 @@ export function DocumentPicker<TFormValues = Record<string, unknown>>({
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+    setFileName("");
   }, [formik, name, onChange]);
 
   return (
@@ -153,8 +157,8 @@ export function DocumentPicker<TFormValues = Record<string, unknown>>({
             )}
           </div>
 
-          <Typography className="!text-[11px] !text-muted-foreground !font-normal">
-            {error || helperText}
+          <Typography className="!text-[11px] !text-muted-foreground !font-normal truncate max-w-[200px] sm:max-w-[250px]">
+            {error || (currentDocument ? fileName || "Document uploaded" : helperText)}
           </Typography>
         </div>
       </div>

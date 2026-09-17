@@ -19,7 +19,11 @@ import {
   useUpdateJobPosting,
   type JobPosting,
 } from "services/job-postings";
-import { useGetMasterDepartments } from "services/masters";
+import {
+  useGetMasterDepartments,
+  useGetMasterRoles,
+  useGetMasterWorkShifts,
+} from "services/masters";
 import { ArrowMenu } from "shared/ArrowMenu";
 import { CustomDialog } from "shared/CustomDialog";
 import { DataTable, type ColumnDef } from "shared/DataTable";
@@ -33,6 +37,8 @@ import * as Yup from "yup";
 const JobPostingSchema = Yup.object().shape({
   title: Yup.string().required("Title is required"),
   department_id: Yup.number().nullable(),
+  role_id: Yup.number().nullable(),
+  shift_id: Yup.number().nullable(),
   location: Yup.string().required("Location is required"),
   employment_type: Yup.string().required("Employment type is required"),
   experience_level: Yup.string().required("Experience level is required"),
@@ -106,6 +112,9 @@ export const JobPostingMasterTab: React.FC = () => {
   const { data: departmentsResponse } = useGetMasterDepartments();
   const departmentsData = departmentsResponse?.data;
 
+  const { data: rolesResponse } = useGetMasterRoles();
+  const { data: shiftsResponse } = useGetMasterWorkShifts();
+
   const createMutation = useCreateJobPosting(() => {
     handleCloseDrawer();
     refetch();
@@ -125,6 +134,8 @@ export const JobPostingMasterTab: React.FC = () => {
     initialValues: {
       title: "",
       department_id: "" as number | "",
+      role_id: "" as number | "",
+      shift_id: "" as number | "",
       location: "",
       employment_type: "Full-Time",
       experience_level: "Mid-Level",
@@ -138,6 +149,8 @@ export const JobPostingMasterTab: React.FC = () => {
       const payload = {
         ...values,
         department_id: values.department_id === "" ? null : Number(values.department_id),
+        role_id: values.role_id === "" ? null : Number(values.role_id),
+        shift_id: values.shift_id === "" ? null : Number(values.shift_id),
       };
       if (editingJob) {
         updateMutation.mutate({ id: editingJob.id, ...payload });
@@ -153,6 +166,8 @@ export const JobPostingMasterTab: React.FC = () => {
       formik.setValues({
         title: job.title,
         department_id: job.department_id || "",
+        role_id: job.role_id || "",
+        shift_id: job.shift_id || "",
         location: job.location,
         employment_type: job.employment_type,
         experience_level: job.experience_level,
@@ -179,6 +194,14 @@ export const JobPostingMasterTab: React.FC = () => {
   const departmentOptions: SelectOption[] = useMemo(() => {
     return (departmentsData || []).map((d) => ({ label: d.name, value: d.id }));
   }, [departmentsData]);
+
+  const roleOptions: SelectOption[] = useMemo(() => {
+    return (rolesResponse?.data || []).map((r) => ({ label: r.name, value: r.id }));
+  }, [rolesResponse]);
+
+  const shiftOptions: SelectOption[] = useMemo(() => {
+    return (shiftsResponse?.data || []).map((s) => ({ label: s.name, value: s.id }));
+  }, [shiftsResponse]);
 
   const employmentOptions: SelectOption[] = [
     { label: "Full-Time", value: "Full-Time" },
@@ -465,6 +488,23 @@ export const JobPostingMasterTab: React.FC = () => {
               label="Department"
               options={departmentOptions}
               placeholder="Select Department"
+              formik={formik}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Select
+              name="role_id"
+              label="Role (Optional)"
+              options={roleOptions}
+              placeholder="Select exact Role mapping"
+              formik={formik}
+            />
+            <Select
+              name="shift_id"
+              label="Work Shift (Optional)"
+              options={shiftOptions}
+              placeholder="Select exact Shift mapping"
               formik={formik}
             />
           </div>

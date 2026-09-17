@@ -30,6 +30,7 @@ import {
   Plus,
   Search,
   Users,
+  FileText,
   type LucideIcon,
 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -136,16 +137,18 @@ function CandidateRowActions({
           View Candidate
         </MenuItem>
 
-        <MenuItem
-          onClick={() => {
-            setAnchorEl(null);
-            onEdit(row);
-          }}
-          className="!text-xs !py-2 !px-3 !gap-2 !rounded-[5px] !text-muted-foreground hover:!text-foreground hover:!bg-secondary/70"
-        >
-          <Edit className="!w-4 !h-4" />
-          Edit Candidate
-        </MenuItem>
+        {!row.onboarded_at && (
+          <MenuItem
+            onClick={() => {
+              setAnchorEl(null);
+              onEdit(row);
+            }}
+            className="!text-xs !py-2 !px-3 !gap-2 !rounded-[5px] !text-muted-foreground hover:!text-foreground hover:!bg-secondary/70"
+          >
+            <Edit className="!w-4 !h-4" />
+            Edit Candidate
+          </MenuItem>
+        )}
 
         {!row.onboarded_at && (row.stage === "Offered" || row.stage === "Hired") && (
           <MenuItem
@@ -199,7 +202,7 @@ function CandidateRowActions({
           </MenuItem>
         )}
 
-        {row.status !== "Rejected" && (
+        {!row.onboarded_at && row.status !== "Rejected" && (
           <MenuItem
             onClick={() => {
               setAnchorEl(null);
@@ -212,16 +215,18 @@ function CandidateRowActions({
           </MenuItem>
         )}
 
-        <MenuItem
-          onClick={() => {
-            setAnchorEl(null);
-            onDelete(row);
-          }}
-          className="!text-xs !py-2 !px-3 !gap-2 !rounded-[5px] !text-destructive hover:!bg-destructive/10 !border-t !border-border/60 !mt-1"
-        >
-          <DeleteOutlined className="!w-4 !h-4 text-destructive" />
-          <span className="font-medium text-destructive">Delete</span>
-        </MenuItem>
+        {!row.onboarded_at && (
+          <MenuItem
+            onClick={() => {
+              setAnchorEl(null);
+              onDelete(row);
+            }}
+            className="!text-xs !py-2 !px-3 !gap-2 !rounded-[5px] !text-destructive hover:!bg-destructive/10 !border-t !border-border/60 !mt-1"
+          >
+            <DeleteOutlined className="!w-4 !h-4 text-destructive" />
+            <span className="font-medium text-destructive">Delete</span>
+          </MenuItem>
+        )}
       </ArrowMenu>
     </>
   );
@@ -270,7 +275,7 @@ function getCandidateColumns(
           </div>
         </div>
       ),
-      width: "24%",
+      width: "20%",
     },
     {
       header: "POSITION APPLIED",
@@ -280,7 +285,7 @@ function getCandidateColumns(
           <span className="text-xs text-muted-foreground mt-0.5">{row.department}</span>
         </div>
       ),
-      width: "22%",
+      width: "18%",
     },
     {
       header: "STAGE",
@@ -289,7 +294,7 @@ function getCandidateColumns(
           {row.stage}
         </div>
       ),
-      width: "15%",
+      width: "12%",
     },
     {
       header: "EXP & RATING",
@@ -303,12 +308,12 @@ function getCandidateColumns(
           </span>
         </div>
       ),
-      width: "14%",
+      width: "12%",
     },
     {
       header: "STATUS",
       cell: (row) => {
-        if (row.status === "Offered" || row.status === "Active") {
+        if (row.status === "Offered" || row.status === "Active" || row.status === "Onboarded") {
           return (
             <Chip
               icon={<CheckCircle className="!w-3.5 !h-3.5" />}
@@ -332,18 +337,78 @@ function getCandidateColumns(
             />
           );
         }
+        if (row.status === "Rejected") {
+          return (
+            <Chip
+              icon={<Cancel className="!w-3.5 !h-3.5" />}
+              label="Rejected"
+              size="small"
+              color="error"
+              variant="outlined"
+              className="!h-6 !text-xs !bg-destructive/10 !border-destructive/20 !font-medium"
+            />
+          );
+        }
         return (
           <Chip
-            icon={<Cancel className="!w-3.5 !h-3.5" />}
-            label="Rejected"
+            label={row.status}
             size="small"
-            color="error"
             variant="outlined"
-            className="!h-6 !text-xs !bg-destructive/10 !border-destructive/20 !font-medium"
+            className="!h-6 !text-xs !bg-secondary !text-muted-foreground !border !border-border !font-medium"
           />
         );
       },
-      width: "13%",
+      width: "11%",
+    },
+    {
+      header: "RESUME",
+      cell: (row) => {
+        if (!row.resume_url) return <span className="text-sm text-muted-foreground">-</span>;
+        return (
+          <a
+            href="#"
+            className="flex items-center gap-1 text-xs text-primary hover:underline"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (row.resume_url && row.resume_url.startsWith("data:")) {
+                try {
+                  const arr = row.resume_url.split(",");
+                  const mimeMatch = arr[0].match(/:(.*?);/);
+                  const mime = mimeMatch ? mimeMatch[1] : "application/pdf";
+                  const bstr = atob(arr[1]);
+                  let n = bstr.length;
+                  const u8arr = new Uint8Array(n);
+                  while (n--) {
+                    u8arr[n] = bstr.charCodeAt(n);
+                  }
+                  const blob = new Blob([u8arr], { type: mime });
+                  const url = URL.createObjectURL(blob);
+                  window.open(url, "_blank");
+                } catch (err) {
+                  const win = window.open();
+                  if (win) {
+                    win.document.body.style.margin = "0";
+                    const iframe = win.document.createElement("iframe");
+                    iframe.src = row.resume_url;
+                    iframe.style.border = "0";
+                    iframe.style.width = "100vw";
+                    iframe.style.height = "100vh";
+                    iframe.allowFullscreen = true;
+                    win.document.body.appendChild(iframe);
+                  }
+                }
+              } else if (row.resume_url) {
+                window.open(row.resume_url, "_blank");
+              }
+            }}
+          >
+            <FileText className="w-3.5 h-3.5" />
+            View
+          </a>
+        );
+      },
+      width: "10%",
     },
     {
       header: "APPLIED DATE",
@@ -693,6 +758,7 @@ export default function Candidates() {
                   endDate={endDate}
                   onStartDateChange={setStartDate}
                   onEndDateChange={setEndDate}
+                  disableFuture
                 />
               </div>
 

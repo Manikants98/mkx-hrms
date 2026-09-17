@@ -105,6 +105,7 @@ export const getCandidates = async (
         year: "numeric",
       }),
       avatar: item.avatar || undefined,
+      resume_url: item.resume_url || undefined,
       onboarded_at: item.onboarded_at,
       employee_id: item.employee_id,
       job_posting: item.job_posting,

@@ -8,6 +8,8 @@ export interface JobPosting {
   job_code: string;
   title: string;
   department_id: number | null;
+  role_id?: number | null;
+  shift_id?: number | null;
   department_rel?: { id: number; name: string };
   location: string;
   employment_type: string;

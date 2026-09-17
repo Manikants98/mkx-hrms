@@ -1,10 +1,14 @@
+import { useState } from "react";
 import { Button, Chip } from "@mui/material";
 import { ArrowRight, Briefcase, Clock, MapPin } from "lucide-react";
 import { useGetJobPostings } from "services/job-postings";
+import { ApplyJobModal } from "../components/ApplyJobModal";
 
 export default function Careers() {
   const { data: response, isLoading } = useGetJobPostings();
   const jobs = response?.data?.filter((j) => j.status === "Active") || [];
+  const [selectedJob, setSelectedJob] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
     <div className="flex flex-col min-h-screen pt-10">
@@ -84,6 +88,10 @@ export default function Careers() {
                       <Button
                         variant="contained"
                         endIcon={<ArrowRight size={16} />}
+                        onClick={() => {
+                          setSelectedJob(job);
+                          setIsModalOpen(true);
+                        }}
                         sx={{
                           borderRadius: "9999px",
                           textTransform: "none",
@@ -103,6 +111,12 @@ export default function Careers() {
           )}
         </div>
       </section>
+
+      <ApplyJobModal
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        job={selectedJob}
+      />
     </div>
   );
 }

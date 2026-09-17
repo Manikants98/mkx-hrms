@@ -232,6 +232,7 @@ export const onboardCandidateToEmployee = async (
   return prisma.$transaction(async (tx) => {
     const candidate = await tx.candidate.findUnique({
       where: { id: candidateId },
+      include: { job_posting: true },
     });
 
     if (!candidate) {
@@ -252,7 +253,7 @@ export const onboardCandidateToEmployee = async (
       generatedEmployeeId = `EMP-${String(count + 1).padStart(3, "0")}`;
     }
 
-    let deptId = additionalInfo?.department_id ?? null;
+    let deptId = additionalInfo?.department_id ?? candidate.job_posting?.department_id ?? null;
     if (!deptId && (additionalInfo?.department || candidate.department)) {
       const dbDept = await tx.department.findFirst({
         where: { name: additionalInfo?.department || candidate.department },
@@ -260,7 +261,7 @@ export const onboardCandidateToEmployee = async (
       if (dbDept) deptId = dbDept.id;
     }
 
-    let roleId = additionalInfo?.role_id ?? null;
+    let roleId = additionalInfo?.role_id ?? candidate.job_posting?.role_id ?? null;
     if (!roleId && (additionalInfo?.role || candidate.position)) {
       const dbRole = await tx.role.findFirst({
         where: { name: additionalInfo?.role || candidate.position },
@@ -276,7 +277,7 @@ export const onboardCandidateToEmployee = async (
       if (dbMgr) mgrId = dbMgr.id;
     }
 
-    let shiftId = additionalInfo?.shift_id ?? null;
+    let shiftId = additionalInfo?.shift_id ?? candidate.job_posting?.shift_id ?? null;
     if (!shiftId && additionalInfo?.shift) {
       const dbShift = await tx.workShift.findFirst({
         where: { name: additionalInfo.shift },

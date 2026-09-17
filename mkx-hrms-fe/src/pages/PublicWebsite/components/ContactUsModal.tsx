@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "@mui/material";
+import { useFormik } from "formik";
 import { useContactUs } from "../../../services/contact";
 import { CustomDialog } from "../../../components/shared/CustomDialog";
 import { Input } from "../../../components/shared/Input";
@@ -10,30 +11,25 @@ interface ContactUsModalProps {
 }
 
 export const ContactUsModal: React.FC<ContactUsModalProps> = ({ open, onClose }) => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    number: "",
-    subject: "",
-    message: "",
+  const { mutateAsync, isPending } = useContactUs();
+
+  const formik = useFormik({
+    initialValues: {
+      name: "",
+      email: "",
+      number: "",
+      subject: "",
+      message: "",
+    },
+    onSubmit: (values, { resetForm }) => {
+      mutateAsync(values)
+        .then(() => {
+          resetForm();
+          onClose();
+        })
+        .catch(() => {});
+    },
   });
-
-  const { mutate, isPending } = useContactUs(() => {
-    onClose();
-    setFormData({ name: "", email: "", number: "", subject: "", message: "" });
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  /**
-   * Handle contact form submission
-   */
-  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    mutate(formData);
-  };
 
   return (
     <CustomDialog
@@ -73,22 +69,22 @@ export const ContactUsModal: React.FC<ContactUsModalProps> = ({ open, onClose })
         </>
       }
     >
-      <form id="contact-us-form" onSubmit={handleSubmit} className="flex flex-col gap-3">
-        <Input required label="Name" name="name" value={formData.name} onChange={handleChange} />
+      <form id="contact-us-form" onSubmit={formik.handleSubmit} className="flex flex-col gap-3">
+        <Input required label="Name" name="name" value={formik.values.name} onChange={formik.handleChange} />
         <div className="grid grid-cols-2 gap-2">
           <Input
             required
             label="Email"
             name="email"
             type="email"
-            value={formData.email}
-            onChange={handleChange}
+            value={formik.values.email}
+            onChange={formik.handleChange}
           />
           <Input
             label="Phone Number (Optional)"
             name="number"
-            value={formData.number}
-            onChange={handleChange}
+            value={formik.values.number}
+            onChange={formik.handleChange}
           />
         </div>
 
@@ -96,16 +92,16 @@ export const ContactUsModal: React.FC<ContactUsModalProps> = ({ open, onClose })
           required
           label="Subject"
           name="subject"
-          value={formData.subject}
-          onChange={handleChange}
+          value={formik.values.subject}
+          onChange={formik.handleChange}
         />
         <Input
           required
           label="Message"
           name="message"
           type="textarea"
-          value={formData.message}
-          onChange={handleChange}
+          value={formik.values.message}
+          onChange={formik.handleChange}
         />
       </form>
     </CustomDialog>

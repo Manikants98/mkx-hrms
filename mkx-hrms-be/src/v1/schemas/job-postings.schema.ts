@@ -4,6 +4,8 @@ export const createJobPostingSchema = z.object({
   body: z.object({
     title: z.string().min(1, "Title is required"),
     department_id: z.union([z.string(), z.number()]).optional(),
+    role_id: z.union([z.string(), z.number()]).optional(),
+    shift_id: z.union([z.string(), z.number()]).optional(),
     location: z.string().optional(),
     employment_type: z.string().optional(),
     experience_level: z.string().optional(),
@@ -18,6 +20,8 @@ export const updateJobPostingSchema = z.object({
   body: z.object({
     title: z.string().optional(),
     department_id: z.union([z.string(), z.number()]).optional(),
+    role_id: z.union([z.string(), z.number()]).optional(),
+    shift_id: z.union([z.string(), z.number()]).optional(),
     location: z.string().optional(),
     employment_type: z.string().optional(),
     experience_level: z.string().optional(),

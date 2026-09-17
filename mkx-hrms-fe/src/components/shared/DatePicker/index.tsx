@@ -12,8 +12,10 @@ dayjs.extend(customParseFormat);
  *
  * @template TFormValues - Structure of Formik form values if used within Formik
  */
-export interface CustomDatePickerProps<TFormValues = Record<string, unknown>>
-  extends Omit<DatePickerProps, "value" | "onChange"> {
+export interface CustomDatePickerProps<TFormValues = Record<string, unknown>> extends Omit<
+  DatePickerProps,
+  "value" | "onChange"
+> {
   /** Optional field identifier matching the Formik schema key */
   name?: string;
   /** Optional Formik bag instance for automatic value binding and error handling */
@@ -127,6 +129,16 @@ export function CustomDatePicker<TFormValues = Record<string, unknown>>({
       onChange={handleChange}
       slotProps={{
         ...slotProps,
+        openPickerButton: {
+          size: "small",
+          className: "!p-1.5",
+          ...(slotProps as any)?.openPickerButton,
+        },
+        openPickerIcon: {
+          fontSize: "small",
+          className: "!w-4 !h-4",
+          ...(slotProps as any)?.openPickerIcon,
+        },
         textField: {
           size,
           fullWidth,
@@ -137,7 +149,35 @@ export function CustomDatePicker<TFormValues = Record<string, unknown>>({
           ...slotProps?.textField,
         },
         popper: {
-          sx: { zIndex: 1400 },
+          sx: {
+            zIndex: 1400,
+            "& .MuiPickersCalendarHeader-root .MuiIconButton-root": {
+              padding: "6px",
+              margin: "0 1px",
+            },
+            "& .MuiPickersArrowSwitcher-spacer": {
+              width: "0",
+            },
+            "& .MuiPickersCalendarHeader-root .MuiSvgIcon-root": {
+              width: "18px",
+              height: "18px",
+            },
+            "& .MuiPickerDay-root": {
+              borderRadius: "5px !important",
+              border: "0 !important",
+              outline: "none !important",
+              overflow: "hidden !important",
+            },
+            "& .MuiPickerDay-root .MuiTouchRipple-root, & .MuiPickerDay-root .MuiTouchRipple-ripple, & .MuiPickerDay-root .MuiTouchRipple-child":
+              {
+                borderRadius: "5px !important",
+              },
+            "& .MuiPickerDay-today": {
+              border: "0 !important",
+              borderColor: "transparent !important",
+              backgroundColor: "#ffffff20 !important",
+            },
+          },
           ...slotProps?.popper,
         },
       }}
@@ -168,6 +208,8 @@ export interface CustomDateRangePickerProps {
   size?: "small" | "medium";
   /** Custom wrapper class */
   className?: string;
+  /** Disable future dates */
+  disableFuture?: boolean;
 }
 
 /**
@@ -186,6 +228,7 @@ export function CustomDateRangePicker({
   format = "DD/MM/YYYY",
   size = "small",
   className = "grid grid-cols-2 gap-2",
+  disableFuture,
 }: CustomDateRangePickerProps): React.ReactElement {
   return (
     <div className={className}>
@@ -195,6 +238,7 @@ export function CustomDateRangePicker({
         value={startDate}
         onChange={(val) => onStartDateChange?.(val)}
         size={size}
+        disableFuture={disableFuture}
       />
       <CustomDatePicker
         label={endLabel}
@@ -202,6 +246,7 @@ export function CustomDateRangePicker({
         value={endDate}
         onChange={(val) => onEndDateChange?.(val)}
         size={size}
+        disableFuture={disableFuture}
       />
     </div>
   );

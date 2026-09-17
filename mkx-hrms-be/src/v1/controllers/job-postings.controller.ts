@@ -72,6 +72,8 @@ export const createJobPosting = async (req: Request, res: Response) => {
       description,
       vacancies,
       status,
+      role_id,
+      shift_id,
     } = req.body;
 
     const job_code = await generateJobCode();
@@ -88,6 +90,8 @@ export const createJobPosting = async (req: Request, res: Response) => {
         description,
         vacancies: vacancies ? Number(vacancies) : 1,
         status: status || "Active",
+        role_id: role_id ? Number(role_id) : null,
+        shift_id: shift_id ? Number(shift_id) : null,
       },
     });
 
@@ -114,6 +118,8 @@ export const updateJobPosting = async (req: Request, res: Response) => {
       description,
       vacancies,
       status,
+      role_id,
+      shift_id,
     } = req.body;
 
     const jobPosting = await prisma.jobPosting.update({
@@ -128,6 +134,8 @@ export const updateJobPosting = async (req: Request, res: Response) => {
         description,
         vacancies: vacancies ? Number(vacancies) : undefined,
         status,
+        role_id: role_id ? Number(role_id) : null,
+        shift_id: shift_id ? Number(shift_id) : null,
       },
     });
 

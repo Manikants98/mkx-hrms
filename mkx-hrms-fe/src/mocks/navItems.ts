@@ -74,6 +74,6 @@ export const navItems: NavItem[] = [
     ],
   },
   { title: "Reports", href: "/reports", icon: BarChartOutlined },
-  { title: "Blogs", href: "/blogs", icon: ArticleOutlined },
+  { title: "Blogs", href: "/company-blogs", icon: ArticleOutlined },
   { title: "Settings", href: "/settings", icon: SettingsOutlined },
 ];

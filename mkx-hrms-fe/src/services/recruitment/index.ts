@@ -16,7 +16,7 @@ export interface CandidateRecord {
   stage: "Screening" | "Interviewing" | "Offered" | "Hired";
   experience: string;
   rating: string;
-  status: "Active" | "In Review" | "Offered" | "Rejected";
+  status: "Active" | "In Review" | "Offered" | "Rejected" | "Onboarded";
   applied_date: string;
   avatar?: string | null;
   resume_url?: string | null;

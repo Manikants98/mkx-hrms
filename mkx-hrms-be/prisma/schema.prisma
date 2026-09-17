@@ -17,6 +17,7 @@ model Role {
   users            User[]
   employees        Employee[]
   role_permissions RolePermission[]
+  job_postings     JobPosting[]
 
   @@map("roles")
 }
@@ -425,7 +426,8 @@ model WorkShift {
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
-  employees   Employee[]
+  employees    Employee[]
+  job_postings JobPosting[]
 
   @@map("work_shifts")
 }
@@ -436,6 +438,8 @@ model JobPosting {
   job_code         String     @unique @db.VarChar(50)
   title            String     @db.VarChar(150)
   department_id    Int?
+  role_id          Int?
+  shift_id         Int?
   location         String     @db.VarChar(100)
   employment_type  String     @db.VarChar(50)
   experience_level String     @db.VarChar(50)
@@ -447,6 +451,8 @@ model JobPosting {
   updated_at       DateTime   @updatedAt
 
   department_rel   Department? @relation(fields: [department_id], references: [id], onDelete: SetNull)
+  role_rel         Role?       @relation(fields: [role_id], references: [id], onDelete: SetNull)
+  shift_rel        WorkShift?  @relation(fields: [shift_id], references: [id], onDelete: SetNull)
   candidates       Candidate[]
 
   @@map("job_postings")
