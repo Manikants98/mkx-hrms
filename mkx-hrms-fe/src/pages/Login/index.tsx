@@ -1,13 +1,13 @@
 import {
+  CheckCircle,
   DarkMode,
   LightMode,
   Lock,
   Mail,
+  Shield,
+  TrendingUp,
   Visibility,
   VisibilityOff,
-  Shield,
-  CheckCircle,
-  TrendingUp,
 } from "@mui/icons-material";
 import {
   Button,
@@ -17,31 +17,12 @@ import {
   InputAdornment,
   InputBase,
 } from "@mui/material";
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import toast from "react-hot-toast";
-import { useAuth } from "contexts/AuthContext";
 import { useTheme } from "context/ThemeContext/useTheme";
-import { StaggerContainer, FadeUpItem } from "shared/animations";
-
-/**
- * Demo credential role definition
- */
-interface DemoCredential {
-  label: string;
-  role: string;
-  email: string;
-  color: string;
-}
-
-const DEMO_ACCOUNTS: DemoCredential[] = [
-  {
-    label: "Admin",
-    role: "System Administrator",
-    email: "admin@mkx.monster",
-    color: "bg-[#ad87ed]/10 text-[#ad87ed] border-[#ad87ed]/30 hover:bg-[#ad87ed]/20",
-  },
-];
+import { useAuth } from "contexts/AuthContext";
+import React, { useState } from "react";
+import toast from "react-hot-toast";
+import { useLocation, useNavigate } from "react-router-dom";
+import { FadeUpItem, StaggerContainer } from "shared/animations";
 
 /**
  * Enterprise Login Page component providing secure authentication with JWT
@@ -60,18 +41,15 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
-  };
+  const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
 
   const from = (location.state as { from?: { pathname?: string } })?.from?.pathname || "/dashboard";
 
   /**
    * Handle form submission
    */
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     if (!email.trim() || !password) {
       toast.error("Please enter both email and password");
       return;
@@ -90,15 +68,6 @@ export default function Login() {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  /**
-   * Auto-fill demo account credentials
-   */
-  const handleSelectDemo = (demoEmail: string) => {
-    setEmail(demoEmail);
-    setPassword("admin@123");
-    toast.success(`Demo credentials loaded for ${demoEmail}`);
   };
 
   return (
@@ -197,29 +166,6 @@ export default function Login() {
               <p className="text-xs text-muted-foreground mt-1">
                 Enter your authorized credentials to access your workspace
               </p>
-            </div>
-
-            {/* Quick Demo Credentials Bar */}
-            <div className="mb-6 p-3 rounded-[5px] bg-secondary/50 border border-border">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-semibold text-foreground uppercase tracking-wider">
-                  Quick Demo Accounts
-                </span>
-                <span className="text-[10px] text-muted-foreground">Click to fill</span>
-              </div>
-              <div className="grid grid-cols-1 gap-2">
-                {DEMO_ACCOUNTS.map((demo) => (
-                  <button
-                    key={demo.label}
-                    type="button"
-                    onClick={() => handleSelectDemo(demo.email)}
-                    className={`px-3 py-2 rounded-[5px] border text-xs font-medium text-center transition-all ${demo.color}`}
-                  >
-                    <span className="block font-semibold">{demo.label}</span>
-                    <span className="block text-[10px] opacity-80 truncate">{demo.role} ({demo.email})</span>
-                  </button>
-                ))}
-              </div>
             </div>
 
             {/* Login Form */}

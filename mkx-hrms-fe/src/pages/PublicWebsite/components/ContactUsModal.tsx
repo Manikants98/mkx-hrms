@@ -27,7 +27,10 @@ export const ContactUsModal: React.FC<ContactUsModalProps> = ({ open, onClose })
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  /**
+   * Handle contact form submission
+   */
+  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     mutate(formData);
   };

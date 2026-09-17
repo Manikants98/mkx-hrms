@@ -66,7 +66,7 @@ export default function SetPassword() {
   /**
    * Submit the new password to the backend using the one-time token
    */
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (password.length < 8) {
@@ -259,9 +259,7 @@ export default function SetPassword() {
                   <p
                     className={`text-[11px] mt-1 ${password === confirmPassword ? "text-success" : "text-destructive"}`}
                   >
-                    {password === confirmPassword
-                      ? "Passwords match"
-                      : "Passwords do not match"}
+                    {password === confirmPassword ? "Passwords match" : "Passwords do not match"}
                   </p>
                 )}
               </div>
