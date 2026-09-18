@@ -1,0 +1,5 @@
+name: mkx_hrms_workspace
+
+packages:
+  - "apps/*"
+  - "packages/*"

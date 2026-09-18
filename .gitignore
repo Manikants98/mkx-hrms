@@ -38,3 +38,5 @@ server/dist
 # Package Locks
 client/package-lock.json
 server/package-lock.json
+pubspec.lock
+
