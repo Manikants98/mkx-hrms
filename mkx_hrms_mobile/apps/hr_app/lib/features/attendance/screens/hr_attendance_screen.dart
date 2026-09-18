@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/widgets/app_avatar.dart';
 import 'package:mkx_core/widgets/app_chip.dart';
@@ -10,6 +9,8 @@ import 'package:mkx_core/widgets/m3_loader.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
+import 'package:provider/provider.dart';
+
 import '../models/hr_attendance_model.dart';
 import '../state/hr_attendance_provider.dart';
 
@@ -22,13 +23,6 @@ class HrAttendanceScreen extends StatefulWidget {
 }
 
 class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
-  static const List<String> _statusFilters = [
-    'All',
-    'Present',
-    'Absent',
-    'Late',
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -64,17 +58,6 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
       appBar: MkxAppBar(
         title: 'Attendance',
         subtitle: DateFormat('EEEE, d MMMM yyyy').format(provider.selectedDate),
-        actions: [
-          IconButton(
-            icon: Icon(
-              Icons.calendar_today_rounded,
-              size: 19,
-              color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
-            ),
-            tooltip: 'Select Date',
-            onPressed: () => _pickDate(context, provider),
-          ),
-        ],
       ),
       body: SafeArea(
         top: false,
@@ -91,8 +74,7 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
                 const SizedBox(height: 12),
                 _buildDateFilters(isDark, provider),
                 const SizedBox(height: 10),
-                _buildFilters(isDark, provider),
-                const SizedBox(height: 12),
+
                 if (provider.isLoading && provider.records.isEmpty)
                   const Center(
                     child: Padding(
@@ -131,14 +113,14 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildStatCol('Present', provider.presentCount, AppColors.success),
-          _buildStatCol('Absent', provider.absentCount, AppColors.error),
-          _buildStatCol('Late', provider.lateCount, AppColors.warning),
           _buildStatCol(
             'Total',
             provider.records.length,
             Theme.of(context).colorScheme.primary,
           ),
+          _buildStatCol('Present', provider.presentCount, AppColors.success),
+          _buildStatCol('Late', provider.lateCount, AppColors.warning),
+          _buildStatCol('Absent', provider.absentCount, AppColors.error),
         ],
       ),
     );
@@ -229,27 +211,6 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildFilters(bool isDark, HrAttendanceProvider provider) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: _statusFilters.map((s) {
-          final isSelected =
-              provider.statusFilter == s ||
-              (s == 'All' && provider.statusFilter.isEmpty);
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: AppChip(
-              label: s,
-              isSelected: isSelected,
-              onSelected: (_) => provider.setStatusFilter(s == 'All' ? '' : s),
-            ),
-          );
-        }).toList(),
       ),
     );
   }

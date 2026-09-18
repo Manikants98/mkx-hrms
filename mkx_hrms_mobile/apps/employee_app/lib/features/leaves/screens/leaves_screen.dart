@@ -149,8 +149,8 @@ class _LeavesScreenState extends State<LeavesScreen> {
                                       color: item.status == 'Approved'
                                           ? AppColors.success
                                           : (item.status == 'Pending'
-                                                ? AppColors.warning
-                                                : AppColors.error),
+                                              ? AppColors.warning
+                                              : AppColors.error),
                                       shape: BoxShape.circle,
                                     ),
                                   ),
@@ -269,21 +269,21 @@ class _LeavesScreenState extends State<LeavesScreen> {
     final displayQuotas = quotas.isNotEmpty
         ? quotas
         : (leaves.masterLeaveTypes.isNotEmpty
-              ? leaves.masterLeaveTypes
-                    .map(
-                      (type) => LeaveQuota(
-                        id: type.id,
-                        name: type.name,
-                        code: type.code,
-                        total: type.daysPerYear,
-                        used: 0,
-                        remaining: type.daysPerYear,
-                        color: type.color,
-                        isPaid: type.isPaid,
-                      ),
-                    )
-                    .toList()
-              : <LeaveQuota>[]);
+            ? leaves.masterLeaveTypes
+                .map(
+                  (type) => LeaveQuota(
+                    id: type.id,
+                    name: type.name,
+                    code: type.code,
+                    total: type.daysPerYear,
+                    used: 0,
+                    remaining: type.daysPerYear,
+                    color: type.color,
+                    isPaid: type.isPaid,
+                  ),
+                )
+                .toList()
+            : <LeaveQuota>[]);
 
     if (displayQuotas.isEmpty) {
       return const SizedBox.shrink();
@@ -295,7 +295,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
         scrollDirection: Axis.horizontal,
         clipBehavior: Clip.none,
         itemCount: displayQuotas.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 10),
+        separatorBuilder: (_, __) => const SizedBox(width: 10),
         itemBuilder: (context, index) {
           final item = displayQuotas[index];
           final color = UiHelpers.parseHexColor(
@@ -419,9 +419,8 @@ class _LeavesScreenState extends State<LeavesScreen> {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 3,
-              backgroundColor: isDark
-                  ? AppColors.darkBorder
-                  : AppColors.lightBorder,
+              backgroundColor:
+                  isDark ? AppColors.darkBorder : AppColors.lightBorder,
               valueColor: AlwaysStoppedAnimation<Color>(color),
             ),
           ),

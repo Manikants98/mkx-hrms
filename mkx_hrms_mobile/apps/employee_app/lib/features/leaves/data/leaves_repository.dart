@@ -43,7 +43,7 @@ class LeavesRepository {
     final response = await _client.post(
       ApiEndpoints.applyLeave,
       data: {
-        'employee_id': ?employeeId,
+        'employee_id': employeeId,
         'leave_type': leaveType,
         'start_date': startDate,
         'end_date': endDate,

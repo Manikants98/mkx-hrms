@@ -1,7 +1,60 @@
 name: mkx_hrms_workspace
 description: A new Flutter project.
-publish_to: 'none'
+publish_to: "none"
 version: 1.0.0+1
-
 environment:
-  sdk: '>=3.1.0 <4.0.0'
+  sdk: ">=3.1.0 <4.0.0"
+
+dev_dependencies:
+  melos: ^8.7.0
+
+melos:
+  command:
+    bootstrap:
+      usePubspecOverrides: true
+  packages:
+    - apps/**
+    - packages/**
+  scripts:
+    run:employee:
+      exec:
+        command: flutter run
+        concurrency: 1
+      packageFilters:
+        scope: "employee_app"
+      description: "Run Employee App"
+    run:hr:
+      exec:
+        command: flutter run
+        concurrency: 1
+      packageFilters:
+        scope: "hr_app"
+      description: "Run HR App"
+    run:all:
+      exec:
+        command: flutter run
+        concurrency: 2
+      packageFilters:
+        scope: "*_app"
+      description: "Run all apps"
+    build:apk:employee:
+      exec:
+        command: flutter build apk --release
+        concurrency: 1
+      packageFilters:
+        scope: "employee_app"
+      description: "Build release APK for Employee App"
+    build:apk:hr:
+      exec:
+        command: flutter build apk --release
+        concurrency: 1
+      packageFilters:
+        scope: "hr_app"
+      description: "Build release APK for HR App"
+    build:apk:all:
+      exec:
+        command: flutter build apk --release
+        concurrency: 2
+      packageFilters:
+        scope: "*_app"
+      description: "Build release APK for all apps concurrently"

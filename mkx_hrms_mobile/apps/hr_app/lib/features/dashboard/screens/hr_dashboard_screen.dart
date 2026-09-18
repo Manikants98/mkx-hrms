@@ -27,45 +27,6 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
     });
   }
 
-  Future<void> _handleLogout(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(
-          'Sign Out',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
-        ),
-        content: Text(
-          'Are you sure you want to sign out of the HR portal?',
-          style: GoogleFonts.inter(fontSize: 14),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.inter(fontWeight: FontWeight.w500),
-            ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(
-              'Sign Out',
-              style: GoogleFonts.inter(
-                color: AppColors.error,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && context.mounted) {
-      await context.read<AuthProvider>().logout();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -80,17 +41,6 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
       appBar: MkxAppBar(
         title: 'HR Dashboard',
         subtitle: 'Good ${_greeting()}, ${user?.name ?? "HR Admin"}',
-        actions: [
-          IconButton(
-            icon: Icon(
-              Icons.logout_rounded,
-              size: 20,
-              color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
-            ),
-            tooltip: 'Sign Out',
-            onPressed: () => _handleLogout(context),
-          ),
-        ],
       ),
       body: SafeArea(
         top: false,
