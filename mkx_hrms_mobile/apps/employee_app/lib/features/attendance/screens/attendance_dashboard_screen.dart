@@ -5,6 +5,7 @@ import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/utils/date_utils.dart';
 import 'package:mkx_core/utils/ui_helpers.dart';
 import 'package:mkx_core/widgets/empty_state.dart';
+import 'package:mkx_core/widgets/m3_loader.dart';
 import 'package:mkx_core/widgets/metric_card.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
@@ -249,7 +250,7 @@ class _AttendanceDashboardScreenState extends State<AttendanceDashboardScreen> {
                   const Center(
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 40),
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: AppLoader.contained(size: 48),
                     ),
                   )
                 else if (attendance.history.isEmpty)
@@ -272,7 +273,7 @@ class _AttendanceDashboardScreenState extends State<AttendanceDashboardScreen> {
                               color: isDark
                                   ? AppColors.darkSecondary
                                   : AppColors.lightSecondary,
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(8),
                             ),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,

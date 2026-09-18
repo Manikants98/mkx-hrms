@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/features/auth/state/auth_provider.dart';
+import 'package:mkx_core/widgets/m3_loader.dart';
 import 'package:mkx_core/widgets/metric_card.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
@@ -100,7 +101,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
               ? const Center(
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 40),
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                    child: AppLoader.contained(size: 48),
                   ),
                 )
               : SingleChildScrollView(
@@ -364,7 +365,7 @@ class _ActivityRow extends StatelessWidget {
             height: 36,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: color, size: 18),
           ),

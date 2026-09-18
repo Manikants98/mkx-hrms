@@ -20,8 +20,10 @@ export const getAttendance = async (
     const status = (req.query.status as string) || "All";
     const department = (req.query.department as string) || "All";
     const location = (req.query.location as string) || "All";
-    const startDate = req.query.startDate as string | undefined;
-    const endDate = req.query.endDate as string | undefined;
+    const startDate =
+      (req.query.startDate as string | undefined) || (req.query.date as string | undefined);
+    const endDate =
+      (req.query.endDate as string | undefined) || (req.query.date as string | undefined);
 
     const whereClause: {
       AND?: Array<Record<string, unknown>>;
@@ -86,6 +88,7 @@ export const getAttendance = async (
         employee: {
           include: {
             department_rel: true,
+            role_rel: true,
           },
         },
       },
@@ -95,7 +98,10 @@ export const getAttendance = async (
       id: item.record_id,
       db_id: item.id,
       name: item.employee.name,
+      employee_name: item.employee.name,
+      employee_code: item.employee.employee_id,
       email: item.employee.email,
+      role: item.employee.role_rel?.name || "Staff",
       department: item.employee.department_rel?.name || "General",
       check_in: item.check_in || "--:--",
       check_out: item.check_out || "--:--",
@@ -331,7 +337,8 @@ export const getAttendanceFilters = async (
     const locationsSet = new Set<string>();
 
     dbAttendance.forEach((item) => {
-      if (item.employee?.department_rel?.name) departmentsSet.add(item.employee.department_rel.name);
+      if (item.employee?.department_rel?.name)
+        departmentsSet.add(item.employee.department_rel.name);
       if (item.location) locationsSet.add(item.location);
     });
 

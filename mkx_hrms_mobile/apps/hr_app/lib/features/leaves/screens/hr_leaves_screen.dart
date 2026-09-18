@@ -3,7 +3,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/utils/ui_helpers.dart';
+import 'package:mkx_core/widgets/app_avatar.dart';
+import 'package:mkx_core/widgets/app_chip.dart';
 import 'package:mkx_core/widgets/empty_state.dart';
+import 'package:mkx_core/widgets/m3_loader.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
@@ -19,13 +22,13 @@ class HrLeavesScreen extends StatefulWidget {
 }
 
 class _HrLeavesScreenState extends State<HrLeavesScreen> {
-  static const List<String> _tabs = ['Pending', 'Approved', 'Rejected', 'All'];
+  static const List<String> _tabs = ['All', 'Pending', 'Approved', 'Rejected'];
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<HrLeavesProvider>().loadLeaves(status: 'Pending');
+      context.read<HrLeavesProvider>().loadLeaves();
     });
   }
 
@@ -59,7 +62,7 @@ class _HrLeavesScreenState extends State<HrLeavesScreen> {
                   const Center(
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 40),
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: AppLoader.contained(size: 48),
                     ),
                   )
                 else if (provider.leaves.isEmpty)
@@ -92,32 +95,10 @@ class _HrLeavesScreenState extends State<HrLeavesScreen> {
           final isSelected = provider.statusFilter == tab;
           return Padding(
             padding: const EdgeInsets.only(right: 8),
-            child: FilterChip(
-              label: Text(
-                tab,
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                  color: isSelected
-                      ? (isDark
-                          ? AppColors.darkPrimaryForeground
-                          : AppColors.lightPrimaryForeground)
-                      : (isDark ? AppColors.darkMuted : AppColors.lightMuted),
-                ),
-              ),
-              selected: isSelected,
+            child: AppChip(
+              label: tab,
+              isSelected: isSelected,
               onSelected: (_) => provider.setStatusFilter(tab),
-              backgroundColor: isDark
-                  ? AppColors.darkSecondary
-                  : AppColors.lightSecondary,
-              selectedColor: isDark
-                  ? AppColors.darkPrimary
-                  : AppColors.lightPrimary,
-              showCheckmark: false,
-              side: BorderSide(
-                color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
             ),
           );
         }).toList(),
@@ -135,28 +116,15 @@ class _LeaveTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.read<HrLeavesProvider>();
-    final primaryColor = Theme.of(context).colorScheme.primary;
     final mutedColor = isDark ? AppColors.darkMuted : AppColors.lightMuted;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: primaryColor.withValues(alpha: 0.12),
-              child: Text(
-                leave.employeeName.isNotEmpty
-                    ? leave.employeeName[0].toUpperCase()
-                    : '?',
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: primaryColor,
-                ),
-              ),
-            ),
+            AppAvatar(name: leave.employeeName, size: 36, borderRadius: 8),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
@@ -171,11 +139,14 @@ class _LeaveTile extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '${leave.employeeCode} • ${leave.department ?? "General"}',
-                    style: GoogleFonts.inter(
-                      fontSize: 11.5,
-                      color: mutedColor,
-                    ),
+                    [
+                      if (leave.role != null && leave.role!.isNotEmpty)
+                        leave.role,
+                      if (leave.department != null &&
+                          leave.department!.isNotEmpty)
+                        leave.department,
+                    ].join(' • '),
+                    style: GoogleFonts.inter(fontSize: 11.5, color: mutedColor),
                   ),
                 ],
               ),
@@ -192,11 +163,7 @@ class _LeaveTile extends StatelessWidget {
           ),
           child: Column(
             children: [
-              _buildRow(
-                'Leave Type',
-                leave.leaveType,
-                isDark,
-              ),
+              _buildRow('Leave Type', leave.leaveType, isDark),
               const SizedBox(height: 4),
               _buildRow(
                 'Schedule',
@@ -205,11 +172,7 @@ class _LeaveTile extends StatelessWidget {
               ),
               if (leave.reason.isNotEmpty) ...[
                 const SizedBox(height: 4),
-                _buildRow(
-                  'Reason',
-                  leave.reason,
-                  isDark,
-                ),
+                _buildRow('Reason', leave.reason, isDark),
               ],
             ],
           ),
@@ -251,10 +214,7 @@ class _LeaveTile extends StatelessWidget {
           width: 72,
           child: Text(
             label,
-            style: GoogleFonts.inter(
-              fontSize: 12,
-              color: mutedColor,
-            ),
+            style: GoogleFonts.inter(fontSize: 12, color: mutedColor),
           ),
         ),
         Expanded(

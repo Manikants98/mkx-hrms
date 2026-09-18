@@ -7,12 +7,14 @@ class StatusBadge extends StatelessWidget {
   final String status;
   final double fontSize;
   final EdgeInsetsGeometry padding;
+  final double borderRadius;
 
   const StatusBadge({
     super.key,
     required this.status,
     this.fontSize = 11,
-    this.padding = const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+    this.padding = const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+    this.borderRadius = 5.0,
   });
 
   @override
@@ -57,7 +59,7 @@ class StatusBadge extends StatelessWidget {
       padding: padding,
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(color: borderColor, width: 1),
       ),
       child: Text(

@@ -35,6 +35,11 @@ class HrShellScreen extends StatelessWidget {
       icon: Icons.payments_outlined,
       activeIcon: Icons.payments_rounded,
     ),
+    _HrNavItem(
+      label: 'Profile',
+      icon: Icons.person_outline_rounded,
+      activeIcon: Icons.person_rounded,
+    ),
   ];
 
   @override
@@ -120,6 +125,7 @@ class HrShellScreen extends StatelessWidget {
     if (location.startsWith('/leaves')) return 2;
     if (location.startsWith('/attendance')) return 3;
     if (location.startsWith('/payroll')) return 4;
+    if (location.startsWith('/profile')) return 5;
     return 0;
   }
 
@@ -139,6 +145,9 @@ class HrShellScreen extends StatelessWidget {
         break;
       case 4:
         context.go('/payroll');
+        break;
+      case 5:
+        context.go('/profile');
         break;
     }
   }

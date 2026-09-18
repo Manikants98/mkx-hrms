@@ -3,7 +3,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:mkx_core/constants/app_colors.dart';
+import 'package:mkx_core/widgets/app_avatar.dart';
+import 'package:mkx_core/widgets/app_chip.dart';
 import 'package:mkx_core/widgets/empty_state.dart';
+import 'package:mkx_core/widgets/m3_loader.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
@@ -85,14 +88,16 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildSummaryRow(isDark, provider),
+                const SizedBox(height: 12),
+                _buildDateFilters(isDark, provider),
                 const SizedBox(height: 10),
                 _buildFilters(isDark, provider),
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
                 if (provider.isLoading && provider.records.isEmpty)
                   const Center(
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 40),
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: AppLoader.contained(size: 48),
                     ),
                   )
                 else if (provider.records.isEmpty)
@@ -159,6 +164,75 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
     );
   }
 
+  Widget _buildDateFilters(bool isDark, HrAttendanceProvider provider) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final dates = List.generate(
+      7,
+      (index) => today.subtract(Duration(days: index)),
+    );
+
+    // Check if current selected date is in our quick list
+    final isCustomDate = !dates.any(
+      (d) =>
+          d.year == provider.selectedDate.year &&
+          d.month == provider.selectedDate.month &&
+          d.day == provider.selectedDate.day,
+    );
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          ...dates.map((date) {
+            final isSelected =
+                provider.selectedDate.year == date.year &&
+                provider.selectedDate.month == date.month &&
+                provider.selectedDate.day == date.day;
+
+            String label;
+            final diff = today.difference(date).inDays;
+            if (diff == 0) {
+              label = 'Today';
+            } else if (diff == 1) {
+              label = 'Yesterday';
+            } else {
+              label = DateFormat('MMM d').format(date);
+            }
+
+            return Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: AppChip(
+                label: label,
+                isSelected: isSelected,
+                onSelected: (_) => provider.setDate(date),
+              ),
+            );
+          }),
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: AppChip(
+              label: isCustomDate
+                  ? DateFormat('MMM d').format(provider.selectedDate)
+                  : 'Custom',
+              icon: Icon(
+                Icons.calendar_today_rounded,
+                size: 14,
+                color: isCustomDate
+                    ? (isDark
+                          ? AppColors.darkPrimaryForeground
+                          : AppColors.lightPrimaryForeground)
+                    : (isDark ? AppColors.darkMuted : AppColors.lightMuted),
+              ),
+              isSelected: isCustomDate,
+              onTap: () => _pickDate(context, provider),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildFilters(bool isDark, HrAttendanceProvider provider) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -169,32 +243,10 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
               (s == 'All' && provider.statusFilter.isEmpty);
           return Padding(
             padding: const EdgeInsets.only(right: 8),
-            child: FilterChip(
-              label: Text(
-                s,
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                  color: isSelected
-                      ? (isDark
-                            ? AppColors.darkPrimaryForeground
-                            : AppColors.lightPrimaryForeground)
-                      : (isDark ? AppColors.darkMuted : AppColors.lightMuted),
-                ),
-              ),
-              selected: isSelected,
+            child: AppChip(
+              label: s,
+              isSelected: isSelected,
               onSelected: (_) => provider.setStatusFilter(s == 'All' ? '' : s),
-              backgroundColor: isDark
-                  ? AppColors.darkSecondary
-                  : AppColors.lightSecondary,
-              selectedColor: isDark
-                  ? AppColors.darkPrimary
-                  : AppColors.lightPrimary,
-              showCheckmark: false,
-              side: BorderSide(
-                color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
             ),
           );
         }).toList(),
@@ -217,21 +269,9 @@ class _AttendanceRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: primaryColor.withValues(alpha: 0.12),
-            child: Text(
-              record.employeeName.isNotEmpty
-                  ? record.employeeName[0].toUpperCase()
-                  : '?',
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: primaryColor,
-              ),
-            ),
-          ),
+          AppAvatar(name: record.employeeName, size: 40, borderRadius: 8),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -247,7 +287,13 @@ class _AttendanceRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${record.employeeCode}${record.department != null ? ' • ${record.department}' : ''}',
+                  [
+                    if (record.role != null && record.role!.isNotEmpty)
+                      record.role,
+                    if (record.department != null &&
+                        record.department!.isNotEmpty)
+                      record.department,
+                  ].join(' • '),
                   style: GoogleFonts.inter(fontSize: 12, color: mutedColor),
                 ),
                 const SizedBox(height: 4),

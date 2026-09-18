@@ -9,7 +9,7 @@ class HrLeavesProvider extends ChangeNotifier {
   List<HrLeaveModel> _leaves = [];
   bool _isLoading = false;
   String? _errorMessage;
-  String _statusFilter = 'Pending';
+  String _statusFilter = 'All';
   final Set<int> _processingIds = {};
 
   List<HrLeaveModel> get leaves => _leaves;

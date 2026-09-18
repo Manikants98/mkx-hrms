@@ -3,7 +3,10 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:mkx_core/constants/app_colors.dart';
+import 'package:mkx_core/widgets/app_avatar.dart';
+import 'package:mkx_core/widgets/app_chip.dart';
 import 'package:mkx_core/widgets/empty_state.dart';
+import 'package:mkx_core/widgets/m3_loader.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
@@ -21,23 +24,13 @@ class EmployeesScreen extends StatefulWidget {
 class _EmployeesScreenState extends State<EmployeesScreen> {
   final _searchController = TextEditingController();
 
-  static const List<String> _departments = [
-    'All',
-    'Engineering',
-    'Sales',
-    'HR',
-    'Finance',
-    'Operations',
-    'Marketing',
-  ];
-
-  static const List<String> _statuses = ['All', 'Active', 'Inactive'];
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<EmployeesProvider>().loadEmployees();
+      final provider = context.read<EmployeesProvider>();
+      provider.loadDepartments();
+      provider.loadEmployees();
     });
   }
 
@@ -146,107 +139,48 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: _departments.map((dept) {
-              final isSelected =
-                  provider.departmentFilter == dept ||
-                  (dept == 'All' && provider.departmentFilter.isEmpty);
-              return Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: FilterChip(
-                  label: Text(
-                    dept,
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: isSelected
-                          ? FontWeight.w600
-                          : FontWeight.w400,
-                      color: isSelected
-                          ? (isDark
-                                ? AppColors.darkPrimaryForeground
-                                : AppColors.lightPrimaryForeground)
-                          : (isDark
-                                ? AppColors.darkMuted
-                                : AppColors.lightMuted),
+        if (provider.isLoadingDepartments)
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: List.generate(
+                4,
+                (index) => Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: Container(
+                    width: index == 0 ? 50 : 90.0 + (index * 10),
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? AppColors.darkSecondary
+                          : AppColors.lightSecondary,
+                      borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  selected: isSelected,
-                  onSelected: (_) =>
-                      provider.setDepartmentFilter(dept == 'All' ? '' : dept),
-                  backgroundColor: isDark
-                      ? AppColors.darkSecondary
-                      : AppColors.lightSecondary,
-                  selectedColor: isDark
-                      ? AppColors.darkPrimary
-                      : AppColors.lightPrimary,
-                  showCheckmark: false,
-                  side: BorderSide(
-                    color: isDark
-                        ? AppColors.darkBorder
-                        : AppColors.lightBorder,
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 4,
-                    vertical: 2,
-                  ),
                 ),
-              );
-            }).toList(),
+              ),
+            ),
+          )
+        else
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: provider.departments.map((dept) {
+                final isSelected =
+                    provider.departmentFilter == dept ||
+                    (dept == 'All' && provider.departmentFilter.isEmpty);
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: AppChip(
+                    label: dept,
+                    isSelected: isSelected,
+                    onSelected: (_) =>
+                        provider.setDepartmentFilter(dept == 'All' ? '' : dept),
+                  ),
+                );
+              }).toList(),
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: _statuses.map((status) {
-              final isSelected =
-                  provider.statusFilter == status ||
-                  (status == 'All' && provider.statusFilter.isEmpty);
-              return Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: FilterChip(
-                  label: Text(
-                    status,
-                    style: GoogleFonts.inter(
-                      fontSize: 12.5,
-                      fontWeight: isSelected
-                          ? FontWeight.w600
-                          : FontWeight.w400,
-                      color: isSelected
-                          ? (isDark
-                                ? AppColors.darkPrimaryForeground
-                                : AppColors.lightPrimaryForeground)
-                          : (isDark
-                                ? AppColors.darkMuted
-                                : AppColors.lightMuted),
-                    ),
-                  ),
-                  selected: isSelected,
-                  onSelected: (_) =>
-                      provider.setStatusFilter(status == 'All' ? '' : status),
-                  backgroundColor: isDark
-                      ? AppColors.darkSecondary
-                      : AppColors.lightSecondary,
-                  selectedColor: isDark
-                      ? AppColors.darkPrimary
-                      : AppColors.lightPrimary,
-                  showCheckmark: false,
-                  side: BorderSide(
-                    color: isDark
-                        ? AppColors.darkBorder
-                        : AppColors.lightBorder,
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 4,
-                    vertical: 1,
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ),
       ],
     );
   }
@@ -258,7 +192,7 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
       return const Center(
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 40),
-          child: CircularProgressIndicator(strokeWidth: 2),
+          child: AppLoader.contained(size: 48),
         ),
       );
     }
@@ -303,7 +237,6 @@ class _EmployeeRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final mutedColor = isDark ? AppColors.darkMuted : AppColors.lightMuted;
-    final primaryColor = Theme.of(context).colorScheme.primary;
 
     return InkWell(
       onTap: onTap,
@@ -311,18 +244,13 @@ class _EmployeeRow extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 4),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CircleAvatar(
-              radius: 22,
-              backgroundColor: primaryColor.withValues(alpha: 0.12),
-              child: Text(
-                employee.name.isNotEmpty ? employee.name[0].toUpperCase() : '?',
-                style: GoogleFonts.inter(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: primaryColor,
-                ),
-              ),
+            AppAvatar(
+              name: employee.name,
+              imageUrl: employee.avatar,
+              size: 44,
+              borderRadius: 8,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -364,8 +292,6 @@ class _EmployeeRow extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             StatusBadge(status: employee.status),
-            const SizedBox(width: 4),
-            Icon(Icons.chevron_right_rounded, size: 20, color: mutedColor),
           ],
         ),
       ),

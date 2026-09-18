@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/theme/app_theme.dart';
+import 'package:mkx_core/widgets/m3_loader.dart';
 import 'features/attendance/state/attendance_provider.dart';
 import 'package:mkx_core/features/auth/screens/login_screen.dart';
 import 'package:mkx_core/features/auth/state/auth_provider.dart';
@@ -91,14 +92,7 @@ class _SplashScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
-              ),
-            ),
+            const AppLoader(size: 28),
           ],
         ),
       ),

@@ -14,6 +14,8 @@ class EmployeesProvider extends ChangeNotifier {
   String _statusFilter = '';
   Map<String, dynamic> _selectedEmployee = {};
   bool _isLoadingDetail = false;
+  List<String> _departments = ['All'];
+  bool _isLoadingDepartments = false;
 
   List<EmployeeListModel> get employees => _employees;
   bool get isLoading => _isLoading;
@@ -23,6 +25,8 @@ class EmployeesProvider extends ChangeNotifier {
   String get statusFilter => _statusFilter;
   Map<String, dynamic> get selectedEmployee => _selectedEmployee;
   bool get isLoadingDetail => _isLoadingDetail;
+  List<String> get departments => _departments;
+  bool get isLoadingDepartments => _isLoadingDepartments;
 
   Future<void> loadEmployees() async {
     _isLoading = true;
@@ -39,6 +43,22 @@ class EmployeesProvider extends ChangeNotifier {
       _errorMessage = e.toString().replaceAll('Exception: ', '');
     } finally {
       _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadDepartments() async {
+    if (_isLoadingDepartments) return;
+    _isLoadingDepartments = true;
+    notifyListeners();
+
+    try {
+      final deps = await _repo.getDepartments();
+      _departments = ['All', ...deps];
+    } catch (_) {
+      // Keep existing list on failure
+    } finally {
+      _isLoadingDepartments = false;
       notifyListeners();
     }
   }

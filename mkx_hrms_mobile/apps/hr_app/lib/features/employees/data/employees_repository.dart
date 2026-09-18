@@ -45,4 +45,26 @@ class EmployeesRepository {
     if (response is Map<String, dynamic>) return response;
     return {};
   }
+
+  /// Fetches all departments.
+  Future<List<String>> getDepartments() async {
+    try {
+      final response = await _client.get(ApiEndpoints.departments);
+      final List<dynamic> list = response is List
+          ? response
+          : (response is Map<String, dynamic>
+                ? (response['departments'] ?? response['data'] ?? [])
+                      as List<dynamic>
+                : []);
+      return list
+          .map((e) {
+            if (e is Map) return e['name']?.toString() ?? '';
+            return e.toString();
+          })
+          .where((e) => e.isNotEmpty)
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
 }

@@ -84,6 +84,7 @@ export const getLeaves = async (req: Request, res: Response, next: NextFunction)
         employee: {
           include: {
             department_rel: true,
+            role_rel: true,
           },
         },
         leave_type_rel: true,
@@ -94,7 +95,10 @@ export const getLeaves = async (req: Request, res: Response, next: NextFunction)
       id: item.leave_code,
       db_id: item.id,
       name: item.employee.name,
+      employee_name: item.employee.name,
+      employee_code: item.employee.employee_id,
       email: item.employee.email,
+      role: item.employee.role_rel?.name || "Staff",
       department: item.employee.department_rel?.name || "General",
       leave_type_id: item.leave_type_id,
       leave_type: item.leave_type_rel?.name || "General Leave",
@@ -349,7 +353,11 @@ export const updateLeaveStatus = async (
       );
     }
 
-    if ((status === "Approved" || status === "Rejected") && existing.status !== status && updated.employee?.email) {
+    if (
+      (status === "Approved" || status === "Rejected") &&
+      existing.status !== status &&
+      updated.employee?.email
+    ) {
       sendLeaveStatusUpdateEmail({
         employeeName: updated.employee.name,
         employeeEmail: updated.employee.email,

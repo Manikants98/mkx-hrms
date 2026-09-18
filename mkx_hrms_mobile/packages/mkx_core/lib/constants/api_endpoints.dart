@@ -35,6 +35,9 @@ class ApiEndpoints {
   /// `GET /employees/:id` — single employee profile
   static String employeeDetail(Object id) => '/employees/$id';
 
+  /// `GET /masters/departments` — list of departments
+  static const String departments = '/masters/departments';
+
   // ── HR Admin — Leaves ─────────────────────────────────────────────────────
   /// `GET /leaves` — all employee leave requests (supports ?status= filter)
   static const String allLeaves = '/leaves';

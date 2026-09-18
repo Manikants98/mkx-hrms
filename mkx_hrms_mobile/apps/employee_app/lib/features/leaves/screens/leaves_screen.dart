@@ -5,7 +5,9 @@ import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/utils/date_utils.dart';
 import 'package:mkx_core/utils/ui_helpers.dart';
 import 'package:mkx_core/widgets/custom_button.dart';
+import 'package:mkx_core/widgets/app_chip.dart';
 import 'package:mkx_core/widgets/empty_state.dart';
+import 'package:mkx_core/widgets/m3_loader.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
@@ -86,7 +88,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
                 _buildDynamicQuotaCards(context, leaves),
                 const SizedBox(height: 10),
 
-                // Status Filter Chips
+                /// Status Filter Chips
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
@@ -96,41 +98,10 @@ class _LeavesScreenState extends State<LeavesScreen> {
                       final isSelected = leaves.selectedFilter == filter;
                       return Padding(
                         padding: const EdgeInsets.only(right: 8),
-                        child: FilterChip(
-                          label: Text(
-                            filter,
-                            style: GoogleFonts.inter(
-                              fontSize: 13,
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.w400,
-                              color: isSelected
-                                  ? (isDark
-                                        ? AppColors.darkPrimaryForeground
-                                        : AppColors.lightPrimaryForeground)
-                                  : (isDark
-                                        ? AppColors.darkMuted
-                                        : AppColors.lightMuted),
-                            ),
-                          ),
-                          selected: isSelected,
+                        child: AppChip(
+                          label: filter,
+                          isSelected: isSelected,
                           onSelected: (_) => leaves.setFilter(filter),
-                          backgroundColor: isDark
-                              ? AppColors.darkSecondary
-                              : AppColors.lightSecondary,
-                          selectedColor: isDark
-                              ? AppColors.darkPrimary
-                              : AppColors.lightPrimary,
-                          showCheckmark: false,
-                          side: BorderSide(
-                            color: isDark
-                                ? AppColors.darkBorder
-                                : AppColors.lightBorder,
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 4,
-                            vertical: 2,
-                          ),
                         ),
                       );
                     }).toList(),
@@ -138,12 +109,12 @@ class _LeavesScreenState extends State<LeavesScreen> {
                 ),
                 const SizedBox(height: 10),
 
-                // History List
+                /// History List
                 if (leaves.isLoading && leaves.history.isEmpty)
                   const Center(
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 40),
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: AppLoader.contained(size: 48),
                     ),
                   )
                 else if (leaves.filteredHistory.isEmpty)

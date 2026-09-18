@@ -19,6 +19,7 @@ import 'features/leaves/state/hr_leaves_provider.dart';
 import 'features/navigation/screens/hr_shell_screen.dart';
 import 'features/payroll/screens/hr_payroll_screen.dart';
 import 'features/payroll/state/hr_payroll_provider.dart';
+import 'features/profile/screens/hr_profile_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -89,6 +90,10 @@ class _HrAppState extends State<HrApp> {
               path: '/payroll',
               builder: (context, state) => const HrPayrollScreen(),
             ),
+            GoRoute(
+              path: '/profile',
+              builder: (context, state) => const HrProfileScreen(),
+            ),
           ],
         ),
       ],
@@ -108,13 +113,17 @@ class _HrAppState extends State<HrApp> {
       ],
       child: DynamicColorBuilder(
         builder: (lightDynamic, darkDynamic) {
-          return MaterialApp.router(
-            title: 'MKX HRMS Admin',
-            theme: AppTheme.lightTheme(lightDynamic),
-            darkTheme: AppTheme.darkTheme(darkDynamic),
-            themeMode: ThemeMode.light,
-            routerConfig: _router,
-            debugShowCheckedModeBanner: false,
+          return Consumer<AuthProvider>(
+            builder: (context, auth, _) {
+              return MaterialApp.router(
+                title: 'MKX HRMS Admin',
+                theme: AppTheme.lightTheme(lightDynamic),
+                darkTheme: AppTheme.darkTheme(darkDynamic),
+                themeMode: auth.themeMode,
+                routerConfig: _router,
+                debugShowCheckedModeBanner: false,
+              );
+            },
           );
         },
       ),

@@ -6,6 +6,7 @@ import 'package:mkx_core/constants/api_endpoints.dart';
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/network/dio_client.dart';
 import 'package:mkx_core/utils/ui_helpers.dart';
+import 'package:mkx_core/widgets/app_chip.dart';
 import 'package:mkx_core/widgets/custom_button.dart';
 import 'package:mkx_core/widgets/custom_text_field.dart';
 import '../state/auth_provider.dart';
@@ -108,7 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       decoration: BoxDecoration(
                         color: AppColors.success.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -150,22 +151,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    ChoiceChip(
-                      label: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.cloud_done_rounded, size: 14),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Render Live',
-                            style: GoogleFonts.inter(fontSize: 12),
-                          ),
-                        ],
-                      ),
-                      selected: isLive,
-                      selectedColor: isDark
-                          ? AppColors.darkPrimary.withValues(alpha: 0.2)
-                          : AppColors.lightPrimary.withValues(alpha: 0.1),
+                    AppChip(
+                      label: 'Render Live',
+                      icon: const Icon(Icons.cloud_done_rounded, size: 14),
+                      isSelected: isLive,
                       onSelected: (selected) {
                         if (selected) {
                           setModalState(() {
@@ -174,22 +163,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         }
                       },
                     ),
-                    ChoiceChip(
-                      label: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.phone_android_rounded, size: 14),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Android 10.0.2.2',
-                            style: GoogleFonts.inter(fontSize: 12),
-                          ),
-                        ],
-                      ),
-                      selected: isEmulator,
-                      selectedColor: isDark
-                          ? AppColors.darkPrimary.withValues(alpha: 0.2)
-                          : AppColors.lightPrimary.withValues(alpha: 0.1),
+                    AppChip(
+                      label: 'Android 10.0.2.2',
+                      icon: const Icon(Icons.phone_android_rounded, size: 14),
+                      isSelected: isEmulator,
                       onSelected: (selected) {
                         if (selected) {
                           setModalState(() {
@@ -198,22 +175,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         }
                       },
                     ),
-                    ChoiceChip(
-                      label: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.laptop_chromebook_rounded, size: 14),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Localhost',
-                            style: GoogleFonts.inter(fontSize: 12),
-                          ),
-                        ],
-                      ),
-                      selected: isLocal,
-                      selectedColor: isDark
-                          ? AppColors.darkPrimary.withValues(alpha: 0.2)
-                          : AppColors.lightPrimary.withValues(alpha: 0.1),
+                    AppChip(
+                      label: 'Localhost',
+                      icon: const Icon(Icons.laptop_chromebook_rounded, size: 14),
+                      isSelected: isLocal,
                       onSelected: (selected) {
                         if (selected) {
                           setModalState(() {

@@ -7,44 +7,25 @@ import 'package:mkx_core/utils/date_utils.dart';
 import 'package:mkx_core/utils/ui_helpers.dart';
 import 'package:mkx_core/widgets/app_avatar.dart';
 import 'package:mkx_core/widgets/custom_button.dart';
-import 'package:mkx_core/widgets/m3_loader.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
 import 'package:mkx_core/features/auth/state/auth_provider.dart';
-import '../../leaves/models/leave_model.dart';
-import '../../leaves/state/leaves_provider.dart';
-import '../../leaves/widgets/apply_leave_bottom_sheet.dart';
 
-/// Personal Employee Profile, Settings, Theme Mode, and Logout Screen
-class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+/// HR Admin Profile, Settings, Theme Mode, and Logout Screen
+class HrProfileScreen extends StatefulWidget {
+  const HrProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  State<HrProfileScreen> createState() => _HrProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final leaves = context.read<LeavesProvider>();
-      if (leaves.balances == null) {
-        final auth = context.read<AuthProvider>();
-        leaves.loadLeaves(
-          employeeId: auth.currentUser?.employeeDbId,
-          employeeCode: auth.currentUser?.employeeId,
-        );
-      }
-    });
-  }
-
+class _HrProfileScreenState extends State<HrProfileScreen> {
   Future<void> _handleLogout(BuildContext context) async {
     final confirmed = await UiHelpers.showConfirmDialog(
       context: context,
       title: 'Sign Out',
-      message: 'Are you sure you want to sign out of your employee account?',
+      message: 'Are you sure you want to sign out of your HR Admin account?',
       confirmText: 'Sign Out',
       isDestructive: true,
     );
@@ -62,13 +43,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final auth = context.watch<AuthProvider>();
-    final leaves = context.watch<LeavesProvider>();
     final user = auth.currentUser;
 
     return Scaffold(
+      backgroundColor: isDark
+          ? AppColors.darkBackground
+          : AppColors.lightBackground,
       appBar: MkxAppBar(
         title: 'Profile',
-        subtitle: 'Employment records and account preferences',
+        subtitle: 'HR Admin account preferences',
         actions: [
           IconButton(
             icon: Icon(
@@ -96,7 +79,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     AppAvatar(
-                      name: user?.name ?? 'Employee',
+                      name: user?.name ?? 'HR Admin',
                       size: 64,
                       borderRadius: 8,
                     ),
@@ -109,7 +92,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             children: [
                               Flexible(
                                 child: Text(
-                                  user?.name ?? 'Employee Name',
+                                  user?.name ?? 'Admin Name',
                                   style: GoogleFonts.inter(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w700,
@@ -202,61 +185,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
               const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Leave Balances',
-                    style: GoogleFonts.inter(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.2,
-                    ),
-                  ),
-                  InkWell(
-                    onTap: () {
-                      showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        backgroundColor: Colors.transparent,
-                        builder: (_) => const ApplyLeaveBottomSheet(),
-                      );
-                    },
-                    borderRadius: BorderRadius.circular(6),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.add_circle_outline_rounded,
-                            size: 14,
-                            color: isDark
-                                ? AppColors.darkPrimary
-                                : AppColors.lightPrimary,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Apply Leave',
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: isDark
-                                  ? AppColors.darkPrimary
-                                  : AppColors.lightPrimary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              _buildLeaveBalancesCard(context, leaves, isDark),
-              const SizedBox(height: 10),
+
               Text(
                 'App Preferences',
                 style: GoogleFonts.inter(
@@ -426,170 +355,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  /// Builds the leave quotas and remaining balances card in profile
-  Widget _buildLeaveBalancesCard(
-    BuildContext context,
-    LeavesProvider leaves,
-    bool isDark,
-  ) {
-    final quotas = leaves.balances?.list ?? [];
-
-    if (leaves.isLoading && quotas.isEmpty) {
-      return SectionTile(
-        isDark: isDark,
-        position: TilePosition.only,
-        padding: const EdgeInsets.all(24),
-        child: const Center(child: AppLoader.contained(size: 36)),
-      );
-    }
-
-    final displayQuotas = quotas.isNotEmpty
-        ? quotas
-        : (leaves.masterLeaveTypes.isNotEmpty
-              ? leaves.masterLeaveTypes
-                    .map(
-                      (type) => LeaveQuota(
-                        id: type.id,
-                        name: type.name,
-                        code: type.code,
-                        total: type.daysPerYear,
-                        used: 0,
-                        remaining: type.daysPerYear,
-                        color: type.color,
-                        isPaid: type.isPaid,
-                      ),
-                    )
-                    .toList()
-              : <LeaveQuota>[]);
-
-    if (displayQuotas.isEmpty) {
-      return SectionTile(
-        isDark: isDark,
-        position: TilePosition.only,
-        padding: const EdgeInsets.all(20),
-        child: Center(
-          child: Text(
-            'No leave balances available',
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
-            ),
-          ),
-        ),
-      );
-    }
-
-    return SectionCard(
-      isDark: isDark,
-      children: displayQuotas.asMap().entries.map((entry) {
-        final index = entry.key;
-        final quota = entry.value;
-        final color = UiHelpers.parseHexColor(
-          quota.color,
-          defaultColor: index % 3 == 0
-              ? AppColors.info
-              : (index % 3 == 1 ? AppColors.success : AppColors.warning),
-        );
-        final progress = quota.total > 0
-            ? (quota.used / quota.total).clamp(0.0, 1.0)
-            : 0.0;
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: color,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      quota.name ?? 'Leave',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    if (quota.code != null && quota.code!.isNotEmpty) ...[
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 5,
-                          vertical: 1,
-                        ),
-                        decoration: BoxDecoration(
-                          color: color.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          quota.code!,
-                          style: GoogleFonts.inter(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: color,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-                Text(
-                  '${quota.remaining} days left',
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: color,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(3),
-              child: LinearProgressIndicator(
-                value: progress,
-                minHeight: 4,
-                backgroundColor: isDark
-                    ? AppColors.darkSecondary
-                    : AppColors.lightSecondary,
-                valueColor: AlwaysStoppedAnimation<Color>(color),
-              ),
-            ),
-            const SizedBox(height: 6),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '${quota.used} used of ${quota.total} total',
-                  style: GoogleFonts.inter(
-                    fontSize: 11,
-                    color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
-                  ),
-                ),
-                Text(
-                  quota.isPaid == false ? 'Unpaid' : 'Paid Leave',
-                  style: GoogleFonts.inter(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        );
-      }).toList(),
     );
   }
 }

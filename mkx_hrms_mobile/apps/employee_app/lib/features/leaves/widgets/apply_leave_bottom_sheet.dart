@@ -6,6 +6,7 @@ import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/utils/ui_helpers.dart';
 import 'package:mkx_core/widgets/custom_button.dart';
 import 'package:mkx_core/widgets/custom_text_field.dart';
+import 'package:mkx_core/widgets/m3_loader.dart';
 import 'package:mkx_core/features/auth/state/auth_provider.dart';
 import '../models/leave_model.dart';
 import '../state/leaves_provider.dart';
@@ -236,11 +237,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                       ),
                     ),
                     if (leaves.isLoadingLeaveTypes)
-                      const SizedBox(
-                        width: 12,
-                        height: 12,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
+                      const AppLoader(size: 14),
                   ],
                 ),
                 const SizedBox(height: 6),

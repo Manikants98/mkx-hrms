@@ -4,6 +4,7 @@ class HrAttendanceModel {
   final int employeeId;
   final String employeeName;
   final String employeeCode;
+  final String? role;
   final String? department;
   final String date;
   final String? checkIn;
@@ -16,6 +17,7 @@ class HrAttendanceModel {
     required this.employeeId,
     required this.employeeName,
     required this.employeeCode,
+    this.role,
     this.department,
     required this.date,
     this.checkIn,
@@ -32,17 +34,26 @@ class HrAttendanceModel {
           : int.tryParse(json['id'].toString()) ?? 0,
       employeeId: employee['id'] is int
           ? employee['id'] as int
-          : int.tryParse(employee['id']?.toString() ?? '') ?? 0,
+          : int.tryParse(
+                  employee['id']?.toString() ??
+                      json['employee_id']?.toString() ??
+                      '',
+                ) ??
+                0,
       employeeName:
-          employee['name']?.toString() ??
           json['employee_name']?.toString() ??
+          json['name']?.toString() ??
+          employee['name']?.toString() ??
           'Unknown',
       employeeCode:
-          employee['employee_id']?.toString() ??
           json['employee_code']?.toString() ??
+          json['employee_id']?.toString() ??
+          employee['employee_id']?.toString() ??
+          json['id']?.toString() ??
           '',
+      role: json['role']?.toString() ?? employee['role']?.toString(),
       department:
-          employee['department']?.toString() ?? json['department']?.toString(),
+          json['department']?.toString() ?? employee['department']?.toString(),
       date: json['date']?.toString() ?? '',
       checkIn: json['check_in']?.toString() ?? json['time_in']?.toString(),
       checkOut: json['check_out']?.toString() ?? json['time_out']?.toString(),

@@ -4,7 +4,9 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/utils/ui_helpers.dart';
+import 'package:mkx_core/widgets/app_avatar.dart';
 import 'package:mkx_core/widgets/empty_state.dart';
+import 'package:mkx_core/widgets/m3_loader.dart';
 import 'package:mkx_core/widgets/metric_card.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
@@ -212,7 +214,7 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
                   const Center(
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 40),
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: AppLoader.contained(size: 48),
                     ),
                   )
                 else if (provider.payrolls.isEmpty)
@@ -283,21 +285,9 @@ class _PayrollRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: primaryColor.withValues(alpha: 0.12),
-              child: Text(
-                payroll.employeeName.isNotEmpty
-                    ? payroll.employeeName[0].toUpperCase()
-                    : '?',
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: primaryColor,
-                ),
-              ),
-            ),
+            AppAvatar(name: payroll.employeeName, size: 36, borderRadius: 8),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
@@ -312,7 +302,13 @@ class _PayrollRow extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '${payroll.employeeCode}${payroll.department != null ? ' • ${payroll.department}' : ''}',
+                    [
+                      if (payroll.role != null && payroll.role!.isNotEmpty)
+                        payroll.role,
+                      if (payroll.department != null &&
+                          payroll.department!.isNotEmpty)
+                        payroll.department,
+                    ].join(' • '),
                     style: GoogleFonts.inter(fontSize: 11.5, color: mutedColor),
                   ),
                 ],
@@ -373,11 +369,7 @@ class _PayrollRow extends StatelessWidget {
                 ),
               ),
               icon: provider.isProcessing(payroll.id)
-                  ? const SizedBox(
-                      width: 14,
-                      height: 14,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
+                  ? const AppLoader(size: 14)
                   : const Icon(Icons.play_arrow_rounded, size: 16),
               label: Text(
                 provider.isProcessing(payroll.id)
