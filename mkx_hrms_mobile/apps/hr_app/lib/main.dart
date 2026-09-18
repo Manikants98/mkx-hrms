@@ -72,8 +72,7 @@ class _HrAppState extends State<HrApp> {
                 GoRoute(
                   path: ':id',
                   builder: (context, state) => EmployeeDetailScreen(
-                    employeeId:
-                        int.tryParse(state.pathParameters['id'] ?? '') ?? 0,
+                    employeeId: state.pathParameters['id'] ?? '',
                   ),
                 ),
               ],

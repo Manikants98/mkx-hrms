@@ -33,7 +33,7 @@ class ApiEndpoints {
   static const String employees = '/employees';
 
   /// `GET /employees/:id` — single employee profile
-  static String employeeDetail(int id) => '/employees/$id';
+  static String employeeDetail(Object id) => '/employees/$id';
 
   // ── HR Admin — Leaves ─────────────────────────────────────────────────────
   /// `GET /leaves` — all employee leave requests (supports ?status= filter)
@@ -57,6 +57,6 @@ class ApiEndpoints {
   static String processPayroll(int id) => '/payroll/$id/process';
 
   // ── HR Admin — Dashboard ──────────────────────────────────────────────────
-  /// `GET /hr/dashboard` — aggregate KPI stats for HR overview
-  static const String hrDashboard = '/hr/dashboard';
+  /// `GET /dashboard/overview` — aggregate KPI stats for HR overview
+  static const String hrDashboard = '/dashboard/overview';
 }

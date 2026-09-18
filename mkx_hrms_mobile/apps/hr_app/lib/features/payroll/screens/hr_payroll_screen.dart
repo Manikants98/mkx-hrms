@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/utils/ui_helpers.dart';
-import 'package:mkx_core/widgets/app_text.dart';
 import 'package:mkx_core/widgets/empty_state.dart';
 import 'package:mkx_core/widgets/metric_card.dart';
+import 'package:mkx_core/widgets/mkx_app_bar.dart';
+import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
 import '../models/hr_payroll_model.dart';
 import '../state/hr_payroll_provider.dart';
 
-/// HR Payroll Processing — monthly records with process action and salary details
+/// HR Payroll Processing — matches employee_app structure and UI patterns
 class HrPayrollScreen extends StatefulWidget {
   const HrPayrollScreen({super.key});
 
@@ -42,156 +44,62 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Scaffold(
-      backgroundColor: isDark
-          ? AppColors.darkBackground
-          : AppColors.lightBackground,
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(isDark),
-            _buildSummary(isDark),
-            Expanded(child: _buildList(isDark)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(bool isDark) {
-    return Consumer<HrPayrollProvider>(
-      builder: (context, provider, _) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const AppText.heading('Payroll'),
-                    AppText.muted(
-                      '${_monthNames[provider.selectedMonth - 1]} ${provider.selectedYear}',
-                    ),
-                  ],
-                ),
-              ),
-              TextButton.icon(
-                onPressed: () => _showMonthPicker(context, provider),
-                icon: const Icon(Icons.calendar_month_rounded, size: 16),
-                label: const AppText.label('Month'),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildSummary(bool isDark) {
-    return Consumer<HrPayrollProvider>(
-      builder: (context, provider, _) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-          child: Row(
-            children: [
-              Expanded(
-                child: MetricCard(
-                  title: 'Pending',
-                  value: provider.pendingCount.toString(),
-                  icon: Icons.pending_rounded,
-                  iconColor: AppColors.warning,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: MetricCard(
-                  title: 'Processed',
-                  value: provider.processedCount.toString(),
-                  icon: Icons.check_circle_rounded,
-                  iconColor: AppColors.success,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildList(bool isDark) {
-    return Consumer<HrPayrollProvider>(
-      builder: (context, provider, _) {
-        if (provider.isLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (provider.payrolls.isEmpty) {
-          return EmptyState(
-            icon: Icons.payments_outlined,
-            title: 'No payroll records',
-            description:
-                'No payroll data for ${_monthNames[provider.selectedMonth - 1]} ${provider.selectedYear}',
-          );
-        }
-
-        return RefreshIndicator(
-          onRefresh: () => provider.loadPayroll(),
-          child: ListView.builder(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            itemCount: provider.payrolls.length,
-            itemBuilder: (context, i) {
-              return _PayrollCard(
-                payroll: provider.payrolls[i],
-                isDark: isDark,
-              );
-            },
-          ),
-        );
-      },
-    );
-  }
-
   Future<void> _showMonthPicker(
     BuildContext context,
     HrPayrollProvider provider,
   ) async {
     int selectedMonth = provider.selectedMonth;
     int selectedYear = provider.selectedYear;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    await showModalBottomSheet<void>(
+    await showModalBottomSheet(
       context: context,
+      backgroundColor: isDark ? AppColors.darkCard : AppColors.lightCard,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (ctx) {
-        final isDark = Theme.of(ctx).brightness == Brightness.dark;
         return StatefulBuilder(
-          builder: (context, setModalState) {
-            return Container(
+          builder: (ctx, setModalState) {
+            return Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const AppText.title('Select Month'),
-                  const SizedBox(height: 16),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      IconButton(
-                        onPressed: () => setModalState(() => selectedYear--),
-                        icon: const Icon(Icons.chevron_left_rounded),
+                      Text(
+                        'Select Month & Year',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                      AppText.title('$selectedYear'),
-                      IconButton(
-                        onPressed: () => setModalState(() => selectedYear++),
-                        icon: const Icon(Icons.chevron_right_rounded),
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.chevron_left_rounded),
+                            onPressed: () =>
+                                setModalState(() => selectedYear--),
+                          ),
+                          Text(
+                            '$selectedYear',
+                            style: GoogleFonts.inter(
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.chevron_right_rounded),
+                            onPressed: () =>
+                                setModalState(() => selectedYear++),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -210,22 +118,24 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
                         child: Container(
                           decoration: BoxDecoration(
                             color: selected
-                                ? AppColors.info
+                                ? Theme.of(context).colorScheme.primary
                                 : (isDark
                                       ? AppColors.darkSecondary
                                       : AppColors.lightSecondary),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           alignment: Alignment.center,
-                          child: AppText(
+                          child: Text(
                             _monthNames[i].substring(0, 3),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: selected
-                                ? Colors.white
-                                : (isDark
-                                      ? AppColors.darkForeground
-                                      : AppColors.lightForeground),
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: selected
+                                  ? Colors.white
+                                  : (isDark
+                                        ? AppColors.darkForeground
+                                        : AppColors.lightForeground),
+                            ),
                           ),
                         ),
                       );
@@ -239,7 +149,16 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
                         Navigator.of(ctx).pop();
                         provider.setMonthYear(selectedMonth, selectedYear);
                       },
-                      child: const Text('Apply'),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: Text(
+                        'Apply',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                      ),
                     ),
                   ),
                 ],
@@ -250,126 +169,229 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
       },
     );
   }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final provider = context.watch<HrPayrollProvider>();
+
+    return Scaffold(
+      backgroundColor: isDark
+          ? AppColors.darkBackground
+          : AppColors.lightBackground,
+      appBar: MkxAppBar(
+        title: 'Payroll',
+        subtitle:
+            '${_monthNames[provider.selectedMonth - 1]} ${provider.selectedYear}',
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.calendar_month_rounded,
+              size: 19,
+              color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
+            ),
+            tooltip: 'Select Month',
+            onPressed: () => _showMonthPicker(context, provider),
+          ),
+        ],
+      ),
+      body: SafeArea(
+        top: false,
+        child: RefreshIndicator(
+          onRefresh: () => provider.loadPayroll(),
+          color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSummary(isDark, provider),
+                const SizedBox(height: 10),
+                if (provider.isLoading && provider.payrolls.isEmpty)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 40),
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                else if (provider.payrolls.isEmpty)
+                  EmptyState(
+                    icon: Icons.payments_outlined,
+                    title: 'No payroll records',
+                    description:
+                        'No payroll data found for ${_monthNames[provider.selectedMonth - 1]} ${provider.selectedYear}',
+                  )
+                else
+                  SectionCard(
+                    isDark: isDark,
+                    children: provider.payrolls.map((payroll) {
+                      return _PayrollRow(payroll: payroll, isDark: isDark);
+                    }).toList(),
+                  ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSummary(bool isDark, HrPayrollProvider provider) {
+    return Row(
+      children: [
+        Expanded(
+          child: MetricCard(
+            title: 'Pending',
+            value: provider.pendingCount.toString(),
+            subtext: 'Requires processing',
+            icon: Icons.pending_actions_rounded,
+            iconColor: AppColors.warning,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: MetricCard(
+            title: 'Processed',
+            value: provider.processedCount.toString(),
+            subtext: 'Disbursed / locked',
+            icon: Icons.check_circle_outline_rounded,
+            iconColor: AppColors.success,
+          ),
+        ),
+      ],
+    );
+  }
 }
 
-class _PayrollCard extends StatelessWidget {
+class _PayrollRow extends StatelessWidget {
   final HrPayrollModel payroll;
   final bool isDark;
 
-  const _PayrollCard({required this.payroll, required this.isDark});
+  const _PayrollRow({required this.payroll, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
     final provider = context.read<HrPayrollProvider>();
     final currencyFormat = NumberFormat.currency(symbol: '₹', decimalDigits: 0);
     final isPending = payroll.status.toLowerCase() == 'pending';
+    final primaryColor = Theme.of(context).colorScheme.primary;
+    final mutedColor = isDark ? AppColors.darkMuted : AppColors.lightMuted;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 18,
-                  backgroundColor: AppColors.info.withValues(alpha: 0.1),
-                  child: AppText(
-                    payroll.employeeName.isNotEmpty
-                        ? payroll.employeeName[0].toUpperCase()
-                        : '?',
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.info,
-                  ),
+            CircleAvatar(
+              radius: 18,
+              backgroundColor: primaryColor.withValues(alpha: 0.12),
+              child: Text(
+                payroll.employeeName.isNotEmpty
+                    ? payroll.employeeName[0].toUpperCase()
+                    : '?',
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: primaryColor,
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AppText.bodyBold(payroll.employeeName),
-                      AppText.caption(
-                        '${payroll.employeeCode}${payroll.department != null ? ' • ${payroll.department}' : ''}',
-                      ),
-                    ],
-                  ),
-                ),
-                StatusBadge(status: payroll.status),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? AppColors.darkSecondary
-                    : AppColors.lightSecondary,
-                borderRadius: BorderRadius.circular(8),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _SalaryItem(
-                    label: 'Basic',
-                    value: currencyFormat.format(payroll.basicSalary),
+                  Text(
+                    payroll.employeeName,
+                    style: GoogleFonts.inter(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.2,
+                    ),
                   ),
-                  _SalaryItem(
-                    label: 'Allowances',
-                    value: currencyFormat.format(payroll.allowances),
-                    valueColor: AppColors.success,
-                  ),
-                  _SalaryItem(
-                    label: 'Deductions',
-                    value: currencyFormat.format(payroll.deductions),
-                    valueColor: AppColors.error,
-                  ),
-                  _SalaryItem(
-                    label: 'Net Pay',
-                    value: currencyFormat.format(payroll.netSalary),
-                    valueColor: AppColors.info,
-                    isBold: true,
+                  Text(
+                    '${payroll.employeeCode}${payroll.department != null ? ' • ${payroll.department}' : ''}',
+                    style: GoogleFonts.inter(fontSize: 11.5, color: mutedColor),
                   ),
                 ],
               ),
             ),
-            if (isPending) ...[
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: provider.isProcessing(payroll.id)
-                      ? null
-                      : () => _handleProcess(context, provider, payroll),
-                  icon: provider.isProcessing(payroll.id)
-                      ? const SizedBox(
-                          width: 14,
-                          height: 14,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.play_arrow_rounded, size: 16),
-                  label: AppText(
-                    provider.isProcessing(payroll.id)
-                        ? 'Processing...'
-                        : 'Process Payroll',
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
+            StatusBadge(status: payroll.status),
           ],
         ),
-      ),
+        const SizedBox(height: 10),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.darkSecondary : AppColors.lightSecondary,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _SalaryCol(
+                label: 'Basic',
+                value: currencyFormat.format(payroll.basicSalary),
+                isDark: isDark,
+              ),
+              _SalaryCol(
+                label: 'Allowances',
+                value: currencyFormat.format(payroll.allowances),
+                color: AppColors.success,
+                isDark: isDark,
+              ),
+              _SalaryCol(
+                label: 'Deductions',
+                value: currencyFormat.format(payroll.deductions),
+                color: AppColors.error,
+                isDark: isDark,
+              ),
+              _SalaryCol(
+                label: 'Net Pay',
+                value: currencyFormat.format(payroll.netSalary),
+                color: primaryColor,
+                isBold: true,
+                isDark: isDark,
+              ),
+            ],
+          ),
+        ),
+        if (isPending) ...[
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: provider.isProcessing(payroll.id)
+                  ? null
+                  : () => _handleProcess(context, provider, payroll),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              icon: provider.isProcessing(payroll.id)
+                  ? const SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.play_arrow_rounded, size: 16),
+              label: Text(
+                provider.isProcessing(payroll.id)
+                    ? 'Processing...'
+                    : 'Process Payroll',
+                style: GoogleFonts.inter(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 
@@ -401,30 +423,40 @@ class _PayrollCard extends StatelessWidget {
   }
 }
 
-class _SalaryItem extends StatelessWidget {
+class _SalaryCol extends StatelessWidget {
   final String label;
   final String value;
-  final Color? valueColor;
+  final Color? color;
   final bool isBold;
+  final bool isDark;
 
-  const _SalaryItem({
+  const _SalaryCol({
     required this.label,
     required this.value,
-    this.valueColor,
+    this.color,
     this.isBold = false,
+    required this.isDark,
   });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        AppText.caption(label),
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 11,
+            color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
+          ),
+        ),
         const SizedBox(height: 2),
-        AppText(
+        Text(
           value,
-          fontSize: 12,
-          fontWeight: isBold ? FontWeight.w700 : FontWeight.w500,
-          color: valueColor,
+          style: GoogleFonts.inter(
+            fontSize: 12.5,
+            fontWeight: isBold ? FontWeight.w800 : FontWeight.w600,
+            color: color,
+          ),
         ),
       ],
     );

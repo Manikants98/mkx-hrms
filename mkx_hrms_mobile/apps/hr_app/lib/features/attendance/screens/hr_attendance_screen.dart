@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:mkx_core/constants/app_colors.dart';
-import 'package:mkx_core/widgets/app_text.dart';
 import 'package:mkx_core/widgets/empty_state.dart';
+import 'package:mkx_core/widgets/mkx_app_bar.dart';
+import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
 import '../models/hr_attendance_model.dart';
 import '../state/hr_attendance_provider.dart';
 
-/// HR Attendance Management — date-filtered all-employee attendance table
+/// HR Attendance Management — matches employee_app structure and UI patterns
 class HrAttendanceScreen extends StatefulWidget {
   const HrAttendanceScreen({super.key});
 
@@ -32,157 +34,6 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Scaffold(
-      backgroundColor: isDark
-          ? AppColors.darkBackground
-          : AppColors.lightBackground,
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(isDark),
-            _buildSummaryRow(isDark),
-            _buildFilters(isDark),
-            Expanded(child: _buildList(isDark)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(bool isDark) {
-    return Consumer<HrAttendanceProvider>(
-      builder: (context, provider, _) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const AppText.heading('Attendance'),
-                    AppText.muted(
-                      DateFormat(
-                        'EEEE, d MMMM yyyy',
-                      ).format(provider.selectedDate),
-                    ),
-                  ],
-                ),
-              ),
-              TextButton.icon(
-                onPressed: () => _pickDate(context, provider),
-                icon: const Icon(Icons.calendar_today_rounded, size: 16),
-                label: const AppText.label('Change'),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildSummaryRow(bool isDark) {
-    return Consumer<HrAttendanceProvider>(
-      builder: (context, provider, _) {
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-          child: Row(
-            children: [
-              _SummaryChip(
-                label: 'Present',
-                count: provider.presentCount,
-                color: AppColors.success,
-              ),
-              const SizedBox(width: 8),
-              _SummaryChip(
-                label: 'Absent',
-                count: provider.absentCount,
-                color: AppColors.error,
-              ),
-              const SizedBox(width: 8),
-              _SummaryChip(
-                label: 'Late',
-                count: provider.lateCount,
-                color: AppColors.warning,
-              ),
-              const SizedBox(width: 8),
-              _SummaryChip(
-                label: 'Total',
-                count: provider.records.length,
-                color: AppColors.info,
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildFilters(bool isDark) {
-    return Consumer<HrAttendanceProvider>(
-      builder: (context, provider, _) {
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-          child: Row(
-            children: _statusFilters.map((s) {
-              final selected =
-                  provider.statusFilter == s ||
-                  (s == 'All' && provider.statusFilter.isEmpty);
-              return Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: _StatusFilterChip(
-                  label: s,
-                  selected: selected,
-                  isDark: isDark,
-                  onTap: () => provider.setStatusFilter(s == 'All' ? '' : s),
-                ),
-              );
-            }).toList(),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildList(bool isDark) {
-    return Consumer<HrAttendanceProvider>(
-      builder: (context, provider, _) {
-        if (provider.isLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (provider.records.isEmpty) {
-          return const EmptyState(
-            icon: Icons.today_outlined,
-            title: 'No records found',
-            description: 'No attendance data for this date',
-          );
-        }
-
-        return RefreshIndicator(
-          onRefresh: () => provider.loadAttendance(),
-          child: ListView.builder(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            itemCount: provider.records.length,
-            itemBuilder: (context, i) {
-              return _AttendanceTile(
-                record: provider.records[i],
-                isDark: isDark,
-              );
-            },
-          ),
-        );
-      },
-    );
-  }
-
   Future<void> _pickDate(
     BuildContext context,
     HrAttendanceProvider provider,
@@ -197,38 +48,188 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
       provider.setDate(picked);
     }
   }
-}
-
-class _AttendanceTile extends StatelessWidget {
-  final HrAttendanceModel record;
-  final bool isDark;
-
-  const _AttendanceTile({required this.record, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final provider = context.watch<HrAttendanceProvider>();
+
+    return Scaffold(
+      backgroundColor: isDark
+          ? AppColors.darkBackground
+          : AppColors.lightBackground,
+      appBar: MkxAppBar(
+        title: 'Attendance',
+        subtitle: DateFormat('EEEE, d MMMM yyyy').format(provider.selectedDate),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.calendar_today_rounded,
+              size: 19,
+              color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
+            ),
+            tooltip: 'Select Date',
+            onPressed: () => _pickDate(context, provider),
+          ),
+        ],
+      ),
+      body: SafeArea(
+        top: false,
+        child: RefreshIndicator(
+          onRefresh: () => provider.loadAttendance(),
+          color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSummaryRow(isDark, provider),
+                const SizedBox(height: 10),
+                _buildFilters(isDark, provider),
+                const SizedBox(height: 10),
+                if (provider.isLoading && provider.records.isEmpty)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 40),
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                else if (provider.records.isEmpty)
+                  const EmptyState(
+                    icon: Icons.today_outlined,
+                    title: 'No attendance records',
+                    description:
+                        'No workforce punch data recorded for this date',
+                  )
+                else
+                  SectionCard(
+                    isDark: isDark,
+                    children: provider.records.map((rec) {
+                      return _AttendanceRow(record: rec, isDark: isDark);
+                    }).toList(),
+                  ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildSummaryRow(bool isDark, HrAttendanceProvider provider) {
+    return SectionTile(
+      isDark: isDark,
+      position: TilePosition.only,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _buildStatCol('Present', provider.presentCount, AppColors.success),
+          _buildStatCol('Absent', provider.absentCount, AppColors.error),
+          _buildStatCol('Late', provider.lateCount, AppColors.warning),
+          _buildStatCol(
+            'Total',
+            provider.records.length,
+            Theme.of(context).colorScheme.primary,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatCol(String label, int count, Color color) {
+    return Column(
+      children: [
+        Text(
+          '$count',
+          style: GoogleFonts.inter(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: color,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.w500),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFilters(bool isDark, HrAttendanceProvider provider) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: _statusFilters.map((s) {
+          final isSelected =
+              provider.statusFilter == s ||
+              (s == 'All' && provider.statusFilter.isEmpty);
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: FilterChip(
+              label: Text(
+                s,
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                  color: isSelected
+                      ? (isDark
+                            ? AppColors.darkPrimaryForeground
+                            : AppColors.lightPrimaryForeground)
+                      : (isDark ? AppColors.darkMuted : AppColors.lightMuted),
+                ),
+              ),
+              selected: isSelected,
+              onSelected: (_) => provider.setStatusFilter(s == 'All' ? '' : s),
+              backgroundColor: isDark
+                  ? AppColors.darkSecondary
+                  : AppColors.lightSecondary,
+              selectedColor: isDark
+                  ? AppColors.darkPrimary
+                  : AppColors.lightPrimary,
+              showCheckmark: false,
+              side: BorderSide(
+                color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _AttendanceRow extends StatelessWidget {
+  final HrAttendanceModel record;
+  final bool isDark;
+
+  const _AttendanceRow({required this.record, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final primaryColor = Theme.of(context).colorScheme.primary;
+    final mutedColor = isDark ? AppColors.darkMuted : AppColors.lightMuted;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
           CircleAvatar(
             radius: 20,
-            backgroundColor: AppColors.info.withValues(alpha: 0.1),
-            child: AppText(
+            backgroundColor: primaryColor.withValues(alpha: 0.12),
+            child: Text(
               record.employeeName.isNotEmpty
                   ? record.employeeName[0].toUpperCase()
                   : '?',
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: AppColors.info,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: primaryColor,
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -236,137 +237,58 @@ class _AttendanceTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppText.bodyBold(record.employeeName),
+                Text(
+                  record.employeeName,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.2,
+                  ),
+                ),
                 const SizedBox(height: 2),
-                AppText.caption(
+                Text(
                   '${record.employeeCode}${record.department != null ? ' • ${record.department}' : ''}',
+                  style: GoogleFonts.inter(fontSize: 12, color: mutedColor),
                 ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    _TimeChip(
-                      label: 'In',
-                      time: record.checkIn ?? '—',
-                      isDark: isDark,
+                    Text(
+                      'In: ${record.checkIn ?? "—"}',
+                      style: GoogleFonts.inter(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w500,
+                        color: mutedColor,
+                      ),
                     ),
-                    const SizedBox(width: 8),
-                    _TimeChip(
-                      label: 'Out',
-                      time: record.checkOut ?? '—',
-                      isDark: isDark,
+                    const SizedBox(width: 10),
+                    Text(
+                      'Out: ${record.checkOut ?? "—"}',
+                      style: GoogleFonts.inter(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w500,
+                        color: mutedColor,
+                      ),
                     ),
                     if (record.duration != null) ...[
                       const SizedBox(width: 8),
-                      AppText.caption(record.duration!),
+                      Text(
+                        '(${record.duration})',
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: primaryColor,
+                        ),
+                      ),
                     ],
                   ],
                 ),
               ],
             ),
           ),
+          const SizedBox(width: 8),
           StatusBadge(status: record.status),
         ],
-      ),
-    );
-  }
-}
-
-class _TimeChip extends StatelessWidget {
-  final String label;
-  final String time;
-  final bool isDark;
-
-  const _TimeChip({
-    required this.label,
-    required this.time,
-    required this.isDark,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSecondary : AppColors.lightSecondary,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: AppText(
-        '$label: $time',
-        fontSize: 10,
-        fontWeight: FontWeight.w500,
-        color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
-      ),
-    );
-  }
-}
-
-class _SummaryChip extends StatelessWidget {
-  final String label;
-  final int count;
-  final Color color;
-
-  const _SummaryChip({
-    required this.label,
-    required this.count,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.25)),
-      ),
-      child: AppText(
-        '$label: $count',
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        color: color,
-      ),
-    );
-  }
-}
-
-class _StatusFilterChip extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final bool isDark;
-  final VoidCallback onTap;
-
-  const _StatusFilterChip({
-    required this.label,
-    required this.selected,
-    required this.isDark,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: selected
-              ? AppColors.info
-              : (isDark ? AppColors.darkCard : AppColors.lightCard),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: selected
-                ? AppColors.info
-                : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-          ),
-        ),
-        child: AppText.label(
-          label,
-          color: selected
-              ? Colors.white
-              : (isDark ? AppColors.darkMuted : AppColors.lightMuted),
-        ),
       ),
     );
   }

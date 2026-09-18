@@ -61,7 +61,7 @@ class EmployeesProvider extends ChangeNotifier {
     loadEmployees();
   }
 
-  Future<void> loadEmployeeDetail(int id) async {
+  Future<void> loadEmployeeDetail(Object id) async {
     _isLoadingDetail = true;
     _selectedEmployee = {};
     notifyListeners();

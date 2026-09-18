@@ -40,7 +40,7 @@ class EmployeesRepository {
   }
 
   /// Fetches full profile details for a single employee.
-  Future<Map<String, dynamic>> getEmployeeDetail(int id) async {
+  Future<Map<String, dynamic>> getEmployeeDetail(Object id) async {
     final response = await _client.get(ApiEndpoints.employeeDetail(id));
     if (response is Map<String, dynamic>) return response;
     return {};

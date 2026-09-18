@@ -26,6 +26,7 @@ router.use("/payroll", payrollRoutes);
 router.use("/recruitment", recruitmentRoutes);
 router.use("/reports", reportsRoutes);
 router.use("/dashboard", dashboardRoutes);
+router.use("/hr/dashboard", dashboardRoutes);
 router.use("/settings", settingsRoutes);
 router.use("/blogs", blogsRoutes);
 router.use("/masters", mastersRoutes);

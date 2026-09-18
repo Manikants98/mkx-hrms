@@ -28,10 +28,16 @@ class EmployeeListModel {
 
   factory EmployeeListModel.fromJson(Map<String, dynamic> json) =>
       EmployeeListModel(
-        id: json['id'] is int
-            ? json['id'] as int
-            : int.tryParse(json['id'].toString()) ?? 0,
-        employeeCode: json['employee_id']?.toString() ?? '',
+        id: json['db_id'] is int
+            ? json['db_id'] as int
+            : int.tryParse(json['db_id']?.toString() ?? '') ??
+                  (json['id'] is int
+                      ? json['id'] as int
+                      : int.tryParse(json['id']?.toString() ?? '') ?? 0),
+        employeeCode:
+            (json['id'] != null && json['id'].toString().startsWith('EMP'))
+            ? json['id'].toString()
+            : json['employee_id']?.toString() ?? json['id']?.toString() ?? '',
         name:
             json['name']?.toString() ??
             '${json['first_name'] ?? ''} ${json['last_name'] ?? ''}'.trim(),
