@@ -8,9 +8,14 @@ class HrLeavesRepository {
 
   /// Fetches all employee leave requests, optionally filtered by [status].
   Future<List<HrLeaveModel>> getLeaves({String? status}) async {
+    final String? normalizedStatus = (status != null &&
+            status.isNotEmpty &&
+            status.toLowerCase() != 'all')
+        ? '${status[0].toUpperCase()}${status.substring(1).toLowerCase()}'
+        : null;
+
     final params = <String, dynamic>{
-      if (status != null && status.isNotEmpty && status != 'All')
-        'status': status.toLowerCase(),
+      if (normalizedStatus != null) 'status': normalizedStatus,
     };
 
     final response = await _client.get(

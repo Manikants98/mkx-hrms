@@ -23,7 +23,7 @@ export const getLeaves = async (req: Request, res: Response, next: NextFunction)
 
     const whereClause: {
       AND?: Array<Record<string, unknown>>;
-      status?: string;
+      status?: string | { equals?: string; mode?: "insensitive" };
       leave_type_rel?: { name?: { equals?: string; mode?: "insensitive" } };
       start_date?: { gte?: Date };
       end_date?: { lte?: Date };
@@ -51,8 +51,8 @@ export const getLeaves = async (req: Request, res: Response, next: NextFunction)
       });
     }
 
-    if (status !== "All") {
-      whereClause.status = status;
+    if (status && status.toLowerCase() !== "all") {
+      whereClause.status = { equals: status, mode: "insensitive" };
     }
     if (leaveType !== "All") {
       whereClause.leave_type_rel = {

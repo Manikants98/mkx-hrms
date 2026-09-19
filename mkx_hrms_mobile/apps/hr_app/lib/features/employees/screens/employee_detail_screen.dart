@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
 import 'package:provider/provider.dart';
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/widgets/app_avatar.dart';
-import 'package:mkx_core/widgets/m3_loader.dart';
+import '../../../widgets/m3_expressive_loader.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
@@ -54,7 +55,7 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
                 ? const Center(
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 40),
-                      child: AppLoader.contained(size: 48),
+                      child: M3ExpressiveLoader.contained(size: 52),
                     ),
                   )
                 : data.isEmpty
@@ -194,10 +195,11 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
     final status = data['status']?.toString() ?? 'Active';
     final mutedColor = isDark ? AppColors.darkMuted : AppColors.lightMuted;
 
-    return SectionTile(
-      isDark: isDark,
-      position: TilePosition.only,
+    return m3e.M3ECard(
+      variant: m3e.M3ECardVariant.filled,
+      borderRadius: BorderRadius.circular(16),
       padding: const EdgeInsets.all(20),
+      color: isDark ? AppColors.darkCard : AppColors.lightCard,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
