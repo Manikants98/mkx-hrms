@@ -30,11 +30,11 @@ class HrShellScreen extends StatelessWidget {
       icon: Icons.today_outlined,
       activeIcon: Icons.today_rounded,
     ),
-    _HrNavItem(
-      label: 'Payroll',
-      icon: Icons.payments_outlined,
-      activeIcon: Icons.payments_rounded,
-    ),
+    // _HrNavItem(
+    //   label: 'Payroll',
+    //   icon: Icons.payments_outlined,
+    //   activeIcon: Icons.payments_rounded,
+    // ),
     _HrNavItem(
       label: 'Profile',
       icon: Icons.person_outline_rounded,
@@ -57,9 +57,8 @@ class HrShellScreen extends StatelessWidget {
     final currentIndex = _indexForLocation(location);
 
     return Scaffold(
-      backgroundColor: isDark
-          ? AppColors.darkBackground
-          : AppColors.lightBackground,
+      backgroundColor:
+          isDark ? AppColors.darkBackground : AppColors.lightBackground,
       body: child,
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -124,8 +123,8 @@ class HrShellScreen extends StatelessWidget {
     if (location.startsWith('/employees')) return 1;
     if (location.startsWith('/leaves')) return 2;
     if (location.startsWith('/attendance')) return 3;
-    if (location.startsWith('/payroll')) return 4;
-    if (location.startsWith('/profile')) return 5;
+    // if (location.startsWith('/payroll')) return 4;
+    if (location.startsWith('/profile')) return 4;
     return 0;
   }
 
@@ -143,10 +142,10 @@ class HrShellScreen extends StatelessWidget {
       case 3:
         context.go('/attendance');
         break;
+      // case 4:
+      //   context.go('/payroll');
+      //   break;
       case 4:
-        context.go('/payroll');
-        break;
-      case 5:
         context.go('/profile');
         break;
     }
