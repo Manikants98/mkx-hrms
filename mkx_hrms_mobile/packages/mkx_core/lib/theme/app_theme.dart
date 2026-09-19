@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_colors.dart';
 
-/// Design theme definitions for Light and Dark modes.
+/// Design theme definitions for Light and Dark modes using system fonts.
 ///
 /// Both static factories accept an optional [dynamicColorScheme] from
 /// Material You / [dynamic_color] package. When provided the accent
@@ -40,7 +39,6 @@ class AppTheme {
     );
 
     return base.copyWith(
-      textTheme: GoogleFonts.interTextTheme(base.textTheme),
       cardTheme: CardThemeData(
         color: AppColors.lightCard,
         elevation: 0,
@@ -54,8 +52,8 @@ class AppTheme {
         filled: true,
         fillColor: AppColors.lightCard,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        hintStyle: GoogleFonts.inter(color: AppColors.lightMuted, fontSize: 14),
-        labelStyle: GoogleFonts.inter(color: AppColors.lightForeground, fontSize: 14),
+        hintStyle: const TextStyle(color: AppColors.lightMuted, fontSize: 14),
+        labelStyle: const TextStyle(color: AppColors.lightForeground, fontSize: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,
@@ -85,16 +83,16 @@ class AppTheme {
           elevation: 0,
           minimumSize: const Size.fromHeight(48),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          textStyle: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 15),
+          textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
         ),
       ),
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.lightCard,
         foregroundColor: AppColors.lightForeground,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        titleTextStyle: GoogleFonts.inter(
+        titleTextStyle: TextStyle(
           color: AppColors.lightForeground,
           fontSize: 18,
           fontWeight: FontWeight.w700,
@@ -110,7 +108,7 @@ class AppTheme {
         backgroundColor: AppColors.lightCard,
         indicatorColor: colorScheme.primary.withAlpha(20),
         labelTextStyle: WidgetStateProperty.all(
-          GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w500),
+          const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
         ),
       ),
     );
@@ -144,7 +142,6 @@ class AppTheme {
     );
 
     return base.copyWith(
-      textTheme: GoogleFonts.interTextTheme(base.textTheme),
       cardTheme: CardThemeData(
         color: AppColors.darkCard,
         elevation: 0,
@@ -158,8 +155,8 @@ class AppTheme {
         filled: true,
         fillColor: AppColors.darkCard,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        hintStyle: GoogleFonts.inter(color: AppColors.darkMuted, fontSize: 14),
-        labelStyle: GoogleFonts.inter(color: AppColors.darkForeground, fontSize: 14),
+        hintStyle: const TextStyle(color: AppColors.darkMuted, fontSize: 14),
+        labelStyle: const TextStyle(color: AppColors.darkForeground, fontSize: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,
@@ -189,16 +186,16 @@ class AppTheme {
           elevation: 0,
           minimumSize: const Size.fromHeight(48),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          textStyle: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 15),
+          textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
         ),
       ),
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.darkCard,
         foregroundColor: AppColors.darkForeground,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        titleTextStyle: GoogleFonts.inter(
+        titleTextStyle: TextStyle(
           color: AppColors.darkForeground,
           fontSize: 18,
           fontWeight: FontWeight.w700,
@@ -214,7 +211,7 @@ class AppTheme {
         backgroundColor: AppColors.darkCard,
         indicatorColor: colorScheme.primary.withAlpha(30),
         labelTextStyle: WidgetStateProperty.all(
-          GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w500),
+          const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
         ),
       ),
     );

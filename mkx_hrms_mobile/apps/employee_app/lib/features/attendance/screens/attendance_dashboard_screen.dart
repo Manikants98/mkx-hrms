@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/utils/date_utils.dart';
@@ -155,7 +154,7 @@ class _AttendanceDashboardScreenState extends State<AttendanceDashboardScreen> {
                 // Monthly Quick Metrics
                 Text(
                   'Monthly Attendance',
-                  style: GoogleFonts.inter(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.2,
@@ -227,7 +226,7 @@ class _AttendanceDashboardScreenState extends State<AttendanceDashboardScreen> {
                   children: [
                     Text(
                       'Recent Activity',
-                      style: GoogleFonts.inter(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                         letterSpacing: -0.2,
@@ -235,7 +234,7 @@ class _AttendanceDashboardScreenState extends State<AttendanceDashboardScreen> {
                     ),
                     Text(
                       'Last 30 Days',
-                      style: GoogleFonts.inter(
+                      style: TextStyle(
                         fontSize: 12,
                         color: isDark
                             ? AppColors.darkMuted
@@ -282,7 +281,7 @@ class _AttendanceDashboardScreenState extends State<AttendanceDashboardScreen> {
                                   AppDateUtils.formatDate(
                                     item.date,
                                   ).split(' ')[0],
-                                  style: GoogleFonts.inter(
+                                  style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
                                     color: isDark
@@ -292,7 +291,7 @@ class _AttendanceDashboardScreenState extends State<AttendanceDashboardScreen> {
                                 ),
                                 Text(
                                   item.date.split('-').last,
-                                  style: GoogleFonts.inter(
+                                  style: TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w800,
                                     color: isDark
@@ -310,7 +309,7 @@ class _AttendanceDashboardScreenState extends State<AttendanceDashboardScreen> {
                               children: [
                                 Text(
                                   '${item.checkIn} - ${item.checkOut}',
-                                  style: GoogleFonts.inter(
+                                  style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -318,7 +317,7 @@ class _AttendanceDashboardScreenState extends State<AttendanceDashboardScreen> {
                                 const SizedBox(height: 4),
                                 Text(
                                   '${item.workHours} • ${item.location}',
-                                  style: GoogleFonts.inter(
+                                  style: TextStyle(
                                     fontSize: 12,
                                     color: isDark
                                         ? AppColors.darkMuted

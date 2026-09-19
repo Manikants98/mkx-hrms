@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/features/auth/state/auth_provider.dart';
@@ -143,7 +142,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
         children: [
           Text(
             "Today's Attendance Ratio",
-            style: GoogleFonts.inter(
+            style: const TextStyle(
               fontSize: 14.5,
               fontWeight: FontWeight.w700,
             ),
@@ -211,7 +210,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
         const SizedBox(width: 5),
         Text(
           '$label ($count)',
-          style: GoogleFonts.inter(
+          style: TextStyle(
             fontSize: 12,
             color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
           ),
@@ -228,7 +227,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 4),
           child: Text(
             'RECENT ACTIVITIES',
-            style: GoogleFonts.inter(
+            style: TextStyle(
               fontSize: 11.5,
               fontWeight: FontWeight.w600,
               letterSpacing: 0.6,
@@ -245,7 +244,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
             child: Center(
               child: Text(
                 'No recent activities recorded',
-                style: GoogleFonts.inter(
+                style: TextStyle(
                   fontSize: 13,
                   color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
                 ),
@@ -328,7 +327,7 @@ class _ActivityRow extends StatelessWidget {
               children: [
                 Text(
                   activity.title,
-                  style: GoogleFonts.inter(
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -338,7 +337,7 @@ class _ActivityRow extends StatelessWidget {
                   activity.subtitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(fontSize: 12, color: mutedColor),
+                  style: TextStyle(fontSize: 12, color: mutedColor),
                 ),
               ],
             ),
@@ -347,7 +346,7 @@ class _ActivityRow extends StatelessWidget {
             const SizedBox(width: 8),
             Text(
               activity.timeAgo,
-              style: GoogleFonts.inter(fontSize: 11, color: mutedColor),
+              style: TextStyle(fontSize: 11, color: mutedColor),
             ),
           ],
         ],

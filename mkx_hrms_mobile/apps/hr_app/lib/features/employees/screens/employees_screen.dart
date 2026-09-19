@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
 import 'package:provider/provider.dart';
@@ -78,10 +77,10 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
   Widget _buildSearchBar(bool isDark) {
     return TextField(
       controller: _searchController,
-      style: GoogleFonts.inter(fontSize: 13.5),
+      style: const TextStyle(fontSize: 13.5),
       decoration: InputDecoration(
         hintText: 'Search by name, email or code...',
-        hintStyle: GoogleFonts.inter(
+        hintStyle: TextStyle(
           fontSize: 13.5,
           color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
         ),
@@ -274,7 +273,7 @@ class _EmployeeRow extends StatelessWidget {
                     employee.name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: const TextStyle(
                       fontSize: 14.5,
                       fontWeight: FontWeight.w700,
                       letterSpacing: -0.2,
@@ -285,7 +284,7 @@ class _EmployeeRow extends StatelessWidget {
                     '${employee.designation ?? employee.role} • ${employee.department}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
                       color: mutedColor,
@@ -294,7 +293,7 @@ class _EmployeeRow extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     employee.employeeCode,
-                    style: GoogleFonts.inter(
+                    style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
                       color: mutedColor,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
 import 'package:provider/provider.dart';
@@ -75,7 +74,7 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
                     children: [
                       Text(
                         'Select Month & Year',
-                        style: GoogleFonts.inter(
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                         ),
@@ -89,7 +88,7 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
                           ),
                           Text(
                             '$selectedYear',
-                            style: GoogleFonts.inter(
+                            style: const TextStyle(
                               fontSize: 14.5,
                               fontWeight: FontWeight.w700,
                             ),
@@ -131,7 +130,7 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
                           alignment: Alignment.center,
                           child: Text(
                             _monthNames[i].substring(0, 3),
-                            style: GoogleFonts.inter(
+                            style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: selected
@@ -155,9 +154,9 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
                         Navigator.of(ctx).pop();
                         provider.setMonthYear(selectedMonth, selectedYear);
                       },
-                      child: Text(
+                      child: const Text(
                         'Apply',
-                        style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                        style: TextStyle(fontWeight: FontWeight.w700),
                       ),
                     ),
                   ),
@@ -337,7 +336,7 @@ class _PayrollRow extends StatelessWidget {
                 children: [
                   Text(
                     payroll.employeeName,
-                    style: GoogleFonts.inter(
+                    style: const TextStyle(
                       fontSize: 14.5,
                       fontWeight: FontWeight.w700,
                       letterSpacing: -0.2,
@@ -351,7 +350,7 @@ class _PayrollRow extends StatelessWidget {
                           payroll.department!.isNotEmpty)
                         payroll.department,
                     ].join(' • '),
-                    style: GoogleFonts.inter(fontSize: 11.5, color: mutedColor),
+                    style: TextStyle(fontSize: 11.5, color: mutedColor),
                   ),
                 ],
               ),
@@ -423,7 +422,7 @@ class _PayrollRow extends StatelessWidget {
                     provider.isProcessing(payroll.id)
                         ? 'Processing...'
                         : 'Process Payroll',
-                    style: GoogleFonts.inter(
+                    style: const TextStyle(
                       fontSize: 12.5,
                       fontWeight: FontWeight.w700,
                     ),
@@ -486,7 +485,7 @@ class _SalaryCol extends StatelessWidget {
       children: [
         Text(
           label,
-          style: GoogleFonts.inter(
+          style: TextStyle(
             fontSize: 11,
             color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
           ),
@@ -494,7 +493,7 @@ class _SalaryCol extends StatelessWidget {
         const SizedBox(height: 2),
         Text(
           value,
-          style: GoogleFonts.inter(
+          style: TextStyle(
             fontSize: 12.5,
             fontWeight: isBold ? FontWeight.w800 : FontWeight.w600,
             color: color,

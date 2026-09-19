@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mkx_core/constants/app_colors.dart';
 import '../../attendance/screens/attendance_dashboard_screen.dart';
 import '../../leaves/screens/leaves_screen.dart';
@@ -88,7 +87,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
                 indicatorShape: const StadiumBorder(),
                 labelTextStyle: WidgetStateProperty.resolveWith((states) {
                   final selected = states.contains(WidgetState.selected);
-                  return GoogleFonts.inter(
+                  return TextStyle(
                     fontSize: 11.5,
                     fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                     color: selected ? activeColor : inactiveColor,

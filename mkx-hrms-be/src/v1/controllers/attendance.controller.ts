@@ -67,12 +67,10 @@ export const getAttendance = async (
     if (startDate || endDate) {
       const dateFilter: { gte?: Date; lte?: Date } = {};
       if (startDate) {
-        dateFilter.gte = new Date(startDate);
+        dateFilter.gte = new Date(`${startDate}T00:00:00.000Z`);
       }
       if (endDate) {
-        const end = new Date(endDate);
-        end.setHours(23, 59, 59, 999);
-        dateFilter.lte = end;
+        dateFilter.lte = new Date(`${endDate}T23:59:59.999Z`);
       }
       whereClause.date = dateFilter;
     }

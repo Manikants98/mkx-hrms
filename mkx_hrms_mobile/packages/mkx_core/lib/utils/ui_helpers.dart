@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_colors.dart';
 
-/// Helper methods for SnackBars, dialogs, and UI feedback
+/// Helper methods for SnackBars, dialogs, and UI feedback using system fonts.
 class UiHelpers {
   UiHelpers._();
 
@@ -29,7 +28,7 @@ class UiHelpers {
       SnackBar(
         content: Text(
           message,
-          style: GoogleFonts.inter(
+          style: TextStyle(
             color: textColor,
             fontSize: 13,
             fontWeight: FontWeight.w500,
@@ -64,21 +63,21 @@ class UiHelpers {
         ),
         title: Text(
           title,
-          style: GoogleFonts.inter(
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
         ),
         content: Text(
           message,
-          style: GoogleFonts.inter(fontSize: 14),
+          style: const TextStyle(fontSize: 14),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
             child: Text(
               cancelText,
-              style: GoogleFonts.inter(
+              style: TextStyle(
                 color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
                 fontWeight: FontWeight.w500,
               ),

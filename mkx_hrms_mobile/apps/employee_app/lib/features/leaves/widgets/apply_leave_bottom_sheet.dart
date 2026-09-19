@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:mkx_core/constants/app_colors.dart';
@@ -153,9 +152,8 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: isDark
-                          ? AppColors.darkBorder
-                          : AppColors.lightBorder,
+                      color:
+                          isDark ? AppColors.darkBorder : AppColors.lightBorder,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -170,7 +168,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                       children: [
                         Text(
                           'Apply for Leave',
-                          style: GoogleFonts.inter(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
                             color: isDark
@@ -192,7 +190,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                           ),
                           child: Text(
                             '$_calculatedDays ${_calculatedDays == 1 ? "Day" : "Days"}',
-                            style: GoogleFonts.inter(
+                            style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                               color: AppColors.info,
@@ -206,16 +204,15 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                       onPressed: () => Navigator.of(context).pop(),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
-                      color: isDark
-                          ? AppColors.darkMuted
-                          : AppColors.lightMuted,
+                      color:
+                          isDark ? AppColors.darkMuted : AppColors.lightMuted,
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Submit your time-off request for manager authorization.',
-                  style: GoogleFonts.inter(
+                  style: TextStyle(
                     fontSize: 12,
                     color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
                   ),
@@ -228,7 +225,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                   children: [
                     Text(
                       'Leave Type',
-                      style: GoogleFonts.inter(
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
                         color: isDark
@@ -236,8 +233,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                             : AppColors.lightForeground,
                       ),
                     ),
-                    if (leaves.isLoadingLeaveTypes)
-                      const AppLoader(size: 14),
+                    if (leaves.isLoadingLeaveTypes) const AppLoader(size: 14),
                   ],
                 ),
                 const SizedBox(height: 6),
@@ -253,9 +249,8 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                     child: DropdownButton<String>(
                       value: _selectedLeaveType,
                       isExpanded: true,
-                      dropdownColor: isDark
-                          ? AppColors.darkCard
-                          : AppColors.lightCard,
+                      dropdownColor:
+                          isDark ? AppColors.darkCard : AppColors.lightCard,
                       items: leaves.masterLeaveTypes.isNotEmpty
                           ? leaves.masterLeaveTypes.map((type) {
                               final color = UiHelpers.parseHexColor(type.color);
@@ -275,7 +270,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                                     Expanded(
                                       child: Text(
                                         type.name,
-                                        style: GoogleFonts.inter(
+                                        style: TextStyle(
                                           fontSize: 14,
                                           fontWeight: FontWeight.w500,
                                           color: isDark
@@ -295,7 +290,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                                       ),
                                       child: Text(
                                         '${type.daysPerYear} d/yr',
-                                        style: GoogleFonts.inter(
+                                        style: TextStyle(
                                           fontSize: 11,
                                           fontWeight: FontWeight.w600,
                                           color: color,
@@ -311,7 +306,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                                 value: type,
                                 child: Text(
                                   type,
-                                  style: GoogleFonts.inter(
+                                  style: TextStyle(
                                     fontSize: 14,
                                     color: isDark
                                         ? AppColors.darkForeground
@@ -340,7 +335,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                         children: [
                           Text(
                             'Start Date',
-                            style: GoogleFonts.inter(
+                            style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
                               color: isDark
@@ -375,7 +370,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                                   const SizedBox(width: 8),
                                   Text(
                                     dateDisplay.format(_startDate),
-                                    style: GoogleFonts.inter(fontSize: 13),
+                                    style: TextStyle(fontSize: 13),
                                   ),
                                 ],
                               ),
@@ -391,7 +386,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                         children: [
                           Text(
                             'End Date',
-                            style: GoogleFonts.inter(
+                            style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
                               color: isDark
@@ -426,7 +421,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                                   const SizedBox(width: 8),
                                   Text(
                                     dateDisplay.format(_endDate),
-                                    style: GoogleFonts.inter(fontSize: 13),
+                                    style: TextStyle(fontSize: 13),
                                   ),
                                 ],
                               ),
@@ -540,7 +535,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                   const SizedBox(width: 6),
                   Text(
                     'Available Balance',
-                    style: GoogleFonts.inter(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: isExceeded
@@ -554,7 +549,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
               ),
               Text(
                 '$remaining / $total Days Left',
-                style: GoogleFonts.inter(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: isExceeded ? AppColors.error : color,
@@ -581,7 +576,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
             children: [
               Text(
                 '$used used • $total allocated',
-                style: GoogleFonts.inter(
+                style: TextStyle(
                   fontSize: 11,
                   color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
                 ),
@@ -591,7 +586,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                   isZero
                       ? 'No balance left'
                       : 'Exceeds quota by ${_calculatedDays - remaining}d',
-                  style: GoogleFonts.inter(
+                  style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                     color: AppColors.error,
@@ -600,7 +595,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
               else
                 Text(
                   '$_calculatedDays ${_calculatedDays == 1 ? "day" : "days"} requested',
-                  style: GoogleFonts.inter(
+                  style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
                     color: isDark ? AppColors.darkMuted : AppColors.lightMuted,

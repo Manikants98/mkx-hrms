@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
 import 'package:provider/provider.dart';
 
@@ -95,7 +94,7 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
                               Flexible(
                                 child: Text(
                                   user?.name ?? 'Admin Name',
-                                  style: GoogleFonts.inter(
+                                  style: const TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -108,7 +107,7 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
                           const SizedBox(height: 4),
                           Text(
                             user?.role ?? 'Role',
-                            style: GoogleFonts.inter(
+                            style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
                               color: isDark
@@ -119,7 +118,7 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
                           const SizedBox(height: 2),
                           Text(
                             user?.department ?? 'Department',
-                            style: GoogleFonts.inter(
+                            style: TextStyle(
                               fontSize: 12,
                               color: isDark
                                   ? AppColors.darkMuted
@@ -134,9 +133,9 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
               ),
               const SizedBox(height: 10),
 
-              Text(
+              const Text(
                 'Employment Details',
-                style: GoogleFonts.inter(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.2,
@@ -188,9 +187,9 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
               ),
               const SizedBox(height: 10),
 
-              Text(
+              const Text(
                 'App Preferences',
-                style: GoogleFonts.inter(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.2,
@@ -204,9 +203,9 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'Theme Mode',
-                      style: GoogleFonts.inter(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
@@ -214,7 +213,7 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
                     const SizedBox(height: 4),
                     Text(
                       'Choose between system, light, and dark zinc appearance.',
-                      style: GoogleFonts.inter(
+                      style: TextStyle(
                         fontSize: 12,
                         color: isDark
                             ? AppColors.darkMuted
@@ -260,7 +259,7 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
         const SizedBox(width: 14),
         Text(
           label,
-          style: GoogleFonts.inter(
+          style: TextStyle(
             fontSize: 13,
             color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
           ),
@@ -268,7 +267,7 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
         const Spacer(),
         Text(
           value,
-          style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600),
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
         ),
       ],
     );

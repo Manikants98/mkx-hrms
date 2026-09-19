@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/utils/date_utils.dart';
@@ -157,7 +156,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
                                   const SizedBox(width: 8),
                                   Text(
                                     item.leaveType,
-                                    style: GoogleFonts.inter(
+                                    style: TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.w700,
                                     ),
@@ -194,7 +193,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
                                     const SizedBox(width: 6),
                                     Text(
                                       '${AppDateUtils.formatDate(item.startDate)} - ${AppDateUtils.formatDate(item.endDate)}',
-                                      style: GoogleFonts.inter(
+                                      style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -203,7 +202,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
                                 ),
                                 Text(
                                   '${item.daysCount} ${item.daysCount == 1 ? "day" : "days"}',
-                                  style: GoogleFonts.inter(
+                                  style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w700,
                                     color: isDark
@@ -219,7 +218,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
                             item.reason,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(
+                            style: TextStyle(
                               fontSize: 13,
                               color: isDark
                                   ? AppColors.darkMuted
@@ -232,7 +231,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
                             children: [
                               Text(
                                 item.leaveCode,
-                                style: GoogleFonts.inter(
+                                style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
                                   color: isDark
@@ -242,7 +241,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
                               ),
                               Text(
                                 'Applied: ${AppDateUtils.formatDate(item.appliedOn)}',
-                                style: GoogleFonts.inter(
+                                style: TextStyle(
                                   fontSize: 11,
                                   color: isDark
                                       ? AppColors.darkMuted
@@ -353,7 +352,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
+                  style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                     color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
@@ -372,7 +371,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
                   ),
                   child: Text(
                     code,
-                    style: GoogleFonts.inter(
+                    style: TextStyle(
                       fontSize: 9,
                       fontWeight: FontWeight.w700,
                       color: color,
@@ -388,7 +387,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
             children: [
               Text(
                 '$remaining',
-                style: GoogleFonts.inter(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
                   color: color,
@@ -397,7 +396,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
               const SizedBox(width: 2),
               Text(
                 '/$total',
-                style: GoogleFonts.inter(
+                style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
                   color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
@@ -406,7 +405,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
               const Spacer(),
               Text(
                 '$usedCount used',
-                style: GoogleFonts.inter(
+                style: TextStyle(
                   fontSize: 10,
                   color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
                 ),

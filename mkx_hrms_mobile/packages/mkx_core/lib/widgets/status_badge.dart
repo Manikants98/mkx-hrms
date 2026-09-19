@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_colors.dart';
 
-/// Semantic pill badge showing colored status with subtle tinted background
+/// Semantic pill badge showing colored status with subtle tinted background using system fonts.
 class StatusBadge extends StatelessWidget {
   final String status;
   final double fontSize;
@@ -64,7 +63,7 @@ class StatusBadge extends StatelessWidget {
       ),
       child: Text(
         status,
-        style: GoogleFonts.inter(
+        style: TextStyle(
           color: textColor,
           fontSize: fontSize,
           fontWeight: FontWeight.w600,

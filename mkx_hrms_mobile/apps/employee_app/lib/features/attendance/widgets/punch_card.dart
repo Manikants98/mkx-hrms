@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/utils/date_utils.dart';
 import 'package:mkx_core/widgets/custom_button.dart';
@@ -43,7 +42,7 @@ class PunchCard extends StatelessWidget {
             children: [
               Text(
                 AppDateUtils.formatFullDate(currentTime),
-                style: GoogleFonts.inter(
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                   color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
@@ -57,7 +56,7 @@ class PunchCard extends StatelessWidget {
           // Digital Live Clock
           Text(
             AppDateUtils.formatTime(currentTime),
-            style: GoogleFonts.inter(
+            style: TextStyle(
               fontSize: 34,
               fontWeight: FontWeight.w800,
               letterSpacing: -1,
@@ -76,7 +75,7 @@ class PunchCard extends StatelessWidget {
               const SizedBox(width: 4),
               Text(
                 'MKX Tech Headquarters • ${record?.location ?? "Office"}',
-                style: GoogleFonts.inter(
+                style: TextStyle(
                   fontSize: 12,
                   color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
                 ),
@@ -165,7 +164,7 @@ class PunchCard extends StatelessWidget {
                   const SizedBox(width: 8),
                   Text(
                     'Punched for Today (${record?.workHours ?? "Completed"})',
-                    style: GoogleFonts.inter(
+                    style: TextStyle(
                       color: AppColors.success,
                       fontWeight: FontWeight.w600,
                       fontSize: 13,
@@ -196,7 +195,7 @@ class PunchCard extends StatelessWidget {
             const SizedBox(width: 4),
             Text(
               title,
-              style: GoogleFonts.inter(
+              style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w500,
                 color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
@@ -207,7 +206,7 @@ class PunchCard extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           time,
-          style: GoogleFonts.inter(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w700,
             color: isDark ? AppColors.darkForeground : AppColors.lightForeground,

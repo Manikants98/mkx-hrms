@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
 import 'package:provider/provider.dart';
 import 'package:mkx_core/constants/app_colors.dart';
@@ -62,7 +61,7 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
                 ? Center(
                     child: Text(
                       'Employee record not found',
-                      style: GoogleFonts.inter(
+                      style: TextStyle(
                         fontSize: 14,
                         color: isDark
                             ? AppColors.darkMuted
@@ -216,7 +215,7 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
               children: [
                 Text(
                   name.isNotEmpty ? name : 'Employee',
-                  style: GoogleFonts.inter(
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.3,
@@ -225,7 +224,7 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
                 const SizedBox(height: 2),
                 Text(
                   data['email']?.toString() ?? '',
-                  style: GoogleFonts.inter(
+                  style: TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w400,
                     color: mutedColor,
@@ -246,7 +245,7 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Text(
         title,
-        style: GoogleFonts.inter(
+        style: TextStyle(
           fontSize: 11.5,
           fontWeight: FontWeight.w600,
           letterSpacing: 0.6,
@@ -266,7 +265,7 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
         children: [
           Text(
             label,
-            style: GoogleFonts.inter(
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w400,
               color: mutedColor,
@@ -277,7 +276,7 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
             child: Text(
               value,
               textAlign: TextAlign.end,
-              style: GoogleFonts.inter(
+              style: const TextStyle(
                 fontSize: 13.5,
                 fontWeight: FontWeight.w600,
               ),

@@ -2,7 +2,6 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
-import 'package:material_ui/material_ui.dart' as mui;
 import 'package:provider/provider.dart';
 
 import 'package:mkx_core/constants/app_colors.dart';
@@ -165,7 +164,9 @@ class _HrAppState extends State<HrApp> {
     );
   }
 
-  static ColorScheme? _toFlutterColorScheme(mui.ColorScheme? scheme) {
+  /// Converts dynamic color scheme (which might come from dynamic_color's re-exported ColorScheme)
+  /// into Flutter's core Material [ColorScheme].
+  static ColorScheme? _toFlutterColorScheme(dynamic scheme) {
     if (scheme == null) return null;
     return ColorScheme(
       brightness: scheme.brightness,

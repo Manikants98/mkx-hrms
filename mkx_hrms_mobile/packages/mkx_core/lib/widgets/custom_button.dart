@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'm3_loader.dart';
 import '../constants/app_colors.dart';
 
@@ -102,7 +101,7 @@ class CustomButton extends StatelessWidget {
                       text,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 0.1,

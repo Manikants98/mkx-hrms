@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
 import 'package:mkx_core/constants/app_colors.dart';
 
 /// Shell scaffold housing the 5-tab HR Admin navigation bar matching the employee app pattern
@@ -85,7 +83,7 @@ class HrShellScreen extends StatelessWidget {
                 indicatorShape: const StadiumBorder(),
                 labelTextStyle: WidgetStateProperty.resolveWith((states) {
                   final selected = states.contains(WidgetState.selected);
-                  return GoogleFonts.inter(
+                  return TextStyle(
                     fontSize: 11.5,
                     fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                     color: selected ? activeColor : inactiveColor,
@@ -106,24 +104,11 @@ class HrShellScreen extends StatelessWidget {
               labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
               destinations: _items
                   .map(
-                    (item) {
-                      final isLeaves = item.label == 'Leaves';
-                      return NavigationDestination(
-                        icon: isLeaves
-                            ? m3e.M3EBadge(
-                                showDot: true,
-                                child: Icon(item.icon),
-                              )
-                            : Icon(item.icon),
-                        selectedIcon: isLeaves
-                            ? m3e.M3EBadge(
-                                showDot: true,
-                                child: Icon(item.activeIcon),
-                              )
-                            : Icon(item.activeIcon),
-                        label: item.label,
-                      );
-                    },
+                    (item) => NavigationDestination(
+                      icon: Icon(item.icon),
+                      selectedIcon: Icon(item.activeIcon),
+                      label: item.label,
+                    ),
                   )
                   .toList(),
             ),

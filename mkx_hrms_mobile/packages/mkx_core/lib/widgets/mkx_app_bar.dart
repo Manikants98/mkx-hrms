@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-/// Custom top app bar matching the MKX HRMS design system.
+/// Custom top app bar matching the MKX HRMS design system using system fonts.
 ///
 /// Uses [ColorScheme.surface] (tile color) for its background so it
 /// always matches the [SectionTile] and bottom nav surfaces, producing
@@ -83,7 +82,7 @@ class MkxAppBar extends StatelessWidget implements PreferredSizeWidget {
                     children: [
                       Text(
                         title,
-                        style: GoogleFonts.inter(
+                        style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w700,
                           letterSpacing: -0.3,
@@ -96,7 +95,7 @@ class MkxAppBar extends StatelessWidget implements PreferredSizeWidget {
                           subtitle!,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
+                          style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w400,
                             color: mutedColor,

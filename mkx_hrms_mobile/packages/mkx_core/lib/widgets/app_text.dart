@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_colors.dart';
 
-/// Opinionated [Text] replacement for MKX HRMS that pre-applies Inter font and
+/// Opinionated [Text] replacement for MKX HRMS that applies system fonts and
 /// automatically resolves foreground / muted colors from the current theme.
 ///
 /// Named constructors map to the common typography scales used across the app:
@@ -172,7 +171,7 @@ class AppText extends StatelessWidget {
       textAlign: textAlign,
       maxLines: maxLines,
       overflow: overflow,
-      style: GoogleFonts.inter(
+      style: TextStyle(
         fontSize: fontSize,
         fontWeight: fontWeight,
         color: resolvedColor,

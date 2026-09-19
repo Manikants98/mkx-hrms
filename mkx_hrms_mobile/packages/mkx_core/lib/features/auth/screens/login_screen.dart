@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mkx_core/constants/api_endpoints.dart';
@@ -97,7 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     Text(
                       'Server Environment',
-                      style: GoogleFonts.inter(
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                       ),
@@ -125,7 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(width: 5),
                           Text(
                             isLive ? 'Live Cloud' : 'Local Dev',
-                            style: GoogleFonts.inter(
+                            style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                               color: AppColors.success,
@@ -139,7 +138,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 8),
                 Text(
                   'Select an active backend environment or enter a custom endpoint URL below:',
-                  style: GoogleFonts.inter(
+                  style: TextStyle(
                     fontSize: 13,
                     color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
                   ),
@@ -289,7 +288,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Text(
                       'MKX HRMS',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
+                      style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w800,
                         letterSpacing: -0.5,
@@ -302,7 +301,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Text(
                       'Employee Self-Service Portal',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
+                      style: TextStyle(
                         fontSize: 14,
                         color: isDark
                             ? AppColors.darkMuted
@@ -325,7 +324,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         children: [
                           Text(
                             'Sign In',
-                            style: GoogleFonts.inter(
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
                               letterSpacing: -0.3,
@@ -334,7 +333,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(height: 6),
                           Text(
                             'Enter your corporate email and password to access your attendance, leaves, and salary slips.',
-                            style: GoogleFonts.inter(
+                            style: TextStyle(
                               fontSize: 12,
                               color: isDark
                                   ? AppColors.darkMuted
@@ -457,7 +456,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     )
                                     ? 'Server: Render Live'
                                     : 'Server: Local Dev',
-                                style: GoogleFonts.inter(
+                                style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
                                   color: isDark

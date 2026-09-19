@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
 import 'package:provider/provider.dart';
 import 'package:mkx_core/constants/app_colors.dart';
@@ -151,7 +150,7 @@ class _LeaveTile extends StatelessWidget {
                 children: [
                   Text(
                     leave.employeeName,
-                    style: GoogleFonts.inter(
+                    style: const TextStyle(
                       fontSize: 14.5,
                       fontWeight: FontWeight.w700,
                       letterSpacing: -0.2,
@@ -165,7 +164,7 @@ class _LeaveTile extends StatelessWidget {
                           leave.department!.isNotEmpty)
                         leave.department,
                     ].join(' • '),
-                    style: GoogleFonts.inter(fontSize: 11.5, color: mutedColor),
+                    style: TextStyle(fontSize: 11.5, color: mutedColor),
                   ),
                 ],
               ),
@@ -212,7 +211,7 @@ class _LeaveTile extends StatelessWidget {
                       const SizedBox(width: 6),
                       Text(
                         'Reject',
-                        style: GoogleFonts.inter(
+                        style: const TextStyle(
                           fontWeight: FontWeight.w600,
                           color: AppColors.error,
                         ),
@@ -234,7 +233,7 @@ class _LeaveTile extends StatelessWidget {
                       const SizedBox(width: 6),
                       Text(
                         'Approve',
-                        style: GoogleFonts.inter(
+                        style: const TextStyle(
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
                         ),
@@ -259,13 +258,13 @@ class _LeaveTile extends StatelessWidget {
           width: 72,
           child: Text(
             label,
-            style: GoogleFonts.inter(fontSize: 12, color: mutedColor),
+            style: TextStyle(fontSize: 12, color: mutedColor),
           ),
         ),
         Expanded(
           child: Text(
             value,
-            style: GoogleFonts.inter(
+            style: const TextStyle(
               fontSize: 12.5,
               fontWeight: FontWeight.w500,
             ),

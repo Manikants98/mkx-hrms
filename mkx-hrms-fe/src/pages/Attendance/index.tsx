@@ -301,7 +301,7 @@ export default function Attendance() {
   const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(null);
   const [departmentFilter, setDepartmentFilter] = useState<string>("All");
   const [locationFilter, setLocationFilter] = useState<string>("All");
-  const todayStr = new Date().toISOString().split("T")[0];
+  const todayStr = new Date().toLocaleDateString('en-CA'); // Gets local YYYY-MM-DD
   const [dateFilter, setDateFilter] = useState<string>(todayStr);
   const [viewingAttendance, setViewingAttendance] = useState<AttendanceRecord | null>(null);
 

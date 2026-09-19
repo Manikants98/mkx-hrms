@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
@@ -64,7 +63,7 @@ class PayslipDetailModal extends StatelessWidget {
                       children: [
                         Text(
                           'Payslip Summary',
-                          style: GoogleFonts.inter(
+                          style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w700,
                             letterSpacing: -0.3,
@@ -73,7 +72,7 @@ class PayslipDetailModal extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           slip.monthLabel,
-                          style: GoogleFonts.inter(
+                          style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                             color: isDark
@@ -99,7 +98,7 @@ class PayslipDetailModal extends StatelessWidget {
                   children: [
                     Text(
                       'Net Disbursed Amount',
-                      style: GoogleFonts.inter(
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: isDark
@@ -110,7 +109,7 @@ class PayslipDetailModal extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(
                       slip.formattedNetPay,
-                      style: GoogleFonts.inter(
+                      style: TextStyle(
                         fontSize: 34,
                         fontWeight: FontWeight.w800,
                         letterSpacing: -1,
@@ -133,7 +132,7 @@ class PayslipDetailModal extends StatelessWidget {
                       ),
                       child: Text(
                         'Credited on ${slip.payDate}',
-                        style: GoogleFonts.inter(
+                        style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: isDark
@@ -260,14 +259,14 @@ class PayslipDetailModal extends StatelessWidget {
                   children: [
                     Text(
                       'Total Net Pay',
-                      style: GoogleFonts.inter(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     Text(
                       slip.formattedNetPay,
-                      style: GoogleFonts.inter(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
                         color: AppColors.success,
@@ -289,7 +288,7 @@ class PayslipDetailModal extends StatelessWidget {
       padding: const EdgeInsets.only(left: 16, bottom: 16),
       child: Text(
         title.toUpperCase(),
-        style: GoogleFonts.inter(
+        style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.5,
@@ -311,7 +310,7 @@ class PayslipDetailModal extends StatelessWidget {
       children: [
         Text(
           label,
-          style: GoogleFonts.inter(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
             color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
@@ -319,7 +318,7 @@ class PayslipDetailModal extends StatelessWidget {
         ),
         Text(
           value,
-          style: GoogleFonts.inter(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: isBoldValue ? FontWeight.w700 : FontWeight.w600,
             color: valueColor,

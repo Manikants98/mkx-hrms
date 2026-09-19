@@ -1,6 +1,5 @@
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/theme/app_theme.dart';
@@ -85,7 +84,7 @@ class _SplashScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               'MKX HRMS',
-              style: GoogleFonts.inter(
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
                 letterSpacing: -0.5,

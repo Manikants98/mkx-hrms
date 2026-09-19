@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_colors.dart';
 import 'section_tile.dart';
 
-/// KPI / Stats card matching the MKX HRMS web card design
+/// KPI / Stats card matching the MKX HRMS web card design using system fonts.
 class MetricCard extends StatelessWidget {
   final String title;
   final String value;
@@ -48,7 +47,7 @@ class MetricCard extends StatelessWidget {
                     title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                       color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
@@ -69,7 +68,7 @@ class MetricCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               value,
-              style: GoogleFonts.inter(
+              style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
                 letterSpacing: -0.5,
@@ -82,7 +81,7 @@ class MetricCard extends StatelessWidget {
                 subtext!,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(
+                style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w400,
                   color: isDark ? AppColors.darkMuted : AppColors.lightMuted,

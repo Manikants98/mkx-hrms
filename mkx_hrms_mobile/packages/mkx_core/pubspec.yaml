@@ -13,7 +13,6 @@ dependencies:
   provider: ^6.1.5+1
   shared_preferences: ^2.5.5
   intl: ^0.20.3
-  google_fonts: ^8.2.1
   dynamic_color: ^2.1.0
 
 dev_dependencies:

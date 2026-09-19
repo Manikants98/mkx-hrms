@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_colors.dart';
 
 /// Clean, modern text input field with optional label, prefix, and suffix
@@ -46,7 +45,7 @@ class CustomTextField extends StatelessWidget {
         if (label != null) ...[
           Text(
             label!,
-            style: GoogleFonts.inter(
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w500,
               color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
@@ -63,7 +62,7 @@ class CustomTextField extends StatelessWidget {
           onTap: onTap,
           onChanged: onChanged,
           validator: validator,
-          style: GoogleFonts.inter(
+          style: TextStyle(
             fontSize: 14,
             color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
           ),

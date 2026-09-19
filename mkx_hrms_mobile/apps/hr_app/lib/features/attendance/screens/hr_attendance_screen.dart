@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
 import 'package:mkx_core/constants/app_colors.dart';
@@ -130,7 +129,7 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
       children: [
         Text(
           '$count',
-          style: GoogleFonts.inter(
+          style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w800,
             color: color,
@@ -139,7 +138,7 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
         const SizedBox(height: 2),
         Text(
           label,
-          style: GoogleFonts.inter(fontSize: 11.5, fontWeight: FontWeight.w500),
+          style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w500),
         ),
       ],
     );
@@ -240,7 +239,7 @@ class _AttendanceRow extends StatelessWidget {
               children: [
                 Text(
                   record.employeeName,
-                  style: GoogleFonts.inter(
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.2,
@@ -250,19 +249,19 @@ class _AttendanceRow extends StatelessWidget {
                 Text(
                   [
                     if (record.role != null && record.role!.isNotEmpty)
-                      record.role,
+                       record.role,
                     if (record.department != null &&
                         record.department!.isNotEmpty)
-                      record.department,
+                       record.department,
                   ].join(' • '),
-                  style: GoogleFonts.inter(fontSize: 12, color: mutedColor),
+                  style: TextStyle(fontSize: 12, color: mutedColor),
                 ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
                     Text(
                       'In: ${record.checkIn ?? "—"}',
-                      style: GoogleFonts.inter(
+                      style: TextStyle(
                         fontSize: 11.5,
                         fontWeight: FontWeight.w500,
                         color: mutedColor,
@@ -271,7 +270,7 @@ class _AttendanceRow extends StatelessWidget {
                     const SizedBox(width: 10),
                     Text(
                       'Out: ${record.checkOut ?? "—"}',
-                      style: GoogleFonts.inter(
+                      style: TextStyle(
                         fontSize: 11.5,
                         fontWeight: FontWeight.w500,
                         color: mutedColor,
@@ -281,7 +280,7 @@ class _AttendanceRow extends StatelessWidget {
                       const SizedBox(width: 8),
                       Text(
                         '(${record.duration})',
-                        style: GoogleFonts.inter(
+                        style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                           color: primaryColor,

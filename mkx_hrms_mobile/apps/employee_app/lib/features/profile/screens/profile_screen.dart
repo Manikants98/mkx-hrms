@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mkx_core/constants/app_colors.dart';
@@ -110,7 +109,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               Flexible(
                                 child: Text(
                                   user?.name ?? 'Employee Name',
-                                  style: GoogleFonts.inter(
+                                  style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -123,7 +122,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           const SizedBox(height: 4),
                           Text(
                             user?.role ?? 'Role',
-                            style: GoogleFonts.inter(
+                            style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
                               color: isDark
@@ -134,7 +133,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           const SizedBox(height: 2),
                           Text(
                             user?.department ?? 'Department',
-                            style: GoogleFonts.inter(
+                            style: TextStyle(
                               fontSize: 12,
                               color: isDark
                                   ? AppColors.darkMuted
@@ -151,7 +150,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
               Text(
                 'Employment Details',
-                style: GoogleFonts.inter(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.2,
@@ -207,7 +206,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   Text(
                     'Leave Balances',
-                    style: GoogleFonts.inter(
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                       letterSpacing: -0.2,
@@ -240,7 +239,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           const SizedBox(width: 4),
                           Text(
                             'Apply Leave',
-                            style: GoogleFonts.inter(
+                            style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: isDark
@@ -259,7 +258,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 10),
               Text(
                 'App Preferences',
-                style: GoogleFonts.inter(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.2,
@@ -275,7 +274,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   children: [
                     Text(
                       'Theme Mode',
-                      style: GoogleFonts.inter(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
@@ -283,7 +282,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 4),
                     Text(
                       'Choose between system, light, and dark zinc appearance.',
-                      style: GoogleFonts.inter(
+                      style: TextStyle(
                         fontSize: 12,
                         color: isDark
                             ? AppColors.darkMuted
@@ -358,7 +357,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const SizedBox(width: 14),
         Text(
           label,
-          style: GoogleFonts.inter(
+          style: TextStyle(
             fontSize: 13,
             color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
           ),
@@ -366,7 +365,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const Spacer(),
         Text(
           value,
-          style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600),
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
         ),
       ],
     );
@@ -412,7 +411,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 4),
               Text(
                 title,
-                style: GoogleFonts.inter(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                   color: isSelected
@@ -473,7 +472,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Center(
           child: Text(
             'No leave balances available',
-            style: GoogleFonts.inter(
+            style: TextStyle(
               fontSize: 13,
               color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
             ),
@@ -516,7 +515,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(width: 8),
                     Text(
                       quota.name ?? 'Leave',
-                      style: GoogleFonts.inter(
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
@@ -534,7 +533,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         child: Text(
                           quota.code!,
-                          style: GoogleFonts.inter(
+                          style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
                             color: color,
@@ -546,7 +545,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 Text(
                   '${quota.remaining} days left',
-                  style: GoogleFonts.inter(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                     color: color,
@@ -572,14 +571,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 Text(
                   '${quota.used} used of ${quota.total} total',
-                  style: GoogleFonts.inter(
+                  style: TextStyle(
                     fontSize: 11,
                     color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
                   ),
                 ),
                 Text(
                   quota.isPaid == false ? 'Unpaid' : 'Paid Leave',
-                  style: GoogleFonts.inter(
+                  style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
                     color: isDark ? AppColors.darkMuted : AppColors.lightMuted,

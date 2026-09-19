@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-/// Professional avatar widget with rounded corners (default 8px) and initial fallback.
+/// Professional avatar widget with rounded corners (default 8px) and initial fallback using system fonts.
 class AppAvatar extends StatelessWidget {
   /// Full name or display label used to generate the initial letter.
   final String name;
@@ -97,7 +96,7 @@ class AppAvatar extends StatelessWidget {
       alignment: Alignment.center,
       child: Text(
         initial,
-        style: GoogleFonts.inter(
+        style: TextStyle(
           fontSize: fs,
           fontWeight: fontWeight,
           color: fg,

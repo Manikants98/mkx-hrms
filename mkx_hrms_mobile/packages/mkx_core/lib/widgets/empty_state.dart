@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_colors.dart';
 
-/// Clean placeholder shown when a list has no data
+/// Clean placeholder shown when a list has no data using system fonts.
 class EmptyState extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -47,7 +46,7 @@ class EmptyState extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
@@ -57,7 +56,7 @@ class EmptyState extends StatelessWidget {
             Text(
               description,
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
+              style: TextStyle(
                 fontSize: 13,
                 color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
               ),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/widgets/empty_state.dart';
@@ -83,7 +82,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                           children: [
                             Text(
                               'Latest Disbursement',
-                              style: GoogleFonts.inter(
+                              style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
                                 color: isDark
@@ -97,7 +96,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                         const SizedBox(height: 8),
                         Text(
                           latest.formattedNetPay,
-                          style: GoogleFonts.inter(
+                          style: TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.w800,
                             letterSpacing: -0.6,
@@ -109,7 +108,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                         const SizedBox(height: 4),
                         Text(
                           '${latest.monthLabel} • Paid on ${latest.payDate}',
-                          style: GoogleFonts.inter(
+                          style: TextStyle(
                             fontSize: 12,
                             color: isDark
                                 ? AppColors.darkMuted
@@ -133,7 +132,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                                   children: [
                                     Text(
                                       'Base Salary',
-                                      style: GoogleFonts.inter(
+                                      style: TextStyle(
                                         fontSize: 11,
                                         color: isDark
                                             ? AppColors.darkMuted
@@ -145,7 +144,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                                     const SizedBox(height: 2),
                                     Text(
                                       latest.formattedBase,
-                                      style: GoogleFonts.inter(
+                                      style: TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w700,
                                       ),
@@ -171,7 +170,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                                   children: [
                                     Text(
                                       'Allowances',
-                                      style: GoogleFonts.inter(
+                                      style: TextStyle(
                                         fontSize: 11,
                                         color: isDark
                                             ? AppColors.darkMuted
@@ -183,7 +182,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                                     const SizedBox(height: 2),
                                     Text(
                                       latest.formattedAllowance,
-                                      style: GoogleFonts.inter(
+                                      style: TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w700,
                                         color: AppColors.success,
@@ -210,7 +209,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                                   children: [
                                     Text(
                                       'Deductions',
-                                      style: GoogleFonts.inter(
+                                      style: TextStyle(
                                         fontSize: 11,
                                         color: isDark
                                             ? AppColors.darkMuted
@@ -222,7 +221,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                                     const SizedBox(height: 2),
                                     Text(
                                       latest.formattedDeductions,
-                                      style: GoogleFonts.inter(
+                                      style: TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w700,
                                         color: AppColors.error,
@@ -244,7 +243,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                 // Past Payslips List
                 Text(
                   'Payslip History',
-                  style: GoogleFonts.inter(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.2,
@@ -295,7 +294,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                                 children: [
                                   Text(
                                     item.monthLabel,
-                                    style: GoogleFonts.inter(
+                                    style: TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.w700,
                                     ),
@@ -303,7 +302,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                                   const SizedBox(height: 2),
                                   Text(
                                     'Disbursed: ${item.payDate} • ${item.payrollCode}',
-                                    style: GoogleFonts.inter(
+                                    style: TextStyle(
                                       fontSize: 12,
                                       color: isDark
                                           ? AppColors.darkMuted
@@ -318,7 +317,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                               children: [
                                 Text(
                                   item.formattedNetPay,
-                                  style: GoogleFonts.inter(
+                                  style: TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w800,
                                     color: AppColors.success,
