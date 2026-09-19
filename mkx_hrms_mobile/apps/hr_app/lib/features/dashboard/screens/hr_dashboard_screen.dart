@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
+import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/features/auth/state/auth_provider.dart';
-import 'package:mkx_core/widgets/m3_loader.dart';
 import 'package:mkx_core/widgets/metric_card.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
+import 'package:provider/provider.dart';
+
+import '../../../widgets/m3_expressive_loader.dart';
 import '../../dashboard/models/dashboard_stats_model.dart';
 import '../../dashboard/state/dashboard_provider.dart';
 
@@ -35,9 +37,8 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
     final user = auth.currentUser;
 
     return Scaffold(
-      backgroundColor: isDark
-          ? AppColors.darkBackground
-          : AppColors.lightBackground,
+      backgroundColor:
+          isDark ? AppColors.darkBackground : AppColors.lightBackground,
       appBar: MkxAppBar(
         title: 'HR Dashboard',
         subtitle: 'Good ${_greeting()}, ${user?.name ?? "HR Admin"}',
@@ -51,7 +52,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
               ? const Center(
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 40),
-                    child: AppLoader.contained(size: 48),
+                    child: M3ExpressiveLoader.contained(size: 52),
                   ),
                 )
               : SingleChildScrollView(
@@ -132,10 +133,11 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
     final total = stats.presentToday + stats.absentToday + stats.lateToday;
     if (total == 0) return const SizedBox.shrink();
 
-    return SectionTile(
-      isDark: isDark,
-      position: TilePosition.only,
+    return m3e.M3ECard(
+      variant: m3e.M3ECardVariant.filled,
+      borderRadius: BorderRadius.circular(16),
       padding: const EdgeInsets.all(16),
+      color: isDark ? AppColors.darkCard : AppColors.lightCard,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

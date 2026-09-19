@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
 import 'package:provider/provider.dart';
 
 import 'package:mkx_core/constants/app_colors.dart';
@@ -71,9 +72,10 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SectionTile(
-                isDark: isDark,
-                position: TilePosition.only,
+              m3e.M3ECard(
+                variant: m3e.M3ECardVariant.filled,
+                borderRadius: BorderRadius.circular(16),
+                color: isDark ? AppColors.darkCard : AppColors.lightCard,
                 padding: const EdgeInsets.all(20),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -220,36 +222,7 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        _buildThemeButton(
-                          context,
-                          title: 'System',
-                          icon: Icons.settings_brightness_rounded,
-                          mode: ThemeMode.system,
-                          currentMode: auth.themeMode,
-                          isDark: isDark,
-                        ),
-                        const SizedBox(width: 8),
-                        _buildThemeButton(
-                          context,
-                          title: 'Light',
-                          icon: Icons.light_mode_outlined,
-                          mode: ThemeMode.light,
-                          currentMode: auth.themeMode,
-                          isDark: isDark,
-                        ),
-                        const SizedBox(width: 8),
-                        _buildThemeButton(
-                          context,
-                          title: 'Dark',
-                          icon: Icons.dark_mode_outlined,
-                          mode: ThemeMode.dark,
-                          currentMode: auth.themeMode,
-                          isDark: isDark,
-                        ),
-                      ],
-                    ),
+                    _buildThemeChips(context, auth, isDark),
                   ],
                 ),
               ),
@@ -301,59 +274,42 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
     );
   }
 
-  Widget _buildThemeButton(
-    BuildContext context, {
-    required String title,
-    required IconData icon,
-    required ThemeMode mode,
-    required ThemeMode currentMode,
-    required bool isDark,
-  }) {
-    final isSelected = mode == currentMode;
-    return Expanded(
-      child: InkWell(
-        onTap: () => context.read<AuthProvider>().setThemeMode(mode),
-        borderRadius: BorderRadius.circular(10),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? (isDark ? AppColors.darkPrimary : AppColors.lightPrimary)
-                : (isDark ? AppColors.darkSecondary : AppColors.lightSecondary),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: isSelected
-                  ? Colors.transparent
-                  : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-            ),
-          ),
-          child: Column(
-            children: [
-              Icon(
-                icon,
-                size: 18,
+  Widget _buildThemeChips(
+    BuildContext context,
+    AuthProvider auth,
+    bool isDark,
+  ) {
+    final modes = [
+      (ThemeMode.system, 'System', Icons.settings_brightness_rounded),
+      (ThemeMode.light, 'Light', Icons.light_mode_rounded),
+      (ThemeMode.dark, 'Dark', Icons.dark_mode_rounded),
+    ];
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: modes.map((item) {
+          final isSelected = auth.themeMode == item.$1;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: m3e.M3EChip(
+              label: item.$2,
+              type: m3e.M3EChipType.filter,
+              selected: isSelected,
+              elevated: isSelected,
+              leading: Icon(
+                item.$3,
+                size: 14,
                 color: isSelected
                     ? (isDark
-                          ? AppColors.darkPrimaryForeground
-                          : AppColors.lightPrimaryForeground)
+                        ? AppColors.darkPrimaryForeground
+                        : AppColors.lightPrimaryForeground)
                     : (isDark ? AppColors.darkMuted : AppColors.lightMuted),
               ),
-              const SizedBox(height: 4),
-              Text(
-                title,
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected
-                      ? (isDark
-                            ? AppColors.darkPrimaryForeground
-                            : AppColors.lightPrimaryForeground)
-                      : (isDark ? AppColors.darkMuted : AppColors.lightMuted),
-                ),
-              ),
-            ],
-          ),
-        ),
+              onPressed: () => auth.setThemeMode(item.$1),
+            ),
+          );
+        }).toList(),
       ),
     );
   }

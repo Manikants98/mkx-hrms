@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
+import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
 import 'package:provider/provider.dart';
 import 'package:mkx_core/constants/app_colors.dart';
+import '../../../widgets/m3_expressive_loader.dart';
 import 'package:mkx_core/widgets/app_avatar.dart';
-import 'package:mkx_core/widgets/app_chip.dart';
 import 'package:mkx_core/widgets/empty_state.dart';
-import 'package:mkx_core/widgets/m3_loader.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
@@ -45,9 +45,8 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark
-          ? AppColors.darkBackground
-          : AppColors.lightBackground,
+      backgroundColor:
+          isDark ? AppColors.darkBackground : AppColors.lightBackground,
       appBar: const MkxAppBar(
         title: 'Employees',
         subtitle: 'Workforce directory & staff records',
@@ -166,15 +165,29 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: provider.departments.map((dept) {
-                final isSelected =
-                    provider.departmentFilter == dept ||
+                final isSelected = provider.departmentFilter == dept ||
                     (dept == 'All' && provider.departmentFilter.isEmpty);
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
-                  child: AppChip(
+                  child: m3e.M3EChip(
                     label: dept,
-                    isSelected: isSelected,
-                    onSelected: (_) =>
+                    type: m3e.M3EChipType.filter,
+                    selected: isSelected,
+                    elevated: isSelected,
+                    leading: Icon(
+                      dept == 'All'
+                          ? Icons.groups_outlined
+                          : Icons.apartment_rounded,
+                      size: 14,
+                      color: isSelected
+                          ? (isDark
+                              ? AppColors.darkPrimaryForeground
+                              : AppColors.lightPrimaryForeground)
+                          : (isDark
+                              ? AppColors.darkMuted
+                              : AppColors.lightMuted),
+                    ),
+                    onPressed: () =>
                         provider.setDepartmentFilter(dept == 'All' ? '' : dept),
                   ),
                 );
@@ -192,7 +205,7 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
       return const Center(
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 40),
-          child: AppLoader.contained(size: 48),
+          child: M3ExpressiveLoader.contained(size: 52),
         ),
       );
     }

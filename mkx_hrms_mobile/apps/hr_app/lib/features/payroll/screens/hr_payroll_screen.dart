@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
 import 'package:provider/provider.dart';
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/utils/ui_helpers.dart';
 import 'package:mkx_core/widgets/app_avatar.dart';
 import 'package:mkx_core/widgets/empty_state.dart';
-import 'package:mkx_core/widgets/m3_loader.dart';
+import '../../../widgets/m3_expressive_loader.dart';
 import 'package:mkx_core/widgets/metric_card.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
@@ -23,6 +24,7 @@ class HrPayrollScreen extends StatefulWidget {
 }
 
 class _HrPayrollScreenState extends State<HrPayrollScreen> {
+  String _statusFilter = 'All';
   static const List<String> _monthNames = [
     'January',
     'February',
@@ -146,17 +148,13 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
                   const SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
+                    child: m3e.M3EButton(
+                      style: m3e.M3EButtonStyle.filled,
+                      size: m3e.M3EButtonSize.md,
                       onPressed: () {
                         Navigator.of(ctx).pop();
                         provider.setMonthYear(selectedMonth, selectedYear);
                       },
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
                       child: Text(
                         'Apply',
                         style: GoogleFonts.inter(fontWeight: FontWeight.w700),
@@ -176,6 +174,12 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final provider = context.watch<HrPayrollProvider>();
+
+    final filteredPayrolls = provider.payrolls.where((p) {
+      if (_statusFilter == 'Pending') return p.status.toLowerCase() == 'pending';
+      if (_statusFilter == 'Processed') return p.status.toLowerCase() == 'processed';
+      return true;
+    }).toList();
 
     return Scaffold(
       backgroundColor: isDark
@@ -210,24 +214,26 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
               children: [
                 _buildSummary(isDark, provider),
                 const SizedBox(height: 10),
+                _buildFilterChips(isDark, provider),
+                const SizedBox(height: 10),
                 if (provider.isLoading && provider.payrolls.isEmpty)
                   const Center(
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 40),
-                      child: AppLoader.contained(size: 48),
+                      child: M3ExpressiveLoader.contained(size: 52),
                     ),
                   )
-                else if (provider.payrolls.isEmpty)
+                else if (filteredPayrolls.isEmpty)
                   EmptyState(
                     icon: Icons.payments_outlined,
-                    title: 'No payroll records',
+                    title: 'No $_statusFilter payroll records',
                     description:
                         'No payroll data found for ${_monthNames[provider.selectedMonth - 1]} ${provider.selectedYear}',
                   )
                 else
                   SectionCard(
                     isDark: isDark,
-                    children: provider.payrolls.map((payroll) {
+                    children: filteredPayrolls.map((payroll) {
                       return _PayrollRow(payroll: payroll, isDark: isDark);
                     }).toList(),
                   ),
@@ -236,6 +242,42 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildFilterChips(bool isDark, HrPayrollProvider provider) {
+    final filters = [
+      ('All', Icons.receipt_long_rounded, provider.payrolls.length),
+      ('Pending', Icons.pending_actions_rounded, provider.pendingCount),
+      ('Processed', Icons.check_circle_outline_rounded, provider.processedCount),
+    ];
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: filters.map((f) {
+          final isSelected = _statusFilter == f.$1;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: m3e.M3EChip(
+              label: '${f.$1} (${f.$3})',
+              type: m3e.M3EChipType.filter,
+              selected: isSelected,
+              elevated: isSelected,
+              leading: Icon(
+                f.$2,
+                size: 14,
+                color: isSelected
+                    ? (isDark
+                        ? AppColors.darkPrimaryForeground
+                        : AppColors.lightPrimaryForeground)
+                    : (isDark ? AppColors.darkMuted : AppColors.lightMuted),
+              ),
+              onPressed: () => setState(() => _statusFilter = f.$1),
+            ),
+          );
+        }).toList(),
       ),
     );
   }
@@ -358,27 +400,35 @@ class _PayrollRow extends StatelessWidget {
           const SizedBox(height: 10),
           SizedBox(
             width: double.infinity,
-            child: OutlinedButton.icon(
+            child: m3e.M3EButton(
+              style: m3e.M3EButtonStyle.outlined,
+              size: m3e.M3EButtonSize.sm,
               onPressed: provider.isProcessing(payroll.id)
                   ? null
                   : () => _handleProcess(context, provider, payroll),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              icon: provider.isProcessing(payroll.id)
-                  ? const AppLoader(size: 14)
-                  : const Icon(Icons.play_arrow_rounded, size: 16),
-              label: Text(
-                provider.isProcessing(payroll.id)
-                    ? 'Processing...'
-                    : 'Process Payroll',
-                style: GoogleFonts.inter(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w700,
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (provider.isProcessing(payroll.id))
+                    M3ExpressiveLoader.button(
+                      size: 14,
+                      color: isDark
+                          ? AppColors.darkPrimary
+                          : AppColors.lightPrimary,
+                    )
+                  else
+                    const Icon(Icons.play_arrow_rounded, size: 16),
+                  const SizedBox(width: 6),
+                  Text(
+                    provider.isProcessing(payroll.id)
+                        ? 'Processing...'
+                        : 'Process Payroll',
+                    style: GoogleFonts.inter(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

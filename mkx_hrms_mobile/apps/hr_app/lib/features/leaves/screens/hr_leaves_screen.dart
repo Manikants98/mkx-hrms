@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
 import 'package:provider/provider.dart';
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/utils/ui_helpers.dart';
 import 'package:mkx_core/widgets/app_avatar.dart';
-import 'package:mkx_core/widgets/app_chip.dart';
 import 'package:mkx_core/widgets/empty_state.dart';
-import 'package:mkx_core/widgets/m3_loader.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
+import '../../../widgets/m3_expressive_loader.dart';
 import '../models/hr_leave_model.dart';
 import '../state/hr_leaves_provider.dart';
 
@@ -62,7 +62,7 @@ class _HrLeavesScreenState extends State<HrLeavesScreen> {
                   const Center(
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 40),
-                      child: AppLoader.contained(size: 48),
+                      child: M3ExpressiveLoader.contained(size: 52),
                     ),
                   )
                 else if (provider.leaves.isEmpty)
@@ -88,17 +88,36 @@ class _HrLeavesScreenState extends State<HrLeavesScreen> {
   }
 
   Widget _buildStatusFilters(bool isDark, HrLeavesProvider provider) {
+    final Map<String, IconData> tabIcons = {
+      'All': Icons.layers_outlined,
+      'Pending': Icons.pending_actions_rounded,
+      'Approved': Icons.check_circle_outline_rounded,
+      'Rejected': Icons.cancel_outlined,
+    };
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         children: _tabs.map((tab) {
           final isSelected = provider.statusFilter == tab;
+          final icon = tabIcons[tab] ?? Icons.label_outline_rounded;
           return Padding(
             padding: const EdgeInsets.only(right: 8),
-            child: AppChip(
+            child: m3e.M3EChip(
               label: tab,
-              isSelected: isSelected,
-              onSelected: (_) => provider.setStatusFilter(tab),
+              type: m3e.M3EChipType.filter,
+              selected: isSelected,
+              elevated: isSelected,
+              leading: Icon(
+                icon,
+                size: 14,
+                color: isSelected
+                    ? (isDark
+                        ? AppColors.darkPrimaryForeground
+                        : AppColors.lightPrimaryForeground)
+                    : (isDark ? AppColors.darkMuted : AppColors.lightMuted),
+              ),
+              onPressed: () => provider.setStatusFilter(tab),
             ),
           );
         }).toList(),
@@ -182,20 +201,46 @@ class _LeaveTile extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: _ActionButton(
-                  label: 'Reject',
-                  color: AppColors.error,
-                  icon: Icons.close_rounded,
-                  onTap: () => _handleReject(context, provider, leave.id),
+                child: m3e.M3EButton(
+                  style: m3e.M3EButtonStyle.outlined,
+                  size: m3e.M3EButtonSize.sm,
+                  onPressed: () => _handleReject(context, provider, leave.id),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.close_rounded, size: 16, color: AppColors.error),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Reject',
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.error,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: _ActionButton(
-                  label: 'Approve',
-                  color: AppColors.success,
-                  icon: Icons.check_rounded,
-                  onTap: () => _handleApprove(context, provider, leave.id),
+                child: m3e.M3EButton(
+                  style: m3e.M3EButtonStyle.filled,
+                  size: m3e.M3EButtonSize.sm,
+                  onPressed: () => _handleApprove(context, provider, leave.id),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.check_rounded, size: 16, color: Colors.white),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Approve',
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -281,49 +326,5 @@ class _LeaveTile extends StatelessWidget {
         );
       }
     }
-  }
-}
-
-class _ActionButton extends StatelessWidget {
-  final String label;
-  final Color color;
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const _ActionButton({
-    required this.label,
-    required this.color,
-    required this.icon,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: color.withValues(alpha: 0.25)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: color, size: 16),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w700,
-                color: color,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

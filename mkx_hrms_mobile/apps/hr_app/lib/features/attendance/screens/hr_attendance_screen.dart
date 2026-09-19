@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/widgets/app_avatar.dart';
-import 'package:mkx_core/widgets/app_chip.dart';
 import 'package:mkx_core/widgets/empty_state.dart';
-import 'package:mkx_core/widgets/m3_loader.dart';
+import '../../../widgets/m3_expressive_loader.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
@@ -52,9 +52,8 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
     final provider = context.watch<HrAttendanceProvider>();
 
     return Scaffold(
-      backgroundColor: isDark
-          ? AppColors.darkBackground
-          : AppColors.lightBackground,
+      backgroundColor:
+          isDark ? AppColors.darkBackground : AppColors.lightBackground,
       appBar: MkxAppBar(
         title: 'Attendance',
         subtitle: DateFormat('EEEE, d MMMM yyyy').format(provider.selectedDate),
@@ -74,12 +73,11 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
                 const SizedBox(height: 12),
                 _buildDateFilters(isDark, provider),
                 const SizedBox(height: 10),
-
                 if (provider.isLoading && provider.records.isEmpty)
                   const Center(
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 40),
-                      child: AppLoader.contained(size: 48),
+                      child: M3ExpressiveLoader.contained(size: 52),
                     ),
                   )
                 else if (provider.records.isEmpty)
@@ -106,9 +104,10 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
   }
 
   Widget _buildSummaryRow(bool isDark, HrAttendanceProvider provider) {
-    return SectionTile(
-      isDark: isDark,
-      position: TilePosition.only,
+    return m3e.M3ECard(
+      variant: m3e.M3ECardVariant.filled,
+      borderRadius: BorderRadius.circular(16),
+      color: isDark ? AppColors.darkCard : AppColors.lightCard,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -167,8 +166,7 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
       child: Row(
         children: [
           ...dates.map((date) {
-            final isSelected =
-                provider.selectedDate.year == date.year &&
+            final isSelected = provider.selectedDate.year == date.year &&
                 provider.selectedDate.month == date.month &&
                 provider.selectedDate.day == date.day;
 
@@ -184,30 +182,32 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
 
             return Padding(
               padding: const EdgeInsets.only(right: 8),
-              child: AppChip(
+              child: m3e.M3EChip(
                 label: label,
-                isSelected: isSelected,
-                onSelected: (_) => provider.setDate(date),
+                type: m3e.M3EChipType.filter,
+                selected: isSelected,
+                onPressed: () => provider.setDate(date),
               ),
             );
           }),
           Padding(
             padding: const EdgeInsets.only(right: 8),
-            child: AppChip(
+            child: m3e.M3EChip(
               label: isCustomDate
                   ? DateFormat('MMM d').format(provider.selectedDate)
                   : 'Custom',
-              icon: Icon(
+              type: m3e.M3EChipType.filter,
+              leading: Icon(
                 Icons.calendar_today_rounded,
                 size: 14,
                 color: isCustomDate
                     ? (isDark
-                          ? AppColors.darkPrimaryForeground
-                          : AppColors.lightPrimaryForeground)
+                        ? AppColors.darkPrimaryForeground
+                        : AppColors.lightPrimaryForeground)
                     : (isDark ? AppColors.darkMuted : AppColors.lightMuted),
               ),
-              isSelected: isCustomDate,
-              onTap: () => _pickDate(context, provider),
+              selected: isCustomDate,
+              onPressed: () => _pickDate(context, provider),
             ),
           ),
         ],
