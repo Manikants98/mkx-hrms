@@ -1,6 +1,6 @@
 {
-    "name": "hr_app",
-    "short_name": "hr_app",
+    "name": "MKX HR Admin",
+    "short_name": "MKX HR Admin",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
