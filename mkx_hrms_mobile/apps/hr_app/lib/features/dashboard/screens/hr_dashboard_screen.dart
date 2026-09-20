@@ -7,7 +7,6 @@ import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:provider/provider.dart';
 
-import '../../../widgets/m3_expressive_loader.dart';
 import '../../dashboard/models/dashboard_stats_model.dart';
 import '../../dashboard/state/dashboard_provider.dart';
 
@@ -39,7 +38,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
       backgroundColor:
           isDark ? AppColors.darkBackground : AppColors.lightBackground,
       appBar: MkxAppBar(
-        title: 'HR Dashboard',
+        title: 'Dashboard',
         subtitle: 'Good ${_greeting()}, ${user?.name ?? "HR Admin"}',
       ),
       body: SafeArea(
@@ -51,7 +50,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
               ? const Center(
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 40),
-                    child: M3ExpressiveLoader.contained(size: 52),
+                    child: SizedBox(width: 52, height: 52, child: CircularProgressIndicator(strokeWidth: 3)),
                   ),
                 )
               : SingleChildScrollView(

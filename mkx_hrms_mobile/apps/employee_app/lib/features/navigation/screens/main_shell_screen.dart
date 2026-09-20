@@ -20,10 +20,10 @@ class _MainShellScreenState extends State<MainShellScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = const [
-    AttendanceDashboardScreen(),
-    LeavesScreen(),
-    PayrollScreen(),
-    ProfileScreen(),
+    AttendanceDashboardScreen(key: ValueKey(0)),
+    LeavesScreen(key: ValueKey(1)),
+    PayrollScreen(key: ValueKey(2)),
+    ProfileScreen(key: ValueKey(3)),
   ];
 
   static const List<_NavItemData> _items = [
@@ -62,7 +62,12 @@ class _MainShellScreenState extends State<MainShellScreen> {
     );
 
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _screens),
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        switchInCurve: Curves.easeOut,
+        switchOutCurve: Curves.easeIn,
+        child: _screens[_currentIndex],
+      ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: surfaceColor,

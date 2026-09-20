@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/utils/date_utils.dart';
-import 'package:mkx_core/widgets/custom_button.dart';
+import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
 import '../models/attendance_model.dart';
@@ -132,20 +132,39 @@ class PunchCard extends StatelessWidget {
 
           // Action Button
           if (!hasCheckedIn)
-            CustomButton(
-              text: 'Punch In Now',
-              icon: const Icon(Icons.fingerprint_rounded, size: 20),
-              isLoading: isPunching,
-              onPressed: onPunchIn,
-            )
+            if (isPunching)
+              Center(child: const SizedBox(width: 40, height: 40, child: CircularProgressIndicator(strokeWidth: 3)))
+            else
+              m3e.M3EButton(
+                style: m3e.M3EButtonStyle.filled,
+                size: m3e.M3EButtonSize.md,
+                onPressed: onPunchIn,
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.fingerprint_rounded, size: 20),
+                    SizedBox(width: 8),
+                    Text('Punch In Now'),
+                  ],
+                ),
+              )
           else if (hasCheckedIn && !hasCheckedOut)
-            CustomButton(
-              text: 'Punch Out Now',
-              icon: const Icon(Icons.timer_off_outlined, size: 20),
-              variant: ButtonVariant.danger,
-              isLoading: isPunching,
-              onPressed: onPunchOut,
-            )
+            if (isPunching)
+              Center(child: const SizedBox(width: 40, height: 40, child: CircularProgressIndicator(strokeWidth: 3)))
+            else
+              m3e.M3EButton(
+                style: m3e.M3EButtonStyle.filled,
+                size: m3e.M3EButtonSize.md,
+                onPressed: onPunchOut,
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.timer_off_outlined, size: 20),
+                    SizedBox(width: 8),
+                    Text('Punch Out Now'),
+                  ],
+                ),
+              )
           else
             Container(
               padding: const EdgeInsets.symmetric(vertical: 14),

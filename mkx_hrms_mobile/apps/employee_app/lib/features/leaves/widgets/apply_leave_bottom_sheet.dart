@@ -3,9 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/utils/ui_helpers.dart';
-import 'package:mkx_core/widgets/custom_button.dart';
+import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
 import 'package:mkx_core/widgets/custom_text_field.dart';
-import 'package:mkx_core/widgets/m3_loader.dart';
 import 'package:mkx_core/features/auth/state/auth_provider.dart';
 import '../models/leave_model.dart';
 import '../state/leaves_provider.dart';
@@ -233,7 +232,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                             : AppColors.lightForeground,
                       ),
                     ),
-                    if (leaves.isLoadingLeaveTypes) const AppLoader(size: 14),
+                    if (leaves.isLoadingLeaveTypes) const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 3)),
                   ],
                 ),
                 const SizedBox(height: 6),
@@ -450,12 +449,22 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                 const SizedBox(height: 24),
 
                 // Submit Button
-                CustomButton(
-                  text: 'Submit Leave Request',
-                  icon: const Icon(Icons.send_rounded, size: 18),
-                  isLoading: leaves.isSubmitting,
-                  onPressed: _handleSubmit,
-                ),
+                if (leaves.isSubmitting)
+                  const Center(child: SizedBox(width: 40, height: 40, child: CircularProgressIndicator(strokeWidth: 3)))
+                else
+                  m3e.M3EButton(
+                    style: m3e.M3EButtonStyle.filled,
+                    size: m3e.M3EButtonSize.md,
+                    onPressed: _handleSubmit,
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.send_rounded, size: 18),
+                        SizedBox(width: 8),
+                        Text('Submit Leave Request'),
+                      ],
+                    ),
+                  ),
               ],
             ),
           ),

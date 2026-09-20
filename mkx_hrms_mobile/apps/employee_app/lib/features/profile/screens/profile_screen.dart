@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
+import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
 import 'package:mkx_core/constants/app_colors.dart';
+import 'package:mkx_core/features/auth/state/auth_provider.dart';
 import 'package:mkx_core/utils/date_utils.dart';
 import 'package:mkx_core/utils/ui_helpers.dart';
 import 'package:mkx_core/widgets/app_avatar.dart';
-import 'package:mkx_core/widgets/custom_button.dart';
-import 'package:mkx_core/widgets/m3_loader.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
-import 'package:mkx_core/features/auth/state/auth_provider.dart';
+import 'package:provider/provider.dart';
+
 import '../../leaves/models/leave_model.dart';
 import '../../leaves/state/leaves_provider.dart';
 import '../../leaves/widgets/apply_leave_bottom_sheet.dart';
@@ -87,9 +86,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SectionTile(
-                isDark: isDark,
-                position: TilePosition.only,
+              m3e.M3ECard(
+                variant: m3e.M3ECardVariant.filled,
+                borderRadius: BorderRadius.circular(16),
+                color: isDark ? AppColors.darkCard : AppColors.lightCard,
                 padding: const EdgeInsets.all(20),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -284,52 +284,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       'Choose between system, light, and dark zinc appearance.',
                       style: TextStyle(
                         fontSize: 12,
-                        color: isDark
-                            ? AppColors.darkMuted
-                            : AppColors.lightMuted,
+                        color:
+                            isDark ? AppColors.darkMuted : AppColors.lightMuted,
                       ),
                     ),
                     const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        _buildThemeButton(
-                          context,
-                          title: 'System',
-                          icon: Icons.settings_brightness_rounded,
-                          mode: ThemeMode.system,
-                          currentMode: auth.themeMode,
-                          isDark: isDark,
-                        ),
-                        const SizedBox(width: 8),
-                        _buildThemeButton(
-                          context,
-                          title: 'Light',
-                          icon: Icons.light_mode_outlined,
-                          mode: ThemeMode.light,
-                          currentMode: auth.themeMode,
-                          isDark: isDark,
-                        ),
-                        const SizedBox(width: 8),
-                        _buildThemeButton(
-                          context,
-                          title: 'Dark',
-                          icon: Icons.dark_mode_outlined,
-                          mode: ThemeMode.dark,
-                          currentMode: auth.themeMode,
-                          isDark: isDark,
-                        ),
-                      ],
-                    ),
+                    _buildThemeChips(context, auth, isDark),
                   ],
                 ),
               ),
               const SizedBox(height: 32),
 
               // Logout Button
-              CustomButton(
-                text: 'Sign Out',
-                icon: const Icon(Icons.logout_rounded, size: 18),
-                variant: ButtonVariant.danger,
+              m3e.M3EButton(
+                style: m3e.M3EButtonStyle.filled,
+                size: m3e.M3EButtonSize.md,
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.logout_rounded, size: 18),
+                    SizedBox(width: 8),
+                    Text('Sign Out'),
+                  ],
+                ),
                 onPressed: () => _handleLogout(context),
               ),
               const SizedBox(height: 40),
@@ -371,59 +348,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildThemeButton(
-    BuildContext context, {
-    required String title,
-    required IconData icon,
-    required ThemeMode mode,
-    required ThemeMode currentMode,
-    required bool isDark,
-  }) {
-    final isSelected = mode == currentMode;
-    return Expanded(
-      child: InkWell(
-        onTap: () => context.read<AuthProvider>().setThemeMode(mode),
-        borderRadius: BorderRadius.circular(10),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? (isDark ? AppColors.darkPrimary : AppColors.lightPrimary)
-                : (isDark ? AppColors.darkSecondary : AppColors.lightSecondary),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: isSelected
-                  ? Colors.transparent
-                  : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-            ),
-          ),
-          child: Column(
-            children: [
-              Icon(
-                icon,
-                size: 18,
+  Widget _buildThemeChips(
+    BuildContext context,
+    AuthProvider auth,
+    bool isDark,
+  ) {
+    final modes = [
+      (ThemeMode.system, 'System', Icons.settings_brightness_rounded),
+      (ThemeMode.light, 'Light', Icons.light_mode_rounded),
+      (ThemeMode.dark, 'Dark', Icons.dark_mode_rounded),
+    ];
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: modes.map((item) {
+          final isSelected = auth.themeMode == item.$1;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: m3e.M3EChip(
+              label: item.$2,
+              type: m3e.M3EChipType.filter,
+              selected: isSelected,
+              elevated: isSelected,
+              leading: Icon(
+                item.$3,
+                size: 14,
                 color: isSelected
                     ? (isDark
-                          ? AppColors.darkPrimaryForeground
-                          : AppColors.lightPrimaryForeground)
+                        ? AppColors.darkPrimaryForeground
+                        : AppColors.lightPrimaryForeground)
                     : (isDark ? AppColors.darkMuted : AppColors.lightMuted),
               ),
-              const SizedBox(height: 4),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected
-                      ? (isDark
-                            ? AppColors.darkPrimaryForeground
-                            : AppColors.lightPrimaryForeground)
-                      : (isDark ? AppColors.darkMuted : AppColors.lightMuted),
-                ),
-              ),
-            ],
-          ),
-        ),
+              onPressed: () => auth.setThemeMode(item.$1),
+            ),
+          );
+        }).toList(),
       ),
     );
   }
@@ -441,28 +401,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
         isDark: isDark,
         position: TilePosition.only,
         padding: const EdgeInsets.all(24),
-        child: const Center(child: AppLoader.contained(size: 36)),
+        child: Center(child: const SizedBox(width: 36, height: 36, child: CircularProgressIndicator(strokeWidth: 3))),
       );
     }
 
     final displayQuotas = quotas.isNotEmpty
         ? quotas
         : (leaves.masterLeaveTypes.isNotEmpty
-              ? leaves.masterLeaveTypes
-                    .map(
-                      (type) => LeaveQuota(
-                        id: type.id,
-                        name: type.name,
-                        code: type.code,
-                        total: type.daysPerYear,
-                        used: 0,
-                        remaining: type.daysPerYear,
-                        color: type.color,
-                        isPaid: type.isPaid,
-                      ),
-                    )
-                    .toList()
-              : <LeaveQuota>[]);
+            ? leaves.masterLeaveTypes
+                .map(
+                  (type) => LeaveQuota(
+                    id: type.id,
+                    name: type.name,
+                    code: type.code,
+                    total: type.daysPerYear,
+                    used: 0,
+                    remaining: type.daysPerYear,
+                    color: type.color,
+                    isPaid: type.isPaid,
+                  ),
+                )
+                .toList()
+            : <LeaveQuota>[]);
 
     if (displayQuotas.isEmpty) {
       return SectionTile(
@@ -492,9 +452,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ? AppColors.info
               : (index % 3 == 1 ? AppColors.success : AppColors.warning),
         );
-        final progress = quota.total > 0
-            ? (quota.used / quota.total).clamp(0.0, 1.0)
-            : 0.0;
+        final progress =
+            quota.total > 0 ? (quota.used / quota.total).clamp(0.0, 1.0) : 0.0;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -559,9 +518,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: LinearProgressIndicator(
                 value: progress,
                 minHeight: 4,
-                backgroundColor: isDark
-                    ? AppColors.darkSecondary
-                    : AppColors.lightSecondary,
+                backgroundColor:
+                    isDark ? AppColors.darkSecondary : AppColors.lightSecondary,
                 valueColor: AlwaysStoppedAnimation<Color>(color),
               ),
             ),

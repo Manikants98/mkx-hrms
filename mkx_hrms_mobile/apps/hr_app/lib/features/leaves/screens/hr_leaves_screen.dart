@@ -8,7 +8,6 @@ import 'package:mkx_core/widgets/empty_state.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
-import '../../../widgets/m3_expressive_loader.dart';
 import '../models/hr_leave_model.dart';
 import '../state/hr_leaves_provider.dart';
 
@@ -61,7 +60,7 @@ class _HrLeavesScreenState extends State<HrLeavesScreen> {
                   const Center(
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 40),
-                      child: M3ExpressiveLoader.contained(size: 52),
+                      child: SizedBox(width: 52, height: 52, child: CircularProgressIndicator(strokeWidth: 3)),
                     ),
                   )
                 else if (provider.leaves.isEmpty)

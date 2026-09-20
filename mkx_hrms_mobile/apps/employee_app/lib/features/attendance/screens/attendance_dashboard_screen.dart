@@ -4,7 +4,6 @@ import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/utils/date_utils.dart';
 import 'package:mkx_core/utils/ui_helpers.dart';
 import 'package:mkx_core/widgets/empty_state.dart';
-import 'package:mkx_core/widgets/m3_loader.dart';
 import 'package:mkx_core/widgets/metric_card.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
@@ -106,6 +105,12 @@ class _AttendanceDashboardScreenState extends State<AttendanceDashboardScreen> {
       );
     }
   }
+  String _greeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Morning';
+    if (hour < 17) return 'Afternoon';
+    return 'Evening';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -127,8 +132,8 @@ class _AttendanceDashboardScreenState extends State<AttendanceDashboardScreen> {
 
     return Scaffold(
       appBar: MkxAppBar(
-        title: 'Attendance',
-        subtitle: '${user?.role ?? "Employee"} • ${user?.department ?? "Engineering"}',
+        title: 'Dashboard',
+        subtitle: 'Good ${_greeting()}, ${user?.name ?? "Employee"}',
       ),
       body: SafeArea(
         top: false,
@@ -246,10 +251,12 @@ class _AttendanceDashboardScreenState extends State<AttendanceDashboardScreen> {
                 const SizedBox(height: 10),
 
                 if (attendance.isLoading && attendance.history.isEmpty)
-                  const Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 40),
-                      child: AppLoader.contained(size: 48),
+                  SectionTile(
+                    isDark: isDark,
+                    position: TilePosition.only,
+                    padding: const EdgeInsets.all(24),
+                    child: Center(
+                      child: const SizedBox(width: 36, height: 36, child: CircularProgressIndicator(strokeWidth: 3)),
                     ),
                   )
                 else if (attendance.history.isEmpty)

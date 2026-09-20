@@ -6,7 +6,6 @@ import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/utils/ui_helpers.dart';
 import 'package:mkx_core/widgets/app_avatar.dart';
 import 'package:mkx_core/widgets/empty_state.dart';
-import '../../../widgets/m3_expressive_loader.dart';
 import 'package:mkx_core/widgets/metric_card.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
@@ -219,7 +218,7 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
                   const Center(
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 40),
-                      child: M3ExpressiveLoader.contained(size: 52),
+                      child: SizedBox(width: 52, height: 52, child: CircularProgressIndicator(strokeWidth: 3)),
                     ),
                   )
                 else if (filteredPayrolls.isEmpty)
@@ -409,11 +408,13 @@ class _PayrollRow extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if (provider.isProcessing(payroll.id))
-                    M3ExpressiveLoader.button(
-                      size: 14,
-                      color: isDark
-                          ? AppColors.darkPrimary
-                          : AppColors.lightPrimary,
+                    SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
+                      ),
                     )
                   else
                     const Icon(Icons.play_arrow_rounded, size: 16),

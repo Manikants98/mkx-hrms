@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'm3_loader.dart';
 import '../constants/app_colors.dart';
 
 enum ButtonVariant { primary, secondary, outline, danger }
@@ -84,9 +83,10 @@ class CustomButton extends StatelessWidget {
         ),
         onPressed: isLoading ? null : onPressed,
         child: isLoading
-            ? AppLoader(
-                size: 18,
-                color: fgColor,
+            ? SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2, color: fgColor),
               )
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,

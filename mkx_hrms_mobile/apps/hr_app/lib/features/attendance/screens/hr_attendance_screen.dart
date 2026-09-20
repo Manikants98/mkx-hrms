@@ -4,7 +4,6 @@ import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/widgets/app_avatar.dart';
 import 'package:mkx_core/widgets/empty_state.dart';
-import '../../../widgets/m3_expressive_loader.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
@@ -76,7 +75,7 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
                   const Center(
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 40),
-                      child: M3ExpressiveLoader.contained(size: 52),
+                      child: SizedBox(width: 52, height: 52, child: CircularProgressIndicator(strokeWidth: 3)),
                     ),
                   )
                 else if (provider.records.isEmpty)

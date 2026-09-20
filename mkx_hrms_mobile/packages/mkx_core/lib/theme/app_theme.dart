@@ -15,8 +15,9 @@ class AppTheme {
   ///
   /// Pass [dynamicColorScheme] from [DynamicColorBuilder] to enable
   /// Material You wallpaper-based accent colours.
-  static ThemeData lightTheme([ColorScheme? dynamicColorScheme]) {
-    final colorScheme = (dynamicColorScheme ?? const ColorScheme.light()).copyWith(
+  static ThemeData lightTheme([dynamic dynamicColorScheme]) {
+    final defaultScheme = const ColorScheme.light();
+    final colorScheme = defaultScheme.copyWith(
       brightness: Brightness.light,
       primary: dynamicColorScheme?.primary ?? AppColors.lightPrimary,
       onPrimary: dynamicColorScheme?.onPrimary ?? AppColors.lightPrimaryForeground,
@@ -118,8 +119,9 @@ class AppTheme {
   ///
   /// Pass [dynamicColorScheme] from [DynamicColorBuilder] to enable
   /// Material You wallpaper-based accent colours.
-  static ThemeData darkTheme([ColorScheme? dynamicColorScheme]) {
-    final colorScheme = (dynamicColorScheme ?? const ColorScheme.dark()).copyWith(
+  static ThemeData darkTheme([dynamic dynamicColorScheme]) {
+    final defaultScheme = const ColorScheme.dark();
+    final colorScheme = defaultScheme.copyWith(
       brightness: Brightness.dark,
       primary: dynamicColorScheme?.primary ?? AppColors.darkPrimary,
       onPrimary: dynamicColorScheme?.onPrimary ?? AppColors.darkPrimaryForeground,

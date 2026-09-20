@@ -6,7 +6,6 @@ import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/utils/date_utils.dart';
 import 'package:mkx_core/utils/ui_helpers.dart';
 import 'package:mkx_core/widgets/app_avatar.dart';
-import 'package:mkx_core/widgets/custom_button.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
@@ -228,11 +227,18 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
               const SizedBox(height: 32),
 
               // Logout Button
-              CustomButton(
-                text: 'Sign Out',
-                icon: const Icon(Icons.logout_rounded, size: 18),
-                variant: ButtonVariant.danger,
+              m3e.M3EButton(
+                style: m3e.M3EButtonStyle.filled,
+                size: m3e.M3EButtonSize.md,
                 onPressed: () => _handleLogout(context),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.logout_rounded, size: 18),
+                    SizedBox(width: 8),
+                    Text('Sign Out'),
+                  ],
+                ),
               ),
               const SizedBox(height: 40),
             ],

@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
 
-import 'package:mkx_core/constants/api_endpoints.dart';
 import 'package:mkx_core/constants/app_colors.dart';
-import 'package:mkx_core/network/dio_client.dart';
 import 'package:mkx_core/utils/ui_helpers.dart';
-import 'package:mkx_core/widgets/app_chip.dart';
-import 'package:mkx_core/widgets/custom_button.dart';
 import 'package:mkx_core/widgets/custom_text_field.dart';
 import '../state/auth_provider.dart';
 
@@ -48,8 +45,6 @@ class _LoginScreenState extends State<LoginScreen> {
         'Welcome back, ${auth.currentUser?.name ?? "Employee"}!',
         isSuccess: true,
       );
-      // MainShellScreen is automatically rendered by Consumer<AuthProvider> in main.dart
-      // If a route was pushed on top of LoginScreen, clear it back to root
       if (Navigator.of(context).canPop()) {
         Navigator.of(context).popUntil((route) => route.isFirst);
       }
@@ -60,190 +55,6 @@ class _LoginScreenState extends State<LoginScreen> {
         isError: true,
       );
     }
-  }
-
-  void _showServerConfigModal() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final currentUrl = DioClient.instance.dio.options.baseUrl;
-    final urlController = TextEditingController(text: currentUrl);
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: isDark ? AppColors.darkCard : AppColors.lightCard,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setModalState) {
-          final isLive = urlController.text == ApiEndpoints.liveBaseUrl;
-          final isEmulator = urlController.text == ApiEndpoints.emulatorBaseUrl;
-          final isLocal = urlController.text == ApiEndpoints.localBaseUrl;
-
-          return Padding(
-            padding: EdgeInsets.only(
-              left: 20,
-              right: 20,
-              top: 24,
-              bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Server Environment',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.success.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 6,
-                            height: 6,
-                            decoration: const BoxDecoration(
-                              color: AppColors.success,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 5),
-                          Text(
-                            isLive ? 'Live Cloud' : 'Local Dev',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.success,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Select an active backend environment or enter a custom endpoint URL below:',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Quick preset environment chips
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    AppChip(
-                      label: 'Render Live',
-                      icon: const Icon(Icons.cloud_done_rounded, size: 14),
-                      isSelected: isLive,
-                      onSelected: (selected) {
-                        if (selected) {
-                          setModalState(() {
-                            urlController.text = ApiEndpoints.liveBaseUrl;
-                          });
-                        }
-                      },
-                    ),
-                    AppChip(
-                      label: 'Android 10.0.2.2',
-                      icon: const Icon(Icons.phone_android_rounded, size: 14),
-                      isSelected: isEmulator,
-                      onSelected: (selected) {
-                        if (selected) {
-                          setModalState(() {
-                            urlController.text = ApiEndpoints.emulatorBaseUrl;
-                          });
-                        }
-                      },
-                    ),
-                    AppChip(
-                      label: 'Localhost',
-                      icon: const Icon(Icons.laptop_chromebook_rounded, size: 14),
-                      isSelected: isLocal,
-                      onSelected: (selected) {
-                        if (selected) {
-                          setModalState(() {
-                            urlController.text = ApiEndpoints.localBaseUrl;
-                          });
-                        }
-                      },
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 16),
-                CustomTextField(
-                  controller: urlController,
-                  label: 'API Base URL',
-                  hintText: 'https://...',
-                  onChanged: (_) => setModalState(() {}),
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Expanded(
-                      child: CustomButton(
-                        text: 'Reset to Live',
-                        variant: ButtonVariant.outline,
-                        onPressed: () {
-                          DioClient.instance.updateBaseUrl(
-                            ApiEndpoints.liveBaseUrl,
-                          );
-                          setState(() {});
-                          Navigator.of(ctx).pop();
-                          UiHelpers.showSnackBar(
-                            context,
-                            'Reset to Render Live Backend',
-                            isSuccess: true,
-                          );
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: CustomButton(
-                        text: 'Apply URL',
-                        onPressed: () {
-                          final trimmed = urlController.text.trim();
-                          if (trimmed.isNotEmpty) {
-                            DioClient.instance.updateBaseUrl(trimmed);
-                            setState(() {});
-                            Navigator.of(ctx).pop();
-                            UiHelpers.showSnackBar(
-                              context,
-                              'API endpoint switched to $trimmed',
-                              isSuccess: true,
-                            );
-                          }
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
   }
 
   @override
@@ -311,14 +122,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 32),
 
                     // Card Container
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? AppColors.darkCard
-                            : AppColors.lightCard,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
+                    m3e.M3ECard(
+                      variant: m3e.M3ECardVariant.elevated,
+                      color: isDark ? AppColors.darkCard : AppColors.lightCard,
+                      padding: const EdgeInsets.all(24),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
@@ -332,7 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            'Enter your corporate email and password to access your attendance, leaves, and salary slips.',
+                            'Enter your corporate email and password to access your dashboard.',
                             style: TextStyle(
                               fontSize: 12,
                               color: isDark
@@ -405,76 +212,21 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 22),
 
-                          // Submit Button
-                          CustomButton(
-                            text: 'Sign In to Portal',
-                            isLoading: auth.isLoading,
-                            onPressed: _handleLogin,
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // Quick Demo Accounts & Server Settings
-                    Center(
-                      child: InkWell(
-                        onTap: _showServerConfigModal,
-                        borderRadius: BorderRadius.circular(12),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? AppColors.darkCard
-                                : AppColors.lightCard,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: isDark
-                                  ? AppColors.darkBorder
-                                  : AppColors.lightBorder,
+                          if (auth.isLoading)
+                            Center(child: const SizedBox(width: 44, height: 44, child: CircularProgressIndicator(strokeWidth: 3)))
+                          else
+                            m3e.M3EButton(
+                              style: m3e.M3EButtonStyle.filled,
+                              size: m3e.M3EButtonSize.md,
+                              onPressed: _handleLogin,
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text('Sign In to Portal'),
+                                ],
+                              ),
                             ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 8,
-                                height: 8,
-                                decoration: const BoxDecoration(
-                                  color: AppColors.success,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                DioClient.instance.dio.options.baseUrl.contains(
-                                      'render.com',
-                                    )
-                                    ? 'Server: Render Live'
-                                    : 'Server: Local Dev',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: isDark
-                                      ? AppColors.darkForeground
-                                      : AppColors.lightForeground,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Icon(
-                                Icons.tune_rounded,
-                                size: 14,
-                                color: isDark
-                                    ? AppColors.darkMuted
-                                    : AppColors.lightMuted,
-                              ),
-                            ],
-                          ),
-                        ),
+                        ],
                       ),
                     ),
                   ],

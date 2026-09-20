@@ -3,10 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/utils/date_utils.dart';
 import 'package:mkx_core/utils/ui_helpers.dart';
-import 'package:mkx_core/widgets/custom_button.dart';
-import 'package:mkx_core/widgets/app_chip.dart';
+import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
 import 'package:mkx_core/widgets/empty_state.dart';
-import 'package:mkx_core/widgets/m3_loader.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
@@ -62,13 +60,17 @@ class _LeavesScreenState extends State<LeavesScreen> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 8),
-            child: CustomButton(
-              text: 'Apply',
-              icon: const Icon(Icons.add_rounded, size: 16),
-              height: 36,
-              width: 90,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: m3e.M3EButton(
+              style: m3e.M3EButtonStyle.outlined,
+              size: m3e.M3EButtonSize.sm,
               onPressed: _openApplyModal,
+              child: const Row(
+                children: [
+                  Icon(Icons.add_rounded, size: 16),
+                  SizedBox(width: 4),
+                  Text('Apply'),
+                ],
+              ),
             ),
           ),
         ],
@@ -95,12 +97,32 @@ class _LeavesScreenState extends State<LeavesScreen> {
                       filter,
                     ) {
                       final isSelected = leaves.selectedFilter == filter;
+                      
+                      final Map<String, IconData> tabIcons = {
+                        'All': Icons.layers_outlined,
+                        'Pending': Icons.pending_actions_rounded,
+                        'Approved': Icons.check_circle_outline_rounded,
+                        'Rejected': Icons.cancel_outlined,
+                      };
+                      final icon = tabIcons[filter] ?? Icons.label_outline_rounded;
+
                       return Padding(
                         padding: const EdgeInsets.only(right: 8),
-                        child: AppChip(
+                        child: m3e.M3EChip(
                           label: filter,
-                          isSelected: isSelected,
-                          onSelected: (_) => leaves.setFilter(filter),
+                          type: m3e.M3EChipType.filter,
+                          selected: isSelected,
+                          elevated: isSelected,
+                          leading: Icon(
+                            icon,
+                            size: 14,
+                            color: isSelected
+                                ? (isDark
+                                    ? AppColors.darkPrimaryForeground
+                                    : AppColors.lightPrimaryForeground)
+                                : (isDark ? AppColors.darkMuted : AppColors.lightMuted),
+                          ),
+                          onPressed: () => leaves.setFilter(filter),
                         ),
                       );
                     }).toList(),
@@ -110,10 +132,10 @@ class _LeavesScreenState extends State<LeavesScreen> {
 
                 /// History List
                 if (leaves.isLoading && leaves.history.isEmpty)
-                  const Center(
+                  Center(
                     child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 40),
-                      child: AppLoader.contained(size: 48),
+                      padding: const EdgeInsets.symmetric(vertical: 40),
+                      child: const SizedBox(width: 48, height: 48, child: CircularProgressIndicator(strokeWidth: 3)),
                     ),
                   )
                 else if (leaves.filteredHistory.isEmpty)
@@ -122,11 +144,11 @@ class _LeavesScreenState extends State<LeavesScreen> {
                     title: 'No leave applications found',
                     description:
                         'Tap the "+ Apply" button above to submit your first leave application.',
-                    action: CustomButton(
-                      text: 'Apply for Leave',
-                      width: 160,
-                      height: 40,
+                    action: m3e.M3EButton(
+                      style: m3e.M3EButtonStyle.filled,
+                      size: m3e.M3EButtonSize.md,
                       onPressed: _openApplyModal,
+                      child: const Text('Apply for Leave'),
                     ),
                   )
                 else
@@ -264,6 +286,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
   }
 
   Widget _buildDynamicQuotaCards(BuildContext context, LeavesProvider leaves) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final quotas = leaves.balances?.list ?? [];
     final displayQuotas = quotas.isNotEmpty
         ? quotas
@@ -288,143 +311,112 @@ class _LeavesScreenState extends State<LeavesScreen> {
       return const SizedBox.shrink();
     }
 
-    return SizedBox(
-      height: 106,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        clipBehavior: Clip.none,
-        itemCount: displayQuotas.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 10),
-        itemBuilder: (context, index) {
-          final item = displayQuotas[index];
-          final color = UiHelpers.parseHexColor(
-            item.color,
-            defaultColor: index % 3 == 0
-                ? AppColors.info
-                : (index % 3 == 1 ? AppColors.success : AppColors.warning),
-          );
+    return SectionCard(
+      isDark: isDark,
+      children: displayQuotas.asMap().entries.map((entry) {
+        final index = entry.key;
+        final quota = entry.value;
+        final color = UiHelpers.parseHexColor(
+          quota.color,
+          defaultColor: index % 3 == 0
+              ? AppColors.info
+              : (index % 3 == 1 ? AppColors.success : AppColors.warning),
+        );
+        final progress =
+            quota.total > 0 ? (quota.used / quota.total).clamp(0.0, 1.0) : 0.0;
 
-          return SizedBox(
-            width: 142,
-            child: _buildQuotaCard(
-              context,
-              title: item.name ?? 'Leave',
-              code: item.code,
-              remaining: item.remaining,
-              used: item.used,
-              total: item.total,
-              color: color,
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      quota.name ?? 'Leave',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    if (quota.code != null && quota.code!.isNotEmpty) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 1,
+                        ),
+                        decoration: BoxDecoration(
+                          color: color.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          quota.code!,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: color,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                Text(
+                  '${quota.remaining} days left',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: color,
+                  ),
+                ),
+              ],
             ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildQuotaCard(
-    BuildContext context, {
-    required String title,
-    String? code,
-    required int remaining,
-    int? used,
-    required int total,
-    required Color color,
-  }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final usedCount = used ?? (total - remaining);
-    final progress = total > 0 ? (usedCount / total).clamp(0.0, 1.0) : 0.0;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(3),
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 4,
+                backgroundColor:
+                    isDark ? AppColors.darkSecondary : AppColors.lightSecondary,
+                valueColor: AlwaysStoppedAnimation<Color>(color),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '${quota.used} used of ${quota.total} total',
                   style: TextStyle(
                     fontSize: 11,
-                    fontWeight: FontWeight.w600,
                     color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
                   ),
                 ),
-              ),
-              if (code != null && code.isNotEmpty)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 4,
-                    vertical: 1,
-                  ),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    code,
-                    style: TextStyle(
-                      fontSize: 9,
-                      fontWeight: FontWeight.w700,
-                      color: color,
-                    ),
+                Text(
+                  quota.isPaid == false ? 'Unpaid' : 'Paid Leave',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
                   ),
                 ),
-            ],
-          ),
-          const SizedBox(height: 5),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Text(
-                '$remaining',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: color,
-                ),
-              ),
-              const SizedBox(width: 2),
-              Text(
-                '/$total',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
-                ),
-              ),
-              const Spacer(),
-              Text(
-                '$usedCount used',
-                style: TextStyle(
-                  fontSize: 10,
-                  color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 5),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(2),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 3,
-              backgroundColor:
-                  isDark ? AppColors.darkBorder : AppColors.lightBorder,
-              valueColor: AlwaysStoppedAnimation<Color>(color),
+              ],
             ),
-          ),
-        ],
-      ),
+          ],
+        );
+      }).toList(),
     );
   }
 }
