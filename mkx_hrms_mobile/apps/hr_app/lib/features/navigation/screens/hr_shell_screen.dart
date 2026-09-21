@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mkx_core/constants/app_colors.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
 
 /// Shell scaffold housing the 5-tab HR Admin navigation bar matching the employee app pattern
 class HrShellScreen extends StatelessWidget {
@@ -43,11 +43,11 @@ class HrShellScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final colorScheme = Theme.of(context).colorScheme;
-    final surfaceColor = isDark ? AppColors.darkCard : AppColors.lightCard;
+    final isDark = M3ETheme.of(context).brightness == Brightness.dark;
+    final colorScheme = M3ETheme.of(context).colorScheme;
+    final surfaceColor = colorScheme.surfaceContainerLow;
     final activeColor = colorScheme.primary;
-    final inactiveColor = isDark ? AppColors.darkMuted : AppColors.lightMuted;
+    final inactiveColor = colorScheme.onSurfaceVariant;
     final indicatorColor = colorScheme.primary.withValues(
       alpha: isDark ? 0.24 : 0.14,
     );
@@ -56,8 +56,7 @@ class HrShellScreen extends StatelessWidget {
     final currentIndex = _indexForLocation(location);
 
     return Scaffold(
-      backgroundColor:
-          isDark ? AppColors.darkBackground : AppColors.lightBackground,
+      backgroundColor: colorScheme.surfaceContainer,
       body: child,
       bottomNavigationBar: Container(
         decoration: BoxDecoration(

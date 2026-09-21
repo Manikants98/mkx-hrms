@@ -58,7 +58,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = m3e.M3ETheme.of(context).brightness == Brightness.dark;
     final auth = context.watch<AuthProvider>();
     final leaves = context.watch<LeavesProvider>();
     final user = auth.currentUser;
@@ -401,7 +401,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         isDark: isDark,
         position: TilePosition.only,
         padding: const EdgeInsets.all(24),
-        child: Center(child: const SizedBox(width: 36, height: 36, child: CircularProgressIndicator(strokeWidth: 3))),
+        child: Center(
+            child: SizedBox(
+                width: 36,
+                height: 36,
+                child: m3e.M3EProgressIndicator.circularWavy(strokeWidth: 3))),
       );
     }
 

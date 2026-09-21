@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
-import 'package:mkx_core/constants/app_colors.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:mkx_core/widgets/app_avatar.dart';
 import 'package:mkx_core/widgets/empty_state.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
@@ -46,21 +45,23 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = M3ETheme.of(context).brightness == Brightness.dark;
     final provider = context.watch<HrAttendanceProvider>();
+    final M3EThemeData theme = M3ETheme.of(context);
+    final M3EColorScheme scheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor:
-          isDark ? AppColors.darkBackground : AppColors.lightBackground,
+      backgroundColor: scheme.surfaceContainer,
       appBar: MkxAppBar(
         title: 'Attendance',
         subtitle: DateFormat('EEEE, d MMMM yyyy').format(provider.selectedDate),
       ),
       body: SafeArea(
         top: false,
-        child: RefreshIndicator(
-          onRefresh: () => provider.loadAttendance(),
-          color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
+        child: M3ERefreshIndicator(
+          onRefresh: () async {
+            await context.read<HrAttendanceProvider>().loadAttendance();
+          },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(10),
@@ -71,14 +72,7 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
                 const SizedBox(height: 12),
                 _buildDateFilters(isDark, provider),
                 const SizedBox(height: 10),
-                if (provider.isLoading && provider.records.isEmpty)
-                  const Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 40),
-                      child: SizedBox(width: 52, height: 52, child: CircularProgressIndicator(strokeWidth: 3)),
-                    ),
-                  )
-                else if (provider.records.isEmpty)
+                if (provider.records.isEmpty)
                   const EmptyState(
                     icon: Icons.today_outlined,
                     title: 'No attendance records',
@@ -102,10 +96,10 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
   }
 
   Widget _buildSummaryRow(bool isDark, HrAttendanceProvider provider) {
-    return m3e.M3ECard(
-      variant: m3e.M3ECardVariant.filled,
+    return M3ECard(
+      variant: M3ECardVariant.filled,
       borderRadius: BorderRadius.circular(16),
-      color: isDark ? AppColors.darkCard : AppColors.lightCard,
+      color: Theme.of(context).colorScheme.surfaceContainerLow,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -115,9 +109,10 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
             provider.records.length,
             Theme.of(context).colorScheme.primary,
           ),
-          _buildStatCol('Present', provider.presentCount, AppColors.success),
-          _buildStatCol('Late', provider.lateCount, AppColors.warning),
-          _buildStatCol('Absent', provider.absentCount, AppColors.error),
+          _buildStatCol('Present', provider.presentCount, Colors.green),
+          _buildStatCol('Late', provider.lateCount, Colors.orange),
+          _buildStatCol('Absent', provider.absentCount,
+              Theme.of(context).colorScheme.error),
         ],
       ),
     );
@@ -180,9 +175,9 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
 
             return Padding(
               padding: const EdgeInsets.only(right: 8),
-              child: m3e.M3EChip(
+              child: M3EChip(
                 label: label,
-                type: m3e.M3EChipType.filter,
+                type: M3EChipType.filter,
                 selected: isSelected,
                 onPressed: () => provider.setDate(date),
               ),
@@ -190,19 +185,17 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
           }),
           Padding(
             padding: const EdgeInsets.only(right: 8),
-            child: m3e.M3EChip(
+            child: M3EChip(
               label: isCustomDate
                   ? DateFormat('MMM d').format(provider.selectedDate)
                   : 'Custom',
-              type: m3e.M3EChipType.filter,
+              type: M3EChipType.filter,
               leading: Icon(
                 Icons.calendar_today_rounded,
                 size: 14,
                 color: isCustomDate
-                    ? (isDark
-                        ? AppColors.darkPrimaryForeground
-                        : AppColors.lightPrimaryForeground)
-                    : (isDark ? AppColors.darkMuted : AppColors.lightMuted),
+                    ? Theme.of(context).colorScheme.onPrimary
+                    : Theme.of(context).colorScheme.onSurfaceVariant,
               ),
               selected: isCustomDate,
               onPressed: () => _pickDate(context, provider),
@@ -222,8 +215,8 @@ class _AttendanceRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).colorScheme.primary;
-    final mutedColor = isDark ? AppColors.darkMuted : AppColors.lightMuted;
+    final primaryColor = M3ETheme.of(context).colorScheme.primary;
+    final mutedColor = M3ETheme.of(context).colorScheme.onSurfaceVariant;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -248,10 +241,10 @@ class _AttendanceRow extends StatelessWidget {
                 Text(
                   [
                     if (record.role != null && record.role!.isNotEmpty)
-                       record.role,
+                      record.role,
                     if (record.department != null &&
                         record.department!.isNotEmpty)
-                       record.department,
+                      record.department,
                   ].join(' • '),
                   style: TextStyle(fontSize: 12, color: mutedColor),
                 ),

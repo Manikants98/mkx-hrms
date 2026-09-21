@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../constants/app_colors.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
 
 enum ButtonVariant { primary, secondary, outline, danger }
 
-/// Professional, highly responsive custom button widget with loading animation
+/// Professional, highly responsive custom button widget using Material 3 Expressive
 class CustomButton extends StatelessWidget {
   final String text;
   final VoidCallback? onPressed;
@@ -30,86 +30,59 @@ class CustomButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final radius = borderRadius ?? BorderRadius.circular(10);
+    final theme = M3ETheme.of(context);
+    final scheme = theme.colorScheme;
 
-    Color bgColor;
-    Color fgColor;
-    BorderSide borderSide = BorderSide.none;
-
+    M3EButtonStyle buttonStyle;
     switch (variant) {
       case ButtonVariant.primary:
-        bgColor = isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
-        fgColor = isDark
-            ? AppColors.darkPrimaryForeground
-            : AppColors.lightPrimaryForeground;
+        buttonStyle = M3EButtonStyle.filled;
         break;
       case ButtonVariant.secondary:
-        bgColor = isDark ? AppColors.darkSecondary : AppColors.lightSecondary;
-        fgColor = isDark
-            ? AppColors.darkSecondaryForeground
-            : AppColors.lightSecondaryForeground;
+        buttonStyle = M3EButtonStyle.tonal;
         break;
       case ButtonVariant.outline:
-        bgColor = Colors.transparent;
-        fgColor = isDark ? AppColors.darkForeground : AppColors.lightForeground;
-        borderSide = BorderSide(
-          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-          width: 1,
-        );
+        buttonStyle = M3EButtonStyle.outlined;
         break;
       case ButtonVariant.danger:
-        bgColor = AppColors.error;
-        fgColor = Colors.white;
+        buttonStyle = M3EButtonStyle.filled;
         break;
     }
 
-    final defaultPadding = padding ??
-        EdgeInsets.symmetric(
-          horizontal: (width != null && width! <= 100) ? 8 : 16,
-        );
+    final child = isLoading
+        ? SizedBox(
+            width: 18,
+            height: 18,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: scheme.onPrimary,
+            ),
+          )
+        : Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                icon!,
+                const SizedBox(width: 5),
+              ],
+              Flexible(
+                child: Text(
+                  text,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          );
 
     return SizedBox(
       height: height,
       width: width,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: bgColor,
-          foregroundColor: fgColor,
-          elevation: 0,
-          side: borderSide,
-          shape: RoundedRectangleBorder(borderRadius: radius),
-          padding: defaultPadding,
-        ),
+      child: M3EButton(
+        style: buttonStyle,
         onPressed: isLoading ? null : onPressed,
-        child: isLoading
-            ? SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(strokeWidth: 2, color: fgColor),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (icon != null) ...[
-                    icon!,
-                    const SizedBox(width: 5),
-                  ],
-                  Flexible(
-                    child: Text(
-                      text,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.1,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+        child: child,
       ),
     );
   }

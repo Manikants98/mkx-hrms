@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
+import 'package:material_3_expressive/material_3_expressive.dart';
 
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/utils/ui_helpers.dart';
@@ -59,7 +59,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = M3ETheme.of(context).brightness == Brightness.dark;
     final auth = context.watch<AuthProvider>();
 
     return Scaffold(
@@ -114,16 +114,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14,
-                        color: isDark
-                            ? AppColors.darkMuted
-                            : AppColors.lightMuted,
+                        color:
+                            isDark ? AppColors.darkMuted : AppColors.lightMuted,
                       ),
                     ),
                     const SizedBox(height: 32),
 
                     // Card Container
-                    m3e.M3ECard(
-                      variant: m3e.M3ECardVariant.elevated,
+                    M3ECard(
+                      variant: M3ECardVariant.elevated,
                       color: isDark ? AppColors.darkCard : AppColors.lightCard,
                       padding: const EdgeInsets.all(24),
                       child: Column(
@@ -213,11 +212,16 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(height: 22),
 
                           if (auth.isLoading)
-                            Center(child: const SizedBox(width: 44, height: 44, child: CircularProgressIndicator(strokeWidth: 3)))
+                            Center(
+                                child: SizedBox(
+                                    width: 44,
+                                    height: 44,
+                                    child: M3EProgressIndicator.circularWavy(
+                                        strokeWidth: 3)))
                           else
-                            m3e.M3EButton(
-                              style: m3e.M3EButtonStyle.filled,
-                              size: m3e.M3EButtonSize.md,
+                            M3EButton(
+                              style: M3EButtonStyle.filled,
+                              size: M3EButtonSize.md,
                               onPressed: _handleLogin,
                               child: const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,

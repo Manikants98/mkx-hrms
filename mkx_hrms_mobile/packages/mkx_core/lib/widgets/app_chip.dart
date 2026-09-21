@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../constants/app_colors.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
 
-/// Global unified filter and action chip adhering to MKX design standards.
+/// Global unified filter and action chip using Material 3 Expressive.
 class AppChip extends StatelessWidget {
   /// Display label for the chip.
   final String label;
@@ -21,7 +21,7 @@ class AppChip extends StatelessWidget {
   /// Optional trailing numeric badge counter.
   final int? count;
 
-  /// Corner radius for the chip container. Defaults to 8.0px.
+  /// Corner radius for the chip container (kept for backward compatibility).
   final double borderRadius;
 
   /// Inner padding inside the chip.
@@ -46,86 +46,79 @@ class AppChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = M3ETheme.of(context);
+    final scheme = theme.colorScheme;
 
-    final bgColor = isSelected
-        ? (isDark ? AppColors.darkPrimary : AppColors.lightPrimary)
-        : (isDark ? AppColors.darkSecondary : AppColors.lightSecondary);
+    final chipContent = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (icon != null) ...[
+          icon!,
+          const SizedBox(width: 5),
+        ],
+        Text(
+          label,
+          style: textStyle ??
+              TextStyle(
+                fontSize: 12.5,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                color:
+                    isSelected ? scheme.onPrimaryContainer : scheme.onSurface,
+              ),
+        ),
+        if (count != null) ...[
+          const SizedBox(width: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 5,
+              vertical: 1.5,
+            ),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? scheme.onPrimaryContainer.withValues(alpha: 0.18)
+                  : scheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              '$count',
+              style: TextStyle(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w700,
+                color: isSelected
+                    ? scheme.onPrimaryContainer
+                    : scheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
 
-    final fgColor = isSelected
-        ? (isDark
-              ? AppColors.darkPrimaryForeground
-              : AppColors.lightPrimaryForeground)
-        : (isDark ? AppColors.darkMuted : AppColors.lightMuted);
-
-    final borderColor = isSelected
-        ? Colors.transparent
-        : (isDark ? AppColors.darkBorder : AppColors.lightBorder);
-
-    final radius = BorderRadius.circular(borderRadius);
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          if (onTap != null) {
-            onTap!();
-          } else if (onSelected != null) {
-            onSelected!(!isSelected);
-          }
-        },
-        borderRadius: radius,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
+    return M3ETappable(
+      onTap: () {
+        if (onTap != null) {
+          onTap!();
+        } else if (onSelected != null) {
+          onSelected!(!isSelected);
+        }
+      },
+      haptic: M3EHapticFeedback.light,
+      builder: (context, state) {
+        return Container(
           padding: padding,
           decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius: radius,
-            border: Border.all(color: borderColor, width: 1),
+            color: isSelected
+                ? scheme.primaryContainer
+                : scheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(borderRadius),
+            border: Border.all(
+              color: isSelected ? Colors.transparent : scheme.outlineVariant,
+              width: 1,
+            ),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (icon != null) ...[icon!, const SizedBox(width: 5)],
-              Text(
-                label,
-                style:
-                    textStyle ??
-                    TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: isSelected
-                          ? FontWeight.w600
-                          : FontWeight.w500,
-                      color: fgColor,
-                    ),
-              ),
-              if (count != null) ...[
-                const SizedBox(width: 6),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 5,
-                    vertical: 1.5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? fgColor.withValues(alpha: 0.18)
-                        : (isDark ? AppColors.darkCard : AppColors.lightCard),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    '$count',
-                    style: TextStyle(
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w700,
-                      color: fgColor,
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
+          child: chipContent,
+        );
+      },
     );
   }
 }

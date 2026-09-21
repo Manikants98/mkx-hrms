@@ -50,7 +50,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = m3e.M3ETheme.of(context).brightness == Brightness.dark;
     final leaves = context.watch<LeavesProvider>();
 
     return Scaffold(
@@ -97,14 +97,15 @@ class _LeavesScreenState extends State<LeavesScreen> {
                       filter,
                     ) {
                       final isSelected = leaves.selectedFilter == filter;
-                      
+
                       final Map<String, IconData> tabIcons = {
                         'All': Icons.layers_outlined,
                         'Pending': Icons.pending_actions_rounded,
                         'Approved': Icons.check_circle_outline_rounded,
                         'Rejected': Icons.cancel_outlined,
                       };
-                      final icon = tabIcons[filter] ?? Icons.label_outline_rounded;
+                      final icon =
+                          tabIcons[filter] ?? Icons.label_outline_rounded;
 
                       return Padding(
                         padding: const EdgeInsets.only(right: 8),
@@ -120,7 +121,9 @@ class _LeavesScreenState extends State<LeavesScreen> {
                                 ? (isDark
                                     ? AppColors.darkPrimaryForeground
                                     : AppColors.lightPrimaryForeground)
-                                : (isDark ? AppColors.darkMuted : AppColors.lightMuted),
+                                : (isDark
+                                    ? AppColors.darkMuted
+                                    : AppColors.lightMuted),
                           ),
                           onPressed: () => leaves.setFilter(filter),
                         ),
@@ -135,7 +138,11 @@ class _LeavesScreenState extends State<LeavesScreen> {
                   Center(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 40),
-                      child: const SizedBox(width: 48, height: 48, child: CircularProgressIndicator(strokeWidth: 3)),
+                      child: SizedBox(
+                          width: 48,
+                          height: 48,
+                          child: m3e.M3EProgressIndicator.circularWavy(
+                              strokeWidth: 3)),
                     ),
                   )
                 else if (leaves.filteredHistory.isEmpty)
@@ -286,7 +293,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
   }
 
   Widget _buildDynamicQuotaCards(BuildContext context, LeavesProvider leaves) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = m3e.M3ETheme.of(context).brightness == Brightness.dark;
     final quotas = leaves.balances?.list ?? [];
     final displayQuotas = quotas.isNotEmpty
         ? quotas

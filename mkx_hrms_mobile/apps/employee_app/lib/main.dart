@@ -40,8 +40,10 @@ class MkxHrmsApp extends StatelessWidget {
                 darkTheme: AppTheme.darkTheme(darkDynamic),
                 themeMode: auth.themeMode,
                 builder: (context, child) {
-                  final isDark = Theme.of(context).brightness == Brightness.dark;
-                  final primaryColor = Theme.of(context).colorScheme.primary;
+                  final isDark =
+                      m3e.M3ETheme.of(context).brightness == Brightness.dark;
+                  final primaryColor =
+                      m3e.M3ETheme.of(context).colorScheme.primary;
                   final baseTheme = isDark
                       ? m3e.M3EThemeData.dark(seedColor: primaryColor)
                       : m3e.M3EThemeData.light(seedColor: primaryColor);
@@ -93,7 +95,7 @@ class _SplashScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = m3e.M3ETheme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       body: Center(
@@ -123,7 +125,10 @@ class _SplashScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            const SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 2)),
+            const SizedBox(
+                width: 28,
+                height: 28,
+                child: CircularProgressIndicator(strokeWidth: 2)),
           ],
         ),
       ),

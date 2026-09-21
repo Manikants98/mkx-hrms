@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:provider/provider.dart';
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/utils/date_utils.dart';
@@ -105,6 +106,7 @@ class _AttendanceDashboardScreenState extends State<AttendanceDashboardScreen> {
       );
     }
   }
+
   String _greeting() {
     final hour = DateTime.now().hour;
     if (hour < 12) return 'Morning';
@@ -114,7 +116,7 @@ class _AttendanceDashboardScreenState extends State<AttendanceDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = M3ETheme.of(context).brightness == Brightness.dark;
     final auth = context.watch<AuthProvider>();
     final attendance = context.watch<AttendanceProvider>();
     final leaves = context.watch<LeavesProvider>();
@@ -123,11 +125,11 @@ class _AttendanceDashboardScreenState extends State<AttendanceDashboardScreen> {
     final totalRemainingLeaves = leaves.balances?.list.isNotEmpty == true
         ? leaves.balances!.list.fold<int>(0, (sum, q) => sum + q.remaining)
         : (leaves.masterLeaveTypes.isNotEmpty
-              ? leaves.masterLeaveTypes.fold<int>(
-                  0,
-                  (sum, t) => sum + t.daysPerYear,
-                )
-              : 0);
+            ? leaves.masterLeaveTypes.fold<int>(
+                0,
+                (sum, t) => sum + t.daysPerYear,
+              )
+            : 0);
     final pendingLeaveRequests = leaves.balances?.pendingRequests ?? 0;
 
     return Scaffold(
@@ -241,9 +243,8 @@ class _AttendanceDashboardScreenState extends State<AttendanceDashboardScreen> {
                       'Last 30 Days',
                       style: TextStyle(
                         fontSize: 12,
-                        color: isDark
-                            ? AppColors.darkMuted
-                            : AppColors.lightMuted,
+                        color:
+                            isDark ? AppColors.darkMuted : AppColors.lightMuted,
                       ),
                     ),
                   ],
@@ -256,7 +257,10 @@ class _AttendanceDashboardScreenState extends State<AttendanceDashboardScreen> {
                     position: TilePosition.only,
                     padding: const EdgeInsets.all(24),
                     child: Center(
-                      child: const SizedBox(width: 36, height: 36, child: CircularProgressIndicator(strokeWidth: 3)),
+                      child: const SizedBox(
+                          width: 36,
+                          height: 36,
+                          child: M3EProgressIndicator.circular()),
                     ),
                   )
                 else if (attendance.history.isEmpty)

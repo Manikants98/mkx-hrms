@@ -34,7 +34,7 @@ abstract class _SearchFilterConfig {
 
 class _GroupSearchFilter extends _SearchFilterConfig {
   const _GroupSearchFilter(WidgetPreviewScaffoldController controller)
-    : super(_PreviewSearchFilter.groupName, controller);
+      : super(_PreviewSearchFilter.groupName, controller);
 
   @override
   ValueListenable<bool> listenable() => _controller.searchByGroupNameListenable;
@@ -45,7 +45,7 @@ class _GroupSearchFilter extends _SearchFilterConfig {
 
 class _PreviewNameSearchFilter extends _SearchFilterConfig {
   const _PreviewNameSearchFilter(WidgetPreviewScaffoldController controller)
-    : super(_PreviewSearchFilter.previewName, controller);
+      : super(_PreviewSearchFilter.previewName, controller);
 
   @override
   ValueListenable<bool> listenable() =>
@@ -93,7 +93,7 @@ class ZoomControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = M3ETheme.of(context);
     return _ControlDecorator(
       child: ValueListenableBuilder<Matrix4>(
         valueListenable: _transformationController,
@@ -212,7 +212,7 @@ class LayoutTypeSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = M3ETheme.of(context);
     return _ControlDecorator(
       child: ValueListenableBuilder<LayoutType>(
         valueListenable: controller.layoutTypeListenable,
@@ -255,7 +255,7 @@ class WidgetInspectorToggle extends StatelessWidget {
       child: ValueListenableBuilder(
         valueListenable: controller.widgetInspectorVisible,
         builder: (context, widgetInspectorVisible, _) {
-          final theme = Theme.of(context);
+          final theme = M3ETheme.of(context);
           return IconButton(
             style: theme.iconButtonTheme.style,
             visualDensity: VisualDensity.compact,
@@ -428,7 +428,7 @@ class _PreviewSearchControlsState extends State<PreviewSearchControls> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = M3ETheme.of(context);
 
     return _ControlDecorator(
       child: Row(
@@ -478,7 +478,7 @@ class _SearchClearButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = M3ETheme.of(context);
     return ValueListenableBuilder<String>(
       valueListenable: controller.searchQueryListenable,
       builder: (context, query, _) {
@@ -505,7 +505,7 @@ class _SearchFiltersMenuButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = M3ETheme.of(context);
     return ListenableBuilder(
       listenable: Listenable.merge(
         searchFilters

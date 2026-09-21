@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+
 import '../constants/app_colors.dart';
 
-/// Semantic pill badge showing colored status with subtle tinted background using system fonts.
+/// Semantic pill badge showing colored status using Material 3 Expressive
 class StatusBadge extends StatelessWidget {
   final String status;
   final double fontSize;
@@ -18,40 +20,35 @@ class StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = M3ETheme.of(context);
+    final scheme = theme.colorScheme;
     final normalized = status.trim().toLowerCase();
 
     Color textColor;
     Color bgColor;
-    Color borderColor;
 
     if (normalized == 'present' ||
         normalized == 'approved' ||
         normalized == 'active' ||
         normalized == 'processed') {
       textColor = AppColors.success;
-      bgColor = isDark ? AppColors.successBgDark : AppColors.successBgLight;
-      borderColor = AppColors.success.withValues(alpha: 0.3);
+      bgColor = AppColors.success.withValues(alpha: 0.12);
     } else if (normalized == 'late' ||
         normalized == 'pending' ||
         normalized == 'screening') {
       textColor = AppColors.warning;
-      bgColor = isDark ? AppColors.warningBgDark : AppColors.warningBgLight;
-      borderColor = AppColors.warning.withValues(alpha: 0.3);
+      bgColor = AppColors.warning.withValues(alpha: 0.12);
     } else if (normalized == 'absent' ||
         normalized == 'rejected' ||
         normalized == 'inactive') {
       textColor = AppColors.error;
-      bgColor = isDark ? AppColors.errorBgDark : AppColors.errorBgLight;
-      borderColor = AppColors.error.withValues(alpha: 0.3);
+      bgColor = AppColors.error.withValues(alpha: 0.12);
     } else if (normalized == 'on hold' || normalized == 'remote') {
       textColor = AppColors.purple;
-      bgColor = isDark ? AppColors.purpleBgDark : AppColors.purpleBgLight;
-      borderColor = AppColors.purple.withValues(alpha: 0.3);
+      bgColor = AppColors.purple.withValues(alpha: 0.12);
     } else {
-      textColor = isDark ? AppColors.darkMuted : AppColors.lightMuted;
-      bgColor = isDark ? AppColors.darkSecondary : AppColors.lightSecondary;
-      borderColor = isDark ? AppColors.darkBorder : AppColors.lightBorder;
+      textColor = scheme.onSurfaceVariant;
+      bgColor = scheme.surfaceContainerHighest;
     }
 
     return Container(
@@ -59,7 +56,6 @@ class StatusBadge extends StatelessWidget {
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(borderRadius),
-        border: Border.all(color: borderColor, width: 1),
       ),
       child: Text(
         status,

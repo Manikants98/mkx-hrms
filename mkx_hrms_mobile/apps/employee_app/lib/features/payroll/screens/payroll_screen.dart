@@ -48,7 +48,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = m3e.M3ETheme.of(context).brightness == Brightness.dark;
     final payroll = context.watch<PayrollProvider>();
     final latest = payroll.latestPayslip;
 
@@ -68,7 +68,6 @@ class _PayrollScreenState extends State<PayrollScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 if (latest != null)
                   SectionTile(
                     isDark: isDark,
@@ -124,7 +123,8 @@ class _PayrollScreenState extends State<PayrollScreen> {
                                 child: Padding(
                                   padding: const EdgeInsets.all(10),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'Base Salary',
@@ -159,7 +159,8 @@ class _PayrollScreenState extends State<PayrollScreen> {
                                 child: Padding(
                                   padding: const EdgeInsets.all(10),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'Allowances',
@@ -195,7 +196,8 @@ class _PayrollScreenState extends State<PayrollScreen> {
                                 child: Padding(
                                   padding: const EdgeInsets.all(10),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'Deductions',
@@ -246,7 +248,11 @@ class _PayrollScreenState extends State<PayrollScreen> {
                   Center(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 40),
-                      child: const SizedBox(width: 48, height: 48, child: CircularProgressIndicator(strokeWidth: 3)),
+                      child: SizedBox(
+                          width: 48,
+                          height: 48,
+                          child: m3e.M3EProgressIndicator.circularWavy(
+                              strokeWidth: 3)),
                     ),
                   )
                 else if (payroll.slips.isEmpty)
@@ -269,8 +275,8 @@ class _PayrollScreenState extends State<PayrollScreen> {
                               height: 44,
                               decoration: BoxDecoration(
                                 color: isDark
-                                       ? AppColors.darkSecondary
-                                       : AppColors.lightSecondary,
+                                    ? AppColors.darkSecondary
+                                    : AppColors.lightSecondary,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: const Icon(

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
-import 'package:provider/provider.dart';
-import 'package:mkx_core/constants/app_colors.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:mkx_core/utils/ui_helpers.dart';
 import 'package:mkx_core/widgets/app_avatar.dart';
 import 'package:mkx_core/widgets/empty_state.dart';
@@ -10,6 +8,8 @@ import 'package:mkx_core/widgets/metric_card.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
+import 'package:provider/provider.dart';
+
 import '../models/hr_payroll_model.dart';
 import '../state/hr_payroll_provider.dart';
 
@@ -52,11 +52,10 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
   ) async {
     int selectedMonth = provider.selectedMonth;
     int selectedYear = provider.selectedYear;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     await showModalBottomSheet(
       context: context,
-      backgroundColor: isDark ? AppColors.darkCard : AppColors.lightCard,
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerLow,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -107,11 +106,11 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
                     physics: const NeverScrollableScrollPhysics(),
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 4,
-                          childAspectRatio: 2,
-                          crossAxisSpacing: 8,
-                          mainAxisSpacing: 8,
-                        ),
+                      crossAxisCount: 4,
+                      childAspectRatio: 2,
+                      crossAxisSpacing: 8,
+                      mainAxisSpacing: 8,
+                    ),
                     itemCount: 12,
                     itemBuilder: (context, i) {
                       final selected = selectedMonth == i + 1;
@@ -121,9 +120,9 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
                           decoration: BoxDecoration(
                             color: selected
                                 ? Theme.of(context).colorScheme.primary
-                                : (isDark
-                                      ? AppColors.darkSecondary
-                                      : AppColors.lightSecondary),
+                                : Theme.of(context)
+                                    .colorScheme
+                                    .surfaceContainerHighest,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           alignment: Alignment.center,
@@ -133,10 +132,8 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: selected
-                                  ? Colors.white
-                                  : (isDark
-                                        ? AppColors.darkForeground
-                                        : AppColors.lightForeground),
+                                  ? Theme.of(context).colorScheme.onPrimary
+                                  : Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
                         ),
@@ -146,9 +143,9 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
                   const SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,
-                    child: m3e.M3EButton(
-                      style: m3e.M3EButtonStyle.filled,
-                      size: m3e.M3EButtonSize.md,
+                    child: M3EButton(
+                      style: M3EButtonStyle.filled,
+                      size: M3EButtonSize.md,
                       onPressed: () {
                         Navigator.of(ctx).pop();
                         provider.setMonthYear(selectedMonth, selectedYear);
@@ -170,19 +167,24 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = M3ETheme.of(context).brightness == Brightness.dark;
     final provider = context.watch<HrPayrollProvider>();
 
     final filteredPayrolls = provider.payrolls.where((p) {
-      if (_statusFilter == 'Pending') return p.status.toLowerCase() == 'pending';
-      if (_statusFilter == 'Processed') return p.status.toLowerCase() == 'processed';
+      if (_statusFilter == 'Pending') {
+        return p.status.toLowerCase() == 'pending';
+      }
+      if (_statusFilter == 'Processed') {
+        return p.status.toLowerCase() == 'processed';
+      }
       return true;
     }).toList();
 
+    final M3EThemeData theme = M3ETheme.of(context);
+    final scheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: isDark
-          ? AppColors.darkBackground
-          : AppColors.lightBackground,
+      backgroundColor: scheme.surfaceContainer,
       appBar: MkxAppBar(
         title: 'Payroll',
         subtitle:
@@ -191,8 +193,7 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
           IconButton(
             icon: Icon(
               Icons.calendar_month_rounded,
-              size: 19,
-              color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             tooltip: 'Select Month',
             onPressed: () => _showMonthPicker(context, provider),
@@ -202,8 +203,8 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
       body: SafeArea(
         top: false,
         child: RefreshIndicator(
-          onRefresh: () => provider.loadPayroll(),
-          color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
+          onRefresh: () async => provider.loadPayroll(),
+          color: Theme.of(context).colorScheme.primary,
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(10),
@@ -218,7 +219,11 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
                   const Center(
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 40),
-                      child: SizedBox(width: 52, height: 52, child: CircularProgressIndicator(strokeWidth: 3)),
+                      child: SizedBox(
+                          width: 52,
+                          height: 52,
+                          child: M3EProgressIndicator.circularWavy(
+                              strokeWidth: 3)),
                     ),
                   )
                 else if (filteredPayrolls.isEmpty)
@@ -248,7 +253,11 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
     final filters = [
       ('All', Icons.receipt_long_rounded, provider.payrolls.length),
       ('Pending', Icons.pending_actions_rounded, provider.pendingCount),
-      ('Processed', Icons.check_circle_outline_rounded, provider.processedCount),
+      (
+        'Processed',
+        Icons.check_circle_outline_rounded,
+        provider.processedCount
+      ),
     ];
 
     return SingleChildScrollView(
@@ -258,19 +267,17 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
           final isSelected = _statusFilter == f.$1;
           return Padding(
             padding: const EdgeInsets.only(right: 8),
-            child: m3e.M3EChip(
+            child: M3EChip(
               label: '${f.$1} (${f.$3})',
-              type: m3e.M3EChipType.filter,
+              type: M3EChipType.filter,
               selected: isSelected,
               elevated: isSelected,
               leading: Icon(
                 f.$2,
                 size: 14,
                 color: isSelected
-                    ? (isDark
-                        ? AppColors.darkPrimaryForeground
-                        : AppColors.lightPrimaryForeground)
-                    : (isDark ? AppColors.darkMuted : AppColors.lightMuted),
+                    ? Theme.of(context).colorScheme.onPrimary
+                    : Theme.of(context).colorScheme.onSurfaceVariant,
               ),
               onPressed: () => setState(() => _statusFilter = f.$1),
             ),
@@ -289,7 +296,7 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
             value: provider.pendingCount.toString(),
             subtext: 'Requires processing',
             icon: Icons.pending_actions_rounded,
-            iconColor: AppColors.warning,
+            iconColor: Colors.orange,
           ),
         ),
         const SizedBox(width: 10),
@@ -299,7 +306,7 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
             value: provider.processedCount.toString(),
             subtext: 'Disbursed / locked',
             icon: Icons.check_circle_outline_rounded,
-            iconColor: AppColors.success,
+            iconColor: Colors.green,
           ),
         ),
       ],
@@ -318,8 +325,8 @@ class _PayrollRow extends StatelessWidget {
     final provider = context.read<HrPayrollProvider>();
     final currencyFormat = NumberFormat.currency(symbol: '₹', decimalDigits: 0);
     final isPending = payroll.status.toLowerCase() == 'pending';
-    final primaryColor = Theme.of(context).colorScheme.primary;
-    final mutedColor = isDark ? AppColors.darkMuted : AppColors.lightMuted;
+    final primaryColor = M3ETheme.of(context).colorScheme.primary;
+    final mutedColor = M3ETheme.of(context).colorScheme.onSurfaceVariant;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -361,7 +368,7 @@ class _PayrollRow extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: isDark ? AppColors.darkSecondary : AppColors.lightSecondary,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(
@@ -375,13 +382,13 @@ class _PayrollRow extends StatelessWidget {
               _SalaryCol(
                 label: 'Allowances',
                 value: currencyFormat.format(payroll.allowances),
-                color: AppColors.success,
+                color: Colors.green,
                 isDark: isDark,
               ),
               _SalaryCol(
                 label: 'Deductions',
                 value: currencyFormat.format(payroll.deductions),
-                color: AppColors.error,
+                color: Theme.of(context).colorScheme.error,
                 isDark: isDark,
               ),
               _SalaryCol(
@@ -398,9 +405,9 @@ class _PayrollRow extends StatelessWidget {
           const SizedBox(height: 10),
           SizedBox(
             width: double.infinity,
-            child: m3e.M3EButton(
-              style: m3e.M3EButtonStyle.outlined,
-              size: m3e.M3EButtonSize.sm,
+            child: M3EButton(
+              style: M3EButtonStyle.outlined,
+              size: M3EButtonSize.sm,
               onPressed: provider.isProcessing(payroll.id)
                   ? null
                   : () => _handleProcess(context, provider, payroll),
@@ -411,9 +418,9 @@ class _PayrollRow extends StatelessWidget {
                     SizedBox(
                       width: 14,
                       height: 14,
-                      child: CircularProgressIndicator(
+                      child: M3EProgressIndicator.circularWavy(
                         strokeWidth: 2,
-                        color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     )
                   else
@@ -488,7 +495,7 @@ class _SalaryCol extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 11,
-            color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
         const SizedBox(height: 2),

@@ -1,13 +1,14 @@
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:provider/provider.dart';
 
-import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/features/auth/screens/login_screen.dart';
 import 'package:mkx_core/features/auth/state/auth_provider.dart';
 import 'package:mkx_core/theme/app_theme.dart';
+import 'package:mkx_core/theme/app_theme_settings.dart';
+import 'package:mkx_core/theme/app_theme_scope.dart';
 
 import 'features/attendance/screens/hr_attendance_screen.dart';
 import 'features/attendance/state/hr_attendance_provider.dart';
@@ -37,12 +38,14 @@ class HrApp extends StatefulWidget {
 
 class _HrAppState extends State<HrApp> {
   late final AuthProvider _authProvider;
+  late final AppThemeSettings _themeSettings;
   late final GoRouter _router;
 
   @override
   void initState() {
     super.initState();
     _authProvider = AuthProvider();
+    _themeSettings = AppThemeSettings();
     _router = GoRouter(
       initialLocation: '/',
       refreshListenable: _authProvider,
@@ -103,6 +106,12 @@ class _HrAppState extends State<HrApp> {
   }
 
   @override
+  void dispose() {
+    _themeSettings.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
@@ -113,53 +122,67 @@ class _HrAppState extends State<HrApp> {
         ChangeNotifierProvider(create: (_) => HrAttendanceProvider()),
         ChangeNotifierProvider(create: (_) => HrPayrollProvider()),
       ],
-      child: DynamicColorBuilder(
-        builder: (lightDynamic, darkDynamic) {
-          return Consumer<AuthProvider>(
-            builder: (context, auth, _) {
-              return MaterialApp.router(
-                title: 'MKX HRMS Admin',
-                theme: AppTheme.lightTheme(_toFlutterColorScheme(lightDynamic)),
-                darkTheme: AppTheme.darkTheme(_toFlutterColorScheme(darkDynamic)),
-                themeMode: auth.themeMode,
-                routerConfig: _router,
-                debugShowCheckedModeBanner: false,
-                builder: (context, child) {
-                  final isDark = Theme.of(context).brightness == Brightness.dark;
-                  final primaryColor = Theme.of(context).colorScheme.primary;
-                  final baseTheme = isDark
-                      ? m3e.M3EThemeData.dark(seedColor: primaryColor)
-                      : m3e.M3EThemeData.light(seedColor: primaryColor);
+      child: AppThemeScope(
+        settings: _themeSettings,
+        child: DynamicColorBuilder(
+          builder: (lightDynamic, darkDynamic) {
+            return Consumer<AuthProvider>(
+              builder: (context, auth, _) {
+                final seedColor = AppThemeScope.of(context).seedColor;
+                final isCustomSeed =
+                    seedColor != AppThemeSettings.seedOptions.first;
 
-                  final m3eColorScheme = baseTheme.colorScheme.copyWith(
-                    secondaryContainer:
-                        isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
-                    onSecondaryContainer: isDark
-                        ? AppColors.darkPrimaryForeground
-                        : AppColors.lightPrimaryForeground,
-                    outlineVariant:
-                        isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                    surfaceContainerLow:
-                        isDark ? AppColors.darkCard : AppColors.lightCard,
-                  );
+                final lightScheme = isCustomSeed
+                    ? ColorScheme.fromSeed(
+                        seedColor: seedColor, brightness: Brightness.light)
+                    : _toFlutterColorScheme(lightDynamic);
 
-                  return m3e.M3ETheme(
-                    data: baseTheme.copyWith(
-                      colorScheme: m3eColorScheme,
-                      loadingIndicatorTheme: const m3e.M3ELoadingIndicatorTheme(
-                        containerWidth: 52,
-                        containerHeight: 52,
-                        elevation: 1.5,
+                final darkScheme = isCustomSeed
+                    ? ColorScheme.fromSeed(
+                        seedColor: seedColor, brightness: Brightness.dark)
+                    : _toFlutterColorScheme(darkDynamic);
+
+                return MaterialApp.router(
+                  title: 'MKX HRMS Admin',
+                  theme: AppTheme.lightTheme(lightScheme),
+                  darkTheme: AppTheme.darkTheme(darkScheme),
+                  themeMode: auth.themeMode,
+                  routerConfig: _router,
+                  debugShowCheckedModeBanner: false,
+                  builder: (context, child) {
+                    final isDark =
+                        Theme.of(context).brightness == Brightness.dark;
+                    final primaryColor =
+                        M3ETheme.of(context).colorScheme.primary;
+                    final baseTheme = isDark
+                        ? M3EThemeData.dark(seedColor: primaryColor)
+                        : M3EThemeData.light(seedColor: primaryColor);
+
+                    final m3eColorScheme = baseTheme.colorScheme.copyWith(
+                      secondaryContainer: baseTheme.colorScheme.primary,
+                      onSecondaryContainer: baseTheme.colorScheme.onPrimary,
+                      outlineVariant: baseTheme.colorScheme.outlineVariant,
+                      surfaceContainerLow:
+                          baseTheme.colorScheme.surfaceContainerLow,
+                    );
+                    return M3ETheme(
+                      data: baseTheme.copyWith(
+                        colorScheme: m3eColorScheme,
+                        loadingIndicatorTheme: const M3ELoadingIndicatorTheme(
+                          containerWidth: 52,
+                          containerHeight: 52,
+                          elevation: 1.5,
+                        ),
+                        chipTheme: AppM3EChipTheme(isDark: isDark),
                       ),
-                      chipTheme: AppM3EChipTheme(isDark: isDark),
-                    ),
-                    child: child ?? const SizedBox.shrink(),
-                  );
-                },
-              );
-            },
-          );
-        },
+                      child: child ?? const SizedBox.shrink(),
+                    );
+                  },
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }
@@ -183,7 +206,7 @@ class _HrAppState extends State<HrApp> {
 }
 
 /// Unified Material 3 Expressive chip theme conforming to the MKX HRMS design system.
-class AppM3EChipTheme extends m3e.M3EChipTheme {
+class AppM3EChipTheme extends M3EChipTheme {
   /// Indicates if the application is currently rendered in dark mode.
   final bool isDark;
 
@@ -200,37 +223,35 @@ class AppM3EChipTheme extends m3e.M3EChipTheme {
 
   @override
   Color containerColor(
-    m3e.M3EColorScheme scheme, {
+    M3EColorScheme scheme, {
     required bool enabled,
     required bool selected,
     required bool elevated,
-    required m3e.M3EChipType type,
+    required M3EChipType type,
   }) {
     if (!enabled) {
       return selected
-          ? (isDark ? AppColors.darkMutedBg : AppColors.lightMutedBg)
+          ? scheme.surfaceContainerHighest
           : const Color(0x00000000);
     }
     if (selected) {
-      return isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
+      return scheme.primary;
     }
-    return isDark ? AppColors.darkCard : AppColors.lightCard;
+    return scheme.surfaceContainerLow;
   }
 
   @override
   Color foregroundColor(
-    m3e.M3EColorScheme scheme, {
+    M3EColorScheme scheme, {
     required bool enabled,
     required bool selected,
   }) {
     if (!enabled) {
-      return isDark ? AppColors.darkMuted : AppColors.lightMuted;
+      return scheme.onSurfaceVariant;
     }
     if (selected) {
-      return isDark
-          ? AppColors.darkPrimaryForeground
-          : AppColors.lightPrimaryForeground;
+      return scheme.onPrimary;
     }
-    return isDark ? AppColors.darkMuted : AppColors.lightMuted;
+    return scheme.onSurfaceVariant;
   }
 }

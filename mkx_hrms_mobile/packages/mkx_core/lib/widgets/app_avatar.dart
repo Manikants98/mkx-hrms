@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_3_expressive/foundations/theme/m3e_theme.dart';
 
 /// Professional avatar widget with rounded corners (default 8px) and initial fallback using system fonts.
 class AppAvatar extends StatelessWidget {
@@ -41,7 +42,7 @@ class AppAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = M3ETheme.of(context);
     final primary = theme.colorScheme.primary;
     final effectiveBg = backgroundColor ?? primary.withValues(alpha: 0.12);
     final effectiveFg = foregroundColor ?? primary;
@@ -61,14 +62,14 @@ class AppAvatar extends StatelessWidget {
           fit: BoxFit.cover,
           errorBuilder:
               (BuildContext context, Object error, StackTrace? stackTrace) {
-                return _buildInitialContainer(
-                  effectiveBg,
-                  effectiveFg,
-                  effectiveFontSize,
-                  initial,
-                  radius,
-                );
-              },
+            return _buildInitialContainer(
+              effectiveBg,
+              effectiveFg,
+              effectiveFontSize,
+              initial,
+              radius,
+            );
+          },
         ),
       );
     }

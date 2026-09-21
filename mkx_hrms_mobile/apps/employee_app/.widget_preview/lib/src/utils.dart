@@ -16,15 +16,15 @@ Iterable<WidgetPreview> buildMultiWidgetPreview({
   required Object? Function() previewFunction,
 }) {
   return preview.transform().map(
-    (p) => buildWidgetPreview(
-      packageName: packageName,
-      scriptUri: scriptUri,
-      line: line,
-      column: column,
-      transformedPreview: p,
-      previewFunction: previewFunction,
-    ),
-  );
+        (p) => buildWidgetPreview(
+          packageName: packageName,
+          scriptUri: scriptUri,
+          line: line,
+          column: column,
+          transformedPreview: p,
+          previewFunction: previewFunction,
+        ),
+      );
 }
 
 WidgetPreview buildWidgetPreview({
@@ -185,7 +185,7 @@ final class OutlineDecoration extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).focusColor;
+    final color = M3ETheme.of(context).focusColor;
     final border = BorderSide(color: color);
     return Container(
       decoration: BoxDecoration(

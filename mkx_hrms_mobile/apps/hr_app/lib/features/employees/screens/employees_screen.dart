@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:provider/provider.dart';
-import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/widgets/app_avatar.dart';
 import 'package:mkx_core/widgets/empty_state.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
@@ -40,20 +39,19 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
+    final isDark = M3ETheme.of(context).brightness == Brightness.dark;
+    final M3EThemeData theme = M3ETheme.of(context);
+    final M3EColorScheme scheme = theme.colorScheme;
     return Scaffold(
-      backgroundColor:
-          isDark ? AppColors.darkBackground : AppColors.lightBackground,
+      backgroundColor: scheme.surfaceContainer,
       appBar: const MkxAppBar(
         title: 'Employees',
         subtitle: 'Workforce directory & staff records',
       ),
       body: SafeArea(
         top: false,
-        child: RefreshIndicator(
+        child: M3ERefreshIndicator(
           onRefresh: () => context.read<EmployeesProvider>().loadEmployees(),
-          color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(10),
@@ -81,12 +79,12 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
         hintText: 'Search by name, email or code...',
         hintStyle: TextStyle(
           fontSize: 13.5,
-          color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
         prefixIcon: Icon(
           Icons.search_rounded,
           size: 20,
-          color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
         suffixIcon: _searchController.text.isNotEmpty
             ? IconButton(
@@ -98,7 +96,7 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
               )
             : null,
         filled: true,
-        fillColor: isDark ? AppColors.darkCard : AppColors.lightCard,
+        fillColor: Theme.of(context).colorScheme.surfaceContainerLow,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14,
           vertical: 12,
@@ -106,13 +104,13 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
-            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+            color: Theme.of(context).colorScheme.outlineVariant,
           ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
-            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+            color: Theme.of(context).colorScheme.outlineVariant,
           ),
         ),
         focusedBorder: OutlineInputBorder(
@@ -148,9 +146,8 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
                     width: index == 0 ? 50 : 90.0 + (index * 10),
                     height: 32,
                     decoration: BoxDecoration(
-                      color: isDark
-                          ? AppColors.darkSecondary
-                          : AppColors.lightSecondary,
+                      color:
+                          Theme.of(context).colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
@@ -167,9 +164,9 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
                     (dept == 'All' && provider.departmentFilter.isEmpty);
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
-                  child: m3e.M3EChip(
+                  child: M3EChip(
                     label: dept,
-                    type: m3e.M3EChipType.filter,
+                    type: M3EChipType.filter,
                     selected: isSelected,
                     elevated: isSelected,
                     leading: Icon(
@@ -178,12 +175,8 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
                           : Icons.apartment_rounded,
                       size: 14,
                       color: isSelected
-                          ? (isDark
-                              ? AppColors.darkPrimaryForeground
-                              : AppColors.lightPrimaryForeground)
-                          : (isDark
-                              ? AppColors.darkMuted
-                              : AppColors.lightMuted),
+                          ? Theme.of(context).colorScheme.onPrimary
+                          : Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                     onPressed: () =>
                         provider.setDepartmentFilter(dept == 'All' ? '' : dept),
@@ -203,7 +196,10 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
       return const Center(
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 40),
-          child: SizedBox(width: 52, height: 52, child: CircularProgressIndicator(strokeWidth: 3)),
+          child: SizedBox(
+              width: 52,
+              height: 52,
+              child: M3EProgressIndicator.circularWavy(strokeWidth: 3)),
         ),
       );
     }
@@ -247,7 +243,7 @@ class _EmployeeRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mutedColor = isDark ? AppColors.darkMuted : AppColors.lightMuted;
+    final mutedColor = M3ETheme.of(context).colorScheme.onSurfaceVariant;
 
     return InkWell(
       onTap: onTap,

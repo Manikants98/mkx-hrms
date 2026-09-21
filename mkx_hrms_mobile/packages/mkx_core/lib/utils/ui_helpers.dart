@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_3_expressive/foundations/theme/m3e_theme.dart';
 import '../constants/app_colors.dart';
 
 /// Helper methods for SnackBars, dialogs, and UI feedback using system fonts.
@@ -50,7 +51,7 @@ class UiHelpers {
     String cancelText = 'Cancel',
     bool isDestructive = false,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = M3ETheme.of(context).brightness == Brightness.dark;
     return showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(

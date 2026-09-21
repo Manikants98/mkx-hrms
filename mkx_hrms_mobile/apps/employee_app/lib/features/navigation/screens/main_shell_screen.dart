@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_3_expressive/foundations/theme/m3e_theme.dart';
 import 'package:mkx_core/constants/app_colors.dart';
 import '../../attendance/screens/attendance_dashboard_screen.dart';
 import '../../leaves/screens/leaves_screen.dart';
@@ -51,9 +52,9 @@ class _MainShellScreenState extends State<MainShellScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = M3ETheme.of(context).brightness == Brightness.dark;
 
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = M3ETheme.of(context).colorScheme;
     final surfaceColor = isDark ? AppColors.darkCard : AppColors.lightCard;
     final activeColor = colorScheme.primary;
     final inactiveColor = isDark ? AppColors.darkMuted : AppColors.lightMuted;

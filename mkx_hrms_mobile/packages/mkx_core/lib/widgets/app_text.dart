@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../constants/app_colors.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
 
-/// Opinionated [Text] replacement for MKX HRMS that applies system fonts and
-/// automatically resolves foreground / muted colors from the current theme.
+/// Opinionated [Text] replacement for MKX HRMS that applies Material 3 Expressive
+/// typography and automatically resolves foreground / muted colors from the current theme.
 ///
 /// Named constructors map to the common typography scales used across the app:
 /// ```dart
@@ -55,10 +55,10 @@ class AppText extends StatelessWidget {
     this.maxLines,
     this.overflow,
     this.height,
-  }) : fontSize = 20,
-       fontWeight = FontWeight.w800,
-       letterSpacing = -0.5,
-       _role = _ColorRole.foreground;
+  })  : fontSize = 20,
+        fontWeight = FontWeight.w800,
+        letterSpacing = -0.5,
+        _role = _ColorRole.foreground;
 
   /// Section title — 16pt, w700.
   const AppText.title(
@@ -69,10 +69,10 @@ class AppText extends StatelessWidget {
     this.maxLines,
     this.overflow,
     this.height,
-  }) : fontSize = 16,
-       fontWeight = FontWeight.w700,
-       letterSpacing = null,
-       _role = _ColorRole.foreground;
+  })  : fontSize = 16,
+        fontWeight = FontWeight.w700,
+        letterSpacing = null,
+        _role = _ColorRole.foreground;
 
   /// Subsection title — 15pt, w700.
   const AppText.subtitle(
@@ -83,10 +83,10 @@ class AppText extends StatelessWidget {
     this.maxLines,
     this.overflow,
     this.height,
-  }) : fontSize = 15,
-       fontWeight = FontWeight.w700,
-       letterSpacing = null,
-       _role = _ColorRole.foreground;
+  })  : fontSize = 15,
+        fontWeight = FontWeight.w700,
+        letterSpacing = null,
+        _role = _ColorRole.foreground;
 
   /// Primary body text — 13pt, w400.
   const AppText.body(
@@ -97,10 +97,10 @@ class AppText extends StatelessWidget {
     this.maxLines,
     this.overflow,
     this.height,
-  }) : fontSize = 13,
-       fontWeight = FontWeight.w400,
-       letterSpacing = null,
-       _role = _ColorRole.foreground;
+  })  : fontSize = 13,
+        fontWeight = FontWeight.w400,
+        letterSpacing = null,
+        _role = _ColorRole.foreground;
 
   /// Emphasized body — 13pt, w600.
   const AppText.bodyBold(
@@ -111,10 +111,10 @@ class AppText extends StatelessWidget {
     this.maxLines,
     this.overflow,
     this.height,
-  }) : fontSize = 13,
-       fontWeight = FontWeight.w600,
-       letterSpacing = null,
-       _role = _ColorRole.foreground;
+  })  : fontSize = 13,
+        fontWeight = FontWeight.w600,
+        letterSpacing = null,
+        _role = _ColorRole.foreground;
 
   /// Small label / chip text — 12pt, w500.
   const AppText.label(
@@ -125,10 +125,10 @@ class AppText extends StatelessWidget {
     this.maxLines,
     this.overflow,
     this.height,
-  }) : fontSize = 12,
-       fontWeight = FontWeight.w500,
-       letterSpacing = null,
-       _role = _ColorRole.foreground;
+  })  : fontSize = 12,
+        fontWeight = FontWeight.w500,
+        letterSpacing = null,
+        _role = _ColorRole.foreground;
 
   /// Tiny caption — 11pt, w400, muted color.
   const AppText.caption(
@@ -139,10 +139,10 @@ class AppText extends StatelessWidget {
     this.maxLines,
     this.overflow,
     this.height,
-  }) : fontSize = 11,
-       fontWeight = FontWeight.w400,
-       letterSpacing = null,
-       _role = _ColorRole.muted;
+  })  : fontSize = 11,
+        fontWeight = FontWeight.w400,
+        letterSpacing = null,
+        _role = _ColorRole.muted;
 
   /// De-emphasized / helper text — 12pt, w400, muted color.
   const AppText.muted(
@@ -153,18 +153,19 @@ class AppText extends StatelessWidget {
     this.maxLines,
     this.overflow,
     this.height,
-  }) : fontSize = 12,
-       fontWeight = FontWeight.w400,
-       letterSpacing = null,
-       _role = _ColorRole.muted;
+  })  : fontSize = 12,
+        fontWeight = FontWeight.w400,
+        letterSpacing = null,
+        _role = _ColorRole.muted;
 
   // ── Build ───────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = M3ETheme.of(context);
+    final scheme = theme.colorScheme;
 
-    final resolvedColor = color ?? _resolveColor(isDark);
+    final resolvedColor = color ?? _resolveColor(scheme);
 
     return Text(
       text,
@@ -181,12 +182,12 @@ class AppText extends StatelessWidget {
     );
   }
 
-  Color _resolveColor(bool isDark) {
+  Color _resolveColor(M3EColorScheme scheme) {
     switch (_role) {
       case _ColorRole.muted:
-        return isDark ? AppColors.darkMuted : AppColors.lightMuted;
+        return scheme.onSurfaceVariant;
       case _ColorRole.foreground:
-        return isDark ? AppColors.darkForeground : AppColors.lightForeground;
+        return scheme.onSurface;
     }
   }
 }

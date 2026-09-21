@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_3_expressive/foundations/theme/m3e_theme.dart';
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
@@ -12,7 +13,7 @@ class PayslipDetailModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = M3ETheme.of(context).brightness == Brightness.dark;
 
     return Container(
       constraints: BoxConstraints(
@@ -22,7 +23,7 @@ class PayslipDetailModal extends StatelessWidget {
         color: isDark
             ? AppColors.darkBackground
             : AppColors
-                  .lightBackground, // Changed to background color so cards stand out
+                .lightBackground, // Changed to background color so cards stand out
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         border: Border(
           top: BorderSide(
@@ -43,9 +44,8 @@ class PayslipDetailModal extends StatelessWidget {
                   width: 40,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: isDark
-                        ? AppColors.darkBorder
-                        : AppColors.lightBorder,
+                    color:
+                        isDark ? AppColors.darkBorder : AppColors.lightBorder,
                     borderRadius: BorderRadius.circular(2.5),
                   ),
                 ),
@@ -101,9 +101,8 @@ class PayslipDetailModal extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: isDark
-                            ? AppColors.darkMuted
-                            : AppColors.lightMuted,
+                        color:
+                            isDark ? AppColors.darkMuted : AppColors.lightMuted,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -123,11 +122,10 @@ class PayslipDetailModal extends StatelessWidget {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color:
-                            (isDark
-                                    ? AppColors.darkMuted
-                                    : AppColors.lightMuted)
-                                .withValues(alpha: 0.1),
+                        color: (isDark
+                                ? AppColors.darkMuted
+                                : AppColors.lightMuted)
+                            .withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(

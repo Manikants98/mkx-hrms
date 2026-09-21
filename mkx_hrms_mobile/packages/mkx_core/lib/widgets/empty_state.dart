@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../constants/app_colors.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
 
-/// Clean placeholder shown when a list has no data using system fonts.
+/// Clean placeholder shown when a list has no data using Material 3 Expressive
 class EmptyState extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -18,7 +18,8 @@ class EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = M3ETheme.of(context);
+    final scheme = theme.colorScheme;
 
     return Center(
       child: Padding(
@@ -30,35 +31,32 @@ class EmptyState extends StatelessWidget {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: isDark ? AppColors.darkSecondary : AppColors.lightSecondary,
+                color: scheme.surfaceContainerHighest,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                  color: scheme.outlineVariant,
                 ),
               ),
               child: Icon(
                 icon,
                 size: 26,
-                color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
+                color: scheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 16),
             Text(
               title,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
+              style: theme.typeScale.titleMedium.copyWith(
+                color: scheme.onSurface,
               ),
             ),
             const SizedBox(height: 6),
             Text(
               description,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13,
-                color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
+              style: theme.typeScale.bodyMedium.copyWith(
+                color: scheme.onSurfaceVariant,
               ),
             ),
             if (action != null) ...[

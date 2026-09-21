@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:provider/provider.dart';
-import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/utils/ui_helpers.dart';
 import 'package:mkx_core/widgets/app_avatar.dart';
 import 'package:mkx_core/widgets/empty_state.dart';
@@ -32,22 +31,21 @@ class _HrLeavesScreenState extends State<HrLeavesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = M3ETheme.of(context).brightness == Brightness.dark;
     final provider = context.watch<HrLeavesProvider>();
+    final M3EThemeData theme = M3ETheme.of(context);
+    final M3EColorScheme scheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: isDark
-          ? AppColors.darkBackground
-          : AppColors.lightBackground,
+      backgroundColor: scheme.surfaceContainer,
       appBar: const MkxAppBar(
         title: 'Leave Requests',
         subtitle: 'Review and approve workforce time off',
       ),
       body: SafeArea(
         top: false,
-        child: RefreshIndicator(
+        child: M3ERefreshIndicator(
           onRefresh: () => provider.loadLeaves(),
-          color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(10),
@@ -60,7 +58,10 @@ class _HrLeavesScreenState extends State<HrLeavesScreen> {
                   const Center(
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 40),
-                      child: SizedBox(width: 52, height: 52, child: CircularProgressIndicator(strokeWidth: 3)),
+                      child: SizedBox(
+                          width: 52,
+                          height: 52,
+                          child: M3EProgressIndicator.circularWavy()),
                     ),
                   )
                 else if (provider.leaves.isEmpty)
@@ -101,19 +102,17 @@ class _HrLeavesScreenState extends State<HrLeavesScreen> {
           final icon = tabIcons[tab] ?? Icons.label_outline_rounded;
           return Padding(
             padding: const EdgeInsets.only(right: 8),
-            child: m3e.M3EChip(
+            child: M3EChip(
               label: tab,
-              type: m3e.M3EChipType.filter,
+              type: M3EChipType.filter,
               selected: isSelected,
               elevated: isSelected,
               leading: Icon(
                 icon,
                 size: 14,
                 color: isSelected
-                    ? (isDark
-                        ? AppColors.darkPrimaryForeground
-                        : AppColors.lightPrimaryForeground)
-                    : (isDark ? AppColors.darkMuted : AppColors.lightMuted),
+                    ? Theme.of(context).colorScheme.onPrimary
+                    : Theme.of(context).colorScheme.onSurfaceVariant,
               ),
               onPressed: () => provider.setStatusFilter(tab),
             ),
@@ -133,7 +132,8 @@ class _LeaveTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.read<HrLeavesProvider>();
-    final mutedColor = isDark ? AppColors.darkMuted : AppColors.lightMuted;
+    final scheme = M3ETheme.of(context).colorScheme;
+    final mutedColor = scheme.onSurfaceVariant;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -175,21 +175,21 @@ class _LeaveTile extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
-            color: isDark ? AppColors.darkSecondary : AppColors.lightSecondary,
+            color: scheme.surfaceContainer,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Column(
             children: [
-              _buildRow('Leave Type', leave.leaveType, isDark),
+              _buildRow(context, 'Leave Type', leave.leaveType),
               const SizedBox(height: 4),
               _buildRow(
+                context,
                 'Schedule',
                 '${leave.startDate} → ${leave.endDate} (${leave.totalDays}d)',
-                isDark,
               ),
               if (leave.reason.isNotEmpty) ...[
                 const SizedBox(height: 4),
-                _buildRow('Reason', leave.reason, isDark),
+                _buildRow(context, 'Reason', leave.reason),
               ],
             ],
           ),
@@ -199,20 +199,20 @@ class _LeaveTile extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: m3e.M3EButton(
-                  style: m3e.M3EButtonStyle.outlined,
-                  size: m3e.M3EButtonSize.sm,
+                child: M3EButton(
+                  style: M3EButtonStyle.outlined,
+                  size: M3EButtonSize.sm,
                   onPressed: () => _handleReject(context, provider, leave.id),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.close_rounded, size: 16, color: AppColors.error),
+                      Icon(Icons.close_rounded, size: 16, color: scheme.error),
                       const SizedBox(width: 6),
                       Text(
                         'Reject',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w600,
-                          color: AppColors.error,
+                          color: scheme.error,
                         ),
                       ),
                     ],
@@ -221,14 +221,15 @@ class _LeaveTile extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: m3e.M3EButton(
-                  style: m3e.M3EButtonStyle.filled,
-                  size: m3e.M3EButtonSize.sm,
+                child: M3EButton(
+                  style: M3EButtonStyle.filled,
+                  size: M3EButtonSize.sm,
                   onPressed: () => _handleApprove(context, provider, leave.id),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.check_rounded, size: 16, color: Colors.white),
+                      const Icon(Icons.check_rounded,
+                          size: 16, color: Colors.white),
                       const SizedBox(width: 6),
                       Text(
                         'Approve',
@@ -248,8 +249,8 @@ class _LeaveTile extends StatelessWidget {
     );
   }
 
-  Widget _buildRow(String label, String value, bool isDark) {
-    final mutedColor = isDark ? AppColors.darkMuted : AppColors.lightMuted;
+  Widget _buildRow(BuildContext context, String label, String value) {
+    final mutedColor = M3ETheme.of(context).colorScheme.onSurfaceVariant;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

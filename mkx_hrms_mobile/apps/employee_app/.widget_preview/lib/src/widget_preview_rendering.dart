@@ -54,7 +54,7 @@ class WidgetPreviewErrorWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = M3ETheme.of(context);
     return SizedBox(
       height: size.height,
       child: SingleChildScrollView(
@@ -100,9 +100,8 @@ class WidgetPreviewErrorWidget extends StatelessWidget {
     bool editorServiceAvailable,
   ) {
     // Figure out the longest path so we know how much to pad.
-    final int longest = frames
-        .map((frame) => frame.location.length)
-        .fold(0, math.max);
+    final int longest =
+        frames.map((frame) => frame.location.length).fold(0, math.max);
 
     // Print out the stack trace nicely formatted.
     return frames.map<TextSpan>((frame) {
@@ -112,10 +111,9 @@ class WidgetPreviewErrorWidget extends StatelessWidget {
       // Editor service isn't available.
       final isLinkable =
           (frame.uri.isScheme('file') || frame.uri.isScheme('package')) &&
-          editorServiceAvailable;
-      final style = isLinkable
-          ? theme.fixedFontLinkStyle
-          : theme.fixedFontStyle;
+              editorServiceAvailable;
+      final style =
+          isLinkable ? theme.fixedFontLinkStyle : theme.fixedFontStyle;
       return TextSpan(
         children: [
           TextSpan(
@@ -123,17 +121,17 @@ class WidgetPreviewErrorWidget extends StatelessWidget {
             style: style,
             recognizer: isLinkable
                 ? (TapGestureRecognizer()
-                    ..onTap = () async {
-                      final resolvedUri = await controller.dtdServices
-                          .resolveUri(frame.uri);
-                      controller.dtdServices.navigateToCode(
-                        CodeLocation(
-                          uri: resolvedUri.toString(),
-                          line: frame.line,
-                          column: frame.column,
-                        ),
-                      );
-                    })
+                  ..onTap = () async {
+                    final resolvedUri =
+                        await controller.dtdServices.resolveUri(frame.uri);
+                    controller.dtdServices.navigateToCode(
+                      CodeLocation(
+                        uri: resolvedUri.toString(),
+                        line: frame.line,
+                        column: frame.column,
+                      ),
+                    );
+                  })
                 : null,
           ),
           TextSpan(text: ' ' * (longest - frame.location.length)),
@@ -155,7 +153,7 @@ class NoPreviewsDetectedWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = M3ETheme.of(context);
     return Center(
       child: Column(
         children: [
@@ -263,7 +261,7 @@ class WidgetPreviewGroupWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = M3ETheme.of(context);
     return Card(
       child: ListTileTheme(
         data: ListTileTheme.of(context).copyWith(
@@ -287,8 +285,8 @@ class WidgetPreviewGroupWidget extends StatelessWidget {
                   return switch (selectedLayout) {
                     LayoutType.gridView => _buildGridViewFlex(group.previews),
                     LayoutType.listView => _buildVerticalListView(
-                      group.previews,
-                    ),
+                        group.previews,
+                      ),
                   };
                 },
               ),
@@ -683,13 +681,13 @@ class _WidgetPreviewLocalizationsState
   PreviewLocalizationsData get _localizationsData => widget.localizationsData!;
   late final LocalizationsResolver _localizationsResolver =
       LocalizationsResolver(
-        supportedLocales: _localizationsData.supportedLocales,
-        locale: _localizationsData.locale,
-        localeListResolutionCallback:
-            _localizationsData.localeListResolutionCallback,
-        localeResolutionCallback: _localizationsData.localeResolutionCallback,
-        localizationsDelegates: _localizationsData.localizationsDelegates,
-      );
+    supportedLocales: _localizationsData.supportedLocales,
+    locale: _localizationsData.locale,
+    localeListResolutionCallback:
+        _localizationsData.localeListResolutionCallback,
+    localeResolutionCallback: _localizationsData.localeResolutionCallback,
+    localizationsDelegates: _localizationsData.localizationsDelegates,
+  );
 
   @override
   void didUpdateWidget(WidgetPreviewLocalizations oldWidget) {
@@ -811,7 +809,7 @@ class _ScaledLayoutWrapper extends SingleChildRenderObjectWidget {
 
 class _ScaledLayoutRenderObject extends RenderShiftedBox {
   _ScaledLayoutRenderObject({required this._scale, RenderBox? child})
-    : super(child);
+      : super(child);
 
   double _scale;
   double get scale => _scale;

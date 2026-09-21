@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../constants/app_colors.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
 
-/// Clean, modern text input field with optional label, prefix, and suffix
+/// Clean, modern text input field using Material 3 Expressive
 class CustomTextField extends StatelessWidget {
   final TextEditingController? controller;
   final String? label;
@@ -36,7 +36,8 @@ class CustomTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = M3ETheme.of(context);
+    final scheme = theme.colorScheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -45,15 +46,13 @@ class CustomTextField extends StatelessWidget {
         if (label != null) ...[
           Text(
             label!,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
+            style: theme.typeScale.labelLarge.copyWith(
+              color: scheme.onSurface,
             ),
           ),
           const SizedBox(height: 6),
         ],
-        TextFormField(
+        TextField(
           controller: controller,
           obscureText: obscureText,
           keyboardType: keyboardType,
@@ -61,17 +60,33 @@ class CustomTextField extends StatelessWidget {
           readOnly: readOnly,
           onTap: onTap,
           onChanged: onChanged,
-          validator: validator,
           style: TextStyle(
             fontSize: 14,
-            color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
+            color: scheme.onSurface,
           ),
           decoration: InputDecoration(
             hintText: hintText,
             errorText: errorText,
             prefixIcon: prefixIcon,
             suffixIcon: suffixIcon,
-            fillColor: isDark ? AppColors.darkInput : AppColors.lightBackground,
+            filled: true,
+            fillColor: scheme.surfaceContainerHighest,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: scheme.outline),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: scheme.outline),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: scheme.primary, width: 2),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: scheme.error),
+            ),
           ),
         ),
       ],

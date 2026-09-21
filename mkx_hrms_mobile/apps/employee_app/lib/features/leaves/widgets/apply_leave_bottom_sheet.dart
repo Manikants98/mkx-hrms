@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/utils/ui_helpers.dart';
-import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:mkx_core/widgets/custom_text_field.dart';
 import 'package:mkx_core/features/auth/state/auth_provider.dart';
 import '../models/leave_model.dart';
@@ -115,7 +115,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = M3ETheme.of(context).brightness == Brightness.dark;
     final leaves = context.watch<LeavesProvider>();
     final dateDisplay = DateFormat('MMM dd, yyyy');
 
@@ -232,7 +232,12 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                             : AppColors.lightForeground,
                       ),
                     ),
-                    if (leaves.isLoadingLeaveTypes) const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 3)),
+                    if (leaves.isLoadingLeaveTypes)
+                      SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: M3EProgressIndicator.circularWavy(
+                              strokeWidth: 3)),
                   ],
                 ),
                 const SizedBox(height: 6),
@@ -450,11 +455,16 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
 
                 // Submit Button
                 if (leaves.isSubmitting)
-                  const Center(child: SizedBox(width: 40, height: 40, child: CircularProgressIndicator(strokeWidth: 3)))
+                  Center(
+                      child: SizedBox(
+                          width: 40,
+                          height: 40,
+                          child: M3EProgressIndicator.circularWavy(
+                              strokeWidth: 3)))
                 else
-                  m3e.M3EButton(
-                    style: m3e.M3EButtonStyle.filled,
-                    size: m3e.M3EButtonSize.md,
+                  M3EButton(
+                    style: M3EButtonStyle.filled,
+                    size: M3EButtonSize.md,
                     onPressed: _handleSubmit,
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,

@@ -25,7 +25,7 @@ class PunchCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = m3e.M3ETheme.of(context).brightness == Brightness.dark;
     final hasCheckedIn = record?.hasCheckedIn ?? false;
     final hasCheckedOut = record?.hasCheckedOut ?? false;
 
@@ -60,7 +60,8 @@ class PunchCard extends StatelessWidget {
               fontSize: 34,
               fontWeight: FontWeight.w800,
               letterSpacing: -1,
-              color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
+              color:
+                  isDark ? AppColors.darkForeground : AppColors.lightForeground,
             ),
           ),
           const SizedBox(height: 4),
@@ -88,7 +89,8 @@ class PunchCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: isDark ? AppColors.darkSecondary : AppColors.lightSecondary,
+              color:
+                  isDark ? AppColors.darkSecondary : AppColors.lightSecondary,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
@@ -133,7 +135,12 @@ class PunchCard extends StatelessWidget {
           // Action Button
           if (!hasCheckedIn)
             if (isPunching)
-              Center(child: const SizedBox(width: 40, height: 40, child: CircularProgressIndicator(strokeWidth: 3)))
+              Center(
+                  child: SizedBox(
+                      width: 40,
+                      height: 40,
+                      child: m3e.M3EProgressIndicator.circularWavy(
+                          strokeWidth: 3)))
             else
               m3e.M3EButton(
                 style: m3e.M3EButtonStyle.filled,
@@ -150,7 +157,12 @@ class PunchCard extends StatelessWidget {
               )
           else if (hasCheckedIn && !hasCheckedOut)
             if (isPunching)
-              Center(child: const SizedBox(width: 40, height: 40, child: CircularProgressIndicator(strokeWidth: 3)))
+              Center(
+                  child: SizedBox(
+                      width: 40,
+                      height: 40,
+                      child: m3e.M3EProgressIndicator.circularWavy(
+                          strokeWidth: 3)))
             else
               m3e.M3EButton(
                 style: m3e.M3EButtonStyle.filled,
@@ -170,7 +182,8 @@ class PunchCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 14),
               width: double.infinity,
               decoration: BoxDecoration(
-                color: isDark ? AppColors.successBgDark : AppColors.successBgLight,
+                color:
+                    isDark ? AppColors.successBgDark : AppColors.successBgLight,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
                   color: AppColors.success.withValues(alpha: 0.3),
@@ -179,7 +192,8 @@ class PunchCard extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 18),
+                  const Icon(Icons.check_circle_rounded,
+                      color: AppColors.success, size: 18),
                   const SizedBox(width: 8),
                   Text(
                     'Punched for Today (${record?.workHours ?? "Completed"})',
@@ -204,7 +218,7 @@ class PunchCard extends StatelessWidget {
     required IconData icon,
     required Color iconColor,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = m3e.M3ETheme.of(context).brightness == Brightness.dark;
     return Column(
       children: [
         Row(
@@ -228,7 +242,8 @@ class PunchCard extends StatelessWidget {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w700,
-            color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
+            color:
+                isDark ? AppColors.darkForeground : AppColors.lightForeground,
           ),
         ),
       ],

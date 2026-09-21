@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:material_3_expressive/foundations/theme/m3e_theme.dart';
 
 /// Custom top app bar matching the MKX HRMS design system using system fonts.
 ///
@@ -36,15 +37,14 @@ class MkxAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = M3ETheme.of(context).colorScheme;
     final isDark = colorScheme.brightness == Brightness.dark;
 
     // surface = tile color (darkCard / lightCard), outline = border token
     final surfaceColor = colorScheme.surface;
     final fgColor = colorScheme.onSurface;
-    final mutedColor = isDark
-        ? const Color(0xFFA1A1AA)
-        : const Color(0xFF6E6E73);
+    final mutedColor =
+        isDark ? const Color(0xFFA1A1AA) : const Color(0xFF6E6E73);
 
     SystemChrome.setSystemUIOverlayStyle(
       isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,

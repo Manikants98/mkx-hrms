@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
-import 'package:provider/provider.dart';
-
-import 'package:mkx_core/constants/app_colors.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:mkx_core/features/auth/state/auth_provider.dart';
 import 'package:mkx_core/utils/date_utils.dart';
 import 'package:mkx_core/utils/ui_helpers.dart';
 import 'package:mkx_core/widgets/app_avatar.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
-import 'package:mkx_core/features/auth/state/auth_provider.dart';
+import 'package:mkx_core/theme/app_theme_settings.dart';
+import 'package:mkx_core/theme/app_theme_scope.dart';
+import 'package:provider/provider.dart';
 
 /// HR Admin Profile, Settings, Theme Mode, and Logout Screen
 class HrProfileScreen extends StatefulWidget {
@@ -40,27 +40,25 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = M3ETheme.of(context).brightness == Brightness.dark;
     final auth = context.watch<AuthProvider>();
     final user = auth.currentUser;
+    final M3EThemeData theme = M3ETheme.of(context);
+    final M3EColorScheme scheme = theme.colorScheme;
+    final colorScheme = M3ETheme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: isDark
-          ? AppColors.darkBackground
-          : AppColors.lightBackground,
+      backgroundColor: scheme.surfaceContainer,
       appBar: MkxAppBar(
         title: 'Profile',
         subtitle: 'HR Admin account preferences',
         actions: [
           IconButton(
-            icon: Icon(
-              Icons.logout_rounded,
-              size: 20,
-              color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
-            ),
-            onPressed: () => _handleLogout(context),
-            tooltip: 'Sign Out',
+            icon: const Icon(Icons.palette_outlined),
+            color: colorScheme.onSurface,
+            onPressed: () => _showPalettePicker(context),
           ),
+          const SizedBox(width: 8),
         ],
       ),
       body: SafeArea(
@@ -70,10 +68,10 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              m3e.M3ECard(
-                variant: m3e.M3ECardVariant.filled,
+              M3ECard(
+                variant: M3ECardVariant.filled,
                 borderRadius: BorderRadius.circular(16),
-                color: isDark ? AppColors.darkCard : AppColors.lightCard,
+                color: colorScheme.surfaceContainerLow,
                 padding: const EdgeInsets.all(20),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -109,9 +107,7 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
-                              color: isDark
-                                  ? AppColors.darkForeground
-                                  : AppColors.lightForeground,
+                              color: colorScheme.onSurface,
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -119,9 +115,7 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
                             user?.department ?? 'Department',
                             style: TextStyle(
                               fontSize: 12,
-                              color: isDark
-                                  ? AppColors.darkMuted
-                                  : AppColors.lightMuted,
+                              color: colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ],
@@ -199,37 +193,38 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
                 isDark: isDark,
                 position: TilePosition.only,
                 padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Theme Mode',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Theme Mode',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Choose between system, light, and dark zinc appearance.',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: isDark
-                            ? AppColors.darkMuted
-                            : AppColors.lightMuted,
+                      const SizedBox(height: 4),
+                      Text(
+                        'Choose between system, light, and dark zinc appearance.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    _buildThemeChips(context, auth, isDark),
-                  ],
+                      const SizedBox(height: 12),
+                      _buildThemeChips(context, auth, isDark),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 32),
 
               // Logout Button
-              m3e.M3EButton(
-                style: m3e.M3EButtonStyle.filled,
-                size: m3e.M3EButtonSize.md,
+              M3EButton(
+                style: M3EButtonStyle.filled,
+                size: M3EButtonSize.md,
                 onPressed: () => _handleLogout(context),
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -248,6 +243,91 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
     );
   }
 
+  void _showPalettePicker(BuildContext context) {
+    final settings = AppThemeScope.of(context);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerLow,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Theme Palette',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: List.generate(
+                    AppThemeSettings.seedOptions.length,
+                    (index) {
+                      final color = AppThemeSettings.seedOptions[index];
+                      final label = AppThemeSettings.seedLabels[index];
+                      final isSelected = settings.seedColor == color;
+
+                      return GestureDetector(
+                        onTap: () {
+                          settings.seedColor = color;
+                          Navigator.pop(context);
+                        },
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: color,
+                                shape: BoxShape.circle,
+                                border: isSelected
+                                    ? Border.all(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface,
+                                        width: 2)
+                                    : null,
+                              ),
+                              child: isSelected
+                                  ? const Icon(Icons.check, color: Colors.white)
+                                  : null,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              label,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: isSelected
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   /// Builds the row content for an info tile — decoration is handled by [SectionCard].
   Widget _buildInfoTileContent({
     required IconData icon,
@@ -255,19 +335,20 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
     required String value,
     required bool isDark,
   }) {
+    final colorScheme = M3ETheme.of(context).colorScheme;
     return Row(
       children: [
         Icon(
           icon,
           size: 18,
-          color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
+          color: colorScheme.onSurfaceVariant,
         ),
         const SizedBox(width: 14),
         Text(
           label,
           style: TextStyle(
             fontSize: 13,
-            color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
+            color: colorScheme.onSurfaceVariant,
           ),
         ),
         const Spacer(),
@@ -284,6 +365,7 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
     AuthProvider auth,
     bool isDark,
   ) {
+    final colorScheme = M3ETheme.of(context).colorScheme;
     final modes = [
       (ThemeMode.system, 'System', Icons.settings_brightness_rounded),
       (ThemeMode.light, 'Light', Icons.light_mode_rounded),
@@ -297,19 +379,17 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
           final isSelected = auth.themeMode == item.$1;
           return Padding(
             padding: const EdgeInsets.only(right: 8),
-            child: m3e.M3EChip(
+            child: M3EChip(
               label: item.$2,
-              type: m3e.M3EChipType.filter,
+              type: M3EChipType.filter,
               selected: isSelected,
               elevated: isSelected,
               leading: Icon(
                 item.$3,
                 size: 14,
                 color: isSelected
-                    ? (isDark
-                        ? AppColors.darkPrimaryForeground
-                        : AppColors.lightPrimaryForeground)
-                    : (isDark ? AppColors.darkMuted : AppColors.lightMuted),
+                    ? colorScheme.onPrimary
+                    : colorScheme.onSurfaceVariant,
               ),
               onPressed: () => auth.setThemeMode(item.$1),
             ),

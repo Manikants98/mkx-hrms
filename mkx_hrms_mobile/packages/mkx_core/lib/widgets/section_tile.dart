@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../constants/app_colors.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
 
 /// Position of a [SectionTile] within a group — kept for API compatibility,
 /// but no longer affects per-tile corner radii (the [SectionCard] wrapper
@@ -52,7 +51,8 @@ class SectionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = isDark ? AppColors.darkCard : AppColors.lightCard;
+    final M3EThemeData theme = M3ETheme.of(context);
+    final M3EColorScheme scheme = theme.colorScheme;
 
     // Standalone tiles keep all-round corners; grouped tiles are flat.
     final isStandalone = position == TilePosition.only;
@@ -60,10 +60,9 @@ class SectionTile extends StatelessWidget {
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: isStandalone
-            ? BorderRadius.circular(14)
-            : BorderRadius.zero,
+        color: scheme.surfaceDim,
+        borderRadius:
+            isStandalone ? BorderRadius.circular(14) : BorderRadius.circular(3),
       ),
       child: child,
     );
@@ -102,10 +101,10 @@ class SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final M3EThemeData theme = M3ETheme.of(context);
+    final M3EColorScheme scheme = theme.colorScheme;
     final total = children.length;
-    final dividerColor = isDark
-        ? AppColors.darkBackground
-        : AppColors.lightBackground;
+    final dividerColor = scheme.surfaceContainer;
     final defaultPadding =
         tilePadding ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 14);
 
@@ -121,7 +120,7 @@ class SectionCard extends StatelessWidget {
               padding: defaultPadding,
               child: children[i],
             ),
-            if (i < total - 1) Container(height: 3, color: dividerColor),
+            if (i < total - 1) Container(height: 4, color: dividerColor),
           ],
         ],
       ),
