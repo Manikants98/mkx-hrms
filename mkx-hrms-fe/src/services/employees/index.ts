@@ -27,6 +27,8 @@ export interface EmployeeSalaryStructureAssignment {
  * Data contract representing an employee in the frontend application
  */
 export interface Employee {
+  manager_email: string;
+  manager_avatar?: string | null;
   id: string;
   db_id?: number;
   name: string;
@@ -348,7 +350,14 @@ export const useAssignEmployeeSalaryStructures = (
   const mutation = useCustomMutation<
     ApiResponse<unknown>,
     unknown,
-    { assignments: Array<{ salary_structure_id: number; amount: number; effective_date?: string; status?: string }> }
+    {
+      assignments: Array<{
+        salary_structure_id: number;
+        amount: number;
+        effective_date?: string;
+        status?: string;
+      }>;
+    }
   >({
     toastMessages: {
       loading: "Saving compensation structure...",
@@ -361,13 +370,27 @@ export const useAssignEmployeeSalaryStructures = (
 
   return {
     ...mutation,
-    mutate: (data: { assignments: Array<{ salary_structure_id: number; amount: number; effective_date?: string; status?: string }> }) =>
+    mutate: (data: {
+      assignments: Array<{
+        salary_structure_id: number;
+        amount: number;
+        effective_date?: string;
+        status?: string;
+      }>;
+    }) =>
       mutation.mutate({
         url: `/v1/employees/${employeeId}/salary-structures`,
         method: "POST",
         data,
       }),
-    mutateAsync: (data: { assignments: Array<{ salary_structure_id: number; amount: number; effective_date?: string; status?: string }> }) =>
+    mutateAsync: (data: {
+      assignments: Array<{
+        salary_structure_id: number;
+        amount: number;
+        effective_date?: string;
+        status?: string;
+      }>;
+    }) =>
       mutation.mutateAsync({
         url: `/v1/employees/${employeeId}/salary-structures`,
         method: "POST",

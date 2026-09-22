@@ -222,7 +222,26 @@ const getEmployeeColumns = (
   },
   {
     header: "MANAGER",
-    cell: (row) => <span className="text-sm text-muted-foreground">{row.manager}</span>,
+    cell: (row) => (
+      <div className="flex items-center gap-3">
+        <Avatar
+          src={row.manager_avatar || undefined}
+          variant="rounded"
+          className="!bg-secondary !text-foreground shrink-0"
+        >
+          {row.manager.charAt(0)}
+        </Avatar>
+        <div className="flex flex-col">
+          <span
+            onClick={() => onView(row)}
+            className="font-medium text-foreground hover:text-primary transition-colors cursor-pointer"
+          >
+            {row.manager}
+          </span>
+          <span className="text-xs text-muted-foreground mt-0.5">{row.manager_email}</span>
+        </div>
+      </div>
+    ),
     width: "15%",
   },
   {
@@ -232,7 +251,15 @@ const getEmployeeColumns = (
   },
   {
     header: "ACTION",
-    cell: (row) => <RowActions row={row} onEdit={onEdit} onDelete={onDelete} onView={onView} onResetPassword={onResetPassword} />,
+    cell: (row) => (
+      <RowActions
+        row={row}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        onView={onView}
+        onResetPassword={onResetPassword}
+      />
+    ),
     width: "5%",
     align: "right",
   },
@@ -409,7 +436,13 @@ export default function Employees() {
   };
 
   const employeeColumns = useMemo(
-    () => getEmployeeColumns(handleEditEmployee, handleDeleteEmployee, handleViewEmployee, handleResetPassword),
+    () =>
+      getEmployeeColumns(
+        handleEditEmployee,
+        handleDeleteEmployee,
+        handleViewEmployee,
+        handleResetPassword,
+      ),
     [handleDeleteEmployee],
   );
 

@@ -135,7 +135,7 @@ export const getEmployees = async (
             department_rel?: { name: string } | null;
             role_rel?: { name: string } | null;
             shift_rel?: { id: number; name: string; start_time: string; end_time: string } | null;
-            manager?: { name: string } | null;
+            manager?: { name: string; email: string; avatar: string | null } | null;
             salary_structures?: Array<{
               id: number;
               amount: unknown;
@@ -186,6 +186,8 @@ export const getEmployees = async (
       shift_rel: emp.shift_rel,
       status: emp.status,
       manager: emp.manager?.name || "None",
+      manager_email: emp.manager?.email || null,
+      manager_avatar: emp.manager?.avatar || null,
       manager_id: emp.manager_id,
       join_date: emp.join_date.toISOString().split("T")[0],
       birth_date: emp.birth_date ? emp.birth_date.toISOString().split("T")[0] : null,
@@ -313,7 +315,9 @@ export const createEmployee = async (
   try {
     if (req.body.email) {
       const existingUser = await prisma.user.findUnique({ where: { email: req.body.email } });
-      const existingEmployee = await prisma.employee.findUnique({ where: { email: req.body.email } });
+      const existingEmployee = await prisma.employee.findUnique({
+        where: { email: req.body.email },
+      });
 
       if (existingUser || existingEmployee) {
         res.sendError({ statusCode: 409, message: "An employee with this email already exists." });
@@ -1101,7 +1105,10 @@ export const resetEmployeePassword = async (
     }
 
     if (!employee.user_id) {
-      res.sendError({ statusCode: 400, message: "Employee does not have an associated user account" });
+      res.sendError({
+        statusCode: 400,
+        message: "Employee does not have an associated user account",
+      });
       return;
     }
 
