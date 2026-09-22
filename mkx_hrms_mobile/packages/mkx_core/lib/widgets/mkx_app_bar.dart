@@ -41,7 +41,7 @@ class MkxAppBar extends StatelessWidget implements PreferredSizeWidget {
     final isDark = colorScheme.brightness == Brightness.dark;
 
     // surface = tile color (darkCard / lightCard), outline = border token
-    final surfaceColor = colorScheme.surface;
+    final surfaceColor = colorScheme.surfaceContainerLowest;
     final fgColor = colorScheme.onSurface;
     final mutedColor =
         isDark ? const Color(0xFFA1A1AA) : const Color(0xFF6E6E73);
@@ -50,7 +50,8 @@ class MkxAppBar extends StatelessWidget implements PreferredSizeWidget {
       isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
     );
 
-    final canPop = Navigator.of(context).canPop();
+    final ModalRoute<dynamic>? parentRoute = ModalRoute.of(context);
+    final canPop = parentRoute?.impliesAppBarDismissal ?? false;
     final hasLeading = leading != null || canPop;
 
     return Container(
@@ -68,7 +69,7 @@ class MkxAppBar extends StatelessWidget implements PreferredSizeWidget {
                   leading ??
                       IconButton(
                         icon: const Icon(
-                          Icons.arrow_back_ios_new_rounded,
+                          Icons.arrow_back,
                           size: 20,
                         ),
                         onPressed: () => Navigator.of(context).pop(),
@@ -96,7 +97,7 @@ class MkxAppBar extends StatelessWidget implements PreferredSizeWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 12,
                             fontWeight: FontWeight.w400,
                             color: mutedColor,
                           ),

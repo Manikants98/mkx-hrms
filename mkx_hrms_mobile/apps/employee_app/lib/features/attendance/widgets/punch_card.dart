@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/utils/date_utils.dart';
-import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
+
 import '../models/attendance_model.dart';
 
 /// Interactive Punch In / Punch Out card with live digital clock
@@ -25,7 +26,7 @@ class PunchCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = m3e.M3ETheme.of(context).brightness == Brightness.dark;
+    final isDark = M3ETheme.of(context).brightness == Brightness.dark;
     final hasCheckedIn = record?.hasCheckedIn ?? false;
     final hasCheckedOut = record?.hasCheckedOut ?? false;
 
@@ -86,48 +87,62 @@ class PunchCard extends StatelessWidget {
           const SizedBox(height: 20),
 
           // Check In & Check Out Time Badges
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color:
-                  isDark ? AppColors.darkSecondary : AppColors.lightSecondary,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildTimeColumn(
-                  context,
-                  title: 'Punch In',
-                  time: record?.checkIn ?? '--:--',
-                  icon: Icons.login_rounded,
-                  iconColor: AppColors.success,
-                ),
-                Container(
-                  width: 1,
-                  height: 32,
-                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                ),
-                _buildTimeColumn(
-                  context,
-                  title: 'Punch Out',
-                  time: record?.checkOut ?? '--:--',
-                  icon: Icons.logout_rounded,
-                  iconColor: AppColors.warning,
-                ),
-                Container(
-                  width: 1,
-                  height: 32,
-                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                ),
-                _buildTimeColumn(
-                  context,
-                  title: 'Total Hours',
-                  time: record?.workHours ?? '0h 00m',
-                  icon: Icons.timer_outlined,
-                  iconColor: AppColors.info,
-                ),
-              ],
+          M3ECard(
+            variant: M3ECardVariant.filled,
+            borderRadius: BorderRadius.circular(16),
+            color: M3ETheme.of(context).colorScheme.surfaceContainer,
+            padding: EdgeInsets.zero,
+            child: IntrinsicHeight(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: _buildTimeColumn(
+                        context,
+                        title: 'Punch In',
+                        time: record?.checkIn ?? '--:--',
+                        icon: Icons.login_rounded,
+                        iconColor: AppColors.success,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    width: 2,
+                    color:
+                        M3ETheme.of(context).colorScheme.surfaceContainerLowest,
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: _buildTimeColumn(
+                        context,
+                        title: 'Punch Out',
+                        time: record?.checkOut ?? '--:--',
+                        icon: Icons.logout_rounded,
+                        iconColor: AppColors.warning,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    width: 2,
+                    color:
+                        M3ETheme.of(context).colorScheme.surfaceContainerLowest,
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: _buildTimeColumn(
+                        context,
+                        title: 'Total Hours',
+                        time: record?.workHours ?? '0h 00m',
+                        icon: Icons.timer_outlined,
+                        iconColor: AppColors.info,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 20),
@@ -139,12 +154,11 @@ class PunchCard extends StatelessWidget {
                   child: SizedBox(
                       width: 40,
                       height: 40,
-                      child: m3e.M3EProgressIndicator.circularWavy(
-                          strokeWidth: 3)))
+                      child: M3EProgressIndicator.circularWavy(strokeWidth: 3)))
             else
-              m3e.M3EButton(
-                style: m3e.M3EButtonStyle.filled,
-                size: m3e.M3EButtonSize.md,
+              M3EButton(
+                style: M3EButtonStyle.filled,
+                size: M3EButtonSize.md,
                 onPressed: onPunchIn,
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -161,12 +175,11 @@ class PunchCard extends StatelessWidget {
                   child: SizedBox(
                       width: 40,
                       height: 40,
-                      child: m3e.M3EProgressIndicator.circularWavy(
-                          strokeWidth: 3)))
+                      child: M3EProgressIndicator.circularWavy(strokeWidth: 3)))
             else
-              m3e.M3EButton(
-                style: m3e.M3EButtonStyle.filled,
-                size: m3e.M3EButtonSize.md,
+              M3EButton(
+                style: M3EButtonStyle.filled,
+                size: M3EButtonSize.md,
                 onPressed: onPunchOut,
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -218,7 +231,7 @@ class PunchCard extends StatelessWidget {
     required IconData icon,
     required Color iconColor,
   }) {
-    final isDark = m3e.M3ETheme.of(context).brightness == Brightness.dark;
+    final isDark = M3ETheme.of(context).brightness == Brightness.dark;
     return Column(
       children: [
         Row(

@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:mkx_core/constants/app_colors.dart';
+import 'package:mkx_core/features/auth/state/auth_provider.dart';
 import 'package:mkx_core/widgets/empty_state.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
-import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
-import 'package:mkx_core/features/auth/state/auth_provider.dart';
+import 'package:provider/provider.dart';
+
 import '../models/payslip_model.dart';
 import '../state/payroll_provider.dart';
-import '../widgets/payslip_detail_modal.dart';
+import 'payslip_detail_screen.dart';
 
 /// Employee Salary Slips & Compensation Screen
 class PayrollScreen extends StatefulWidget {
@@ -38,28 +39,28 @@ class _PayrollScreenState extends State<PayrollScreen> {
   }
 
   void _openDetailModal(Payslip slip) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => PayslipDetailModal(slip: slip),
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => PayslipDetailScreen(slip: slip),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = m3e.M3ETheme.of(context).brightness == Brightness.dark;
+    final isDark = M3ETheme.of(context).brightness == Brightness.dark;
     final payroll = context.watch<PayrollProvider>();
     final latest = payroll.latestPayslip;
-
+    final theme = M3ETheme.of(context).colorScheme;
     return Scaffold(
+      backgroundColor: theme.surfaceContainer,
       appBar: const MkxAppBar(
         title: 'Salary & Payslips',
         subtitle: 'Remuneration statements and annual earnings',
       ),
       body: SafeArea(
         top: false,
-        child: RefreshIndicator(
+        child: M3ERefreshIndicator.contained(
           onRefresh: _loadData,
           color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
           child: SingleChildScrollView(
@@ -115,118 +116,129 @@ class _PayrollScreenState extends State<PayrollScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: m3e.M3ECard(
-                                variant: m3e.M3ECardVariant.filled,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(10),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Base Salary',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: isDark
-                                              ? AppColors.darkMuted
-                                              : AppColors.lightMuted,
+                        M3ECard(
+                          variant: M3ECardVariant.filled,
+                          color: theme.surfaceContainer,
+                          padding: EdgeInsets.zero,
+                          borderRadius: BorderRadius.circular(16),
+                          child: IntrinsicHeight(
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 16, horizontal: 12),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Base Salary',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            color: isDark
+                                                ? AppColors.darkMuted
+                                                : AppColors.lightMuted,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        latest.formattedBase,
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w700,
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          latest.formattedBase,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w700,
+                                            color: isDark
+                                                ? AppColors.darkForeground
+                                                : AppColors.lightForeground,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: m3e.M3ECard(
-                                variant: m3e.M3ECardVariant.filled,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(10),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Allowances',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: isDark
-                                              ? AppColors.darkMuted
-                                              : AppColors.lightMuted,
+                                Container(
+                                  width: 2,
+                                  color: theme.surfaceContainerLowest,
+                                ),
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 16, horizontal: 12),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Allowances',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            color: isDark
+                                                ? AppColors.darkMuted
+                                                : AppColors.lightMuted,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        latest.formattedAllowance,
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w700,
-                                          color: AppColors.success,
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          latest.formattedAllowance,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w700,
+                                            color: AppColors.success,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: m3e.M3ECard(
-                                variant: m3e.M3ECardVariant.filled,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(10),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Deductions',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: isDark
-                                              ? AppColors.darkMuted
-                                              : AppColors.lightMuted,
+                                Container(
+                                  width: 2,
+                                  color: theme.surfaceContainerLowest,
+                                ),
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 16, horizontal: 12),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Deductions',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            color: isDark
+                                                ? AppColors.darkMuted
+                                                : AppColors.lightMuted,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        latest.formattedDeductions,
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w700,
-                                          color: AppColors.error,
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          latest.formattedDeductions,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w700,
+                                            color: AppColors.error,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                       ],
                     ),
@@ -251,7 +263,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                       child: SizedBox(
                           width: 48,
                           height: 48,
-                          child: m3e.M3EProgressIndicator.circularWavy(
+                          child: M3EProgressIndicator.circularWavy(
                               strokeWidth: 3)),
                     ),
                   )
@@ -274,14 +286,15 @@ class _PayrollScreenState extends State<PayrollScreen> {
                               width: 44,
                               height: 44,
                               decoration: BoxDecoration(
-                                color: isDark
-                                    ? AppColors.darkSecondary
-                                    : AppColors.lightSecondary,
+                                color: M3ETheme.of(context)
+                                    .colorScheme
+                                    .surfaceContainer,
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.receipt_outlined,
                                 size: 22,
+                                color: M3ETheme.of(context).colorScheme.primary,
                               ),
                             ),
                             const SizedBox(width: 14),
@@ -298,9 +311,9 @@ class _PayrollScreenState extends State<PayrollScreen> {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    'Disbursed: ${item.payDate} • ${item.payrollCode}',
+                                    '${item.payDate} • ${item.payrollCode}',
                                     style: TextStyle(
-                                      fontSize: 12,
+                                      fontSize: 10,
                                       color: isDark
                                           ? AppColors.darkMuted
                                           : AppColors.lightMuted,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/widgets/app_avatar.dart';
 import 'package:mkx_core/widgets/empty_state.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
@@ -58,7 +59,7 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
       ),
       body: SafeArea(
         top: false,
-        child: M3ERefreshIndicator(
+        child: M3ERefreshIndicator.contained(
           onRefresh: () async {
             await context.read<HrAttendanceProvider>().loadAttendance();
           },
@@ -69,9 +70,7 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildSummaryRow(isDark, provider),
-                const SizedBox(height: 12),
                 _buildDateFilters(isDark, provider),
-                const SizedBox(height: 10),
                 if (provider.records.isEmpty)
                   const EmptyState(
                     icon: Icons.today_outlined,
@@ -99,21 +98,55 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
     return M3ECard(
       variant: M3ECardVariant.filled,
       borderRadius: BorderRadius.circular(16),
-      color: Theme.of(context).colorScheme.surfaceContainerLow,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _buildStatCol(
-            'Total',
-            provider.records.length,
-            Theme.of(context).colorScheme.primary,
-          ),
-          _buildStatCol('Present', provider.presentCount, Colors.green),
-          _buildStatCol('Late', provider.lateCount, Colors.orange),
-          _buildStatCol('Absent', provider.absentCount,
-              Theme.of(context).colorScheme.error),
-        ],
+      color: M3ETheme.of(context).colorScheme.surfaceContainerLowest,
+      padding: EdgeInsets.zero,
+      child: IntrinsicHeight(
+        child: Row(
+          children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: _buildStatCol(
+                  'Total',
+                  provider.records.length,
+                  Colors.blue,
+                ),
+              ),
+            ),
+            Container(
+              width: 4,
+              color: M3ETheme.of(context).colorScheme.surfaceContainer,
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: _buildStatCol(
+                    'Present', provider.presentCount, Colors.green),
+              ),
+            ),
+            Container(
+              width: 4,
+              color: M3ETheme.of(context).colorScheme.surfaceContainer,
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: _buildStatCol('Late', provider.lateCount, Colors.orange),
+              ),
+            ),
+            Container(
+              width: 4,
+              color: M3ETheme.of(context).colorScheme.surfaceContainer,
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: _buildStatCol(
+                    'Absent', provider.absentCount, AppColors.error),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -154,54 +187,69 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
           d.day == provider.selectedDate.day,
     );
 
+    int? selectedIndex;
+    if (isCustomDate) {
+      selectedIndex = dates.length;
+    } else {
+      for (int i = 0; i < dates.length; i++) {
+        if (provider.selectedDate.year == dates[i].year &&
+            provider.selectedDate.month == dates[i].month &&
+            provider.selectedDate.day == dates[i].day) {
+          selectedIndex = i;
+          break;
+        }
+      }
+    }
+
+    final actions = <M3EButtonGroupAction>[];
+    for (final date in dates) {
+      String label;
+      final diff = today.difference(date).inDays;
+      if (diff == 0) {
+        label = 'Today';
+      } else if (diff == 1) {
+        label = 'Yesterday';
+      } else {
+        label = DateFormat('MMM d').format(date);
+      }
+      actions.add(M3EButtonGroupAction(
+        label: Text(label),
+      ));
+    }
+
+    actions.add(M3EButtonGroupAction(
+      label: Text(isCustomDate
+          ? DateFormat('MMM d').format(provider.selectedDate)
+          : 'Custom'),
+      icon: const Icon(Icons.calendar_today_rounded, size: 14),
+    ));
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          ...dates.map((date) {
-            final isSelected = provider.selectedDate.year == date.year &&
-                provider.selectedDate.month == date.month &&
-                provider.selectedDate.day == date.day;
-
-            String label;
-            final diff = today.difference(date).inDays;
-            if (diff == 0) {
-              label = 'Today';
-            } else if (diff == 1) {
-              label = 'Yesterday';
-            } else {
-              label = DateFormat('MMM d').format(date);
+      child: M3EButtonGroup(
+        type: M3EButtonGroupType.connected,
+        shape: M3EButtonShape.square,
+        size: M3EButtonSize.xs,
+        style: M3EButtonStyle.filled,
+        neighborSquish: true,
+        decoration: M3EToggleButtonDecoration(
+          backgroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return M3ETheme.of(context).colorScheme.primary;
             }
-
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: M3EChip(
-                label: label,
-                type: M3EChipType.filter,
-                selected: isSelected,
-                onPressed: () => provider.setDate(date),
-              ),
-            );
+            return M3ETheme.of(context).colorScheme.surfaceContainerLowest;
           }),
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: M3EChip(
-              label: isCustomDate
-                  ? DateFormat('MMM d').format(provider.selectedDate)
-                  : 'Custom',
-              type: M3EChipType.filter,
-              leading: Icon(
-                Icons.calendar_today_rounded,
-                size: 14,
-                color: isCustomDate
-                    ? Theme.of(context).colorScheme.onPrimary
-                    : Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-              selected: isCustomDate,
-              onPressed: () => _pickDate(context, provider),
-            ),
-          ),
-        ],
+        ),
+        selectedIndex: selectedIndex,
+        onSelectedIndexChanged: (int? index) {
+          if (index == null) return;
+          if (index == dates.length) {
+            _pickDate(context, provider);
+          } else {
+            provider.setDate(dates[index]);
+          }
+        },
+        actions: actions,
       ),
     );
   }

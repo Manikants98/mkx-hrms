@@ -46,17 +46,12 @@ class HrShellScreen extends StatelessWidget {
     final isDark = M3ETheme.of(context).brightness == Brightness.dark;
     final colorScheme = M3ETheme.of(context).colorScheme;
     final surfaceColor = colorScheme.surfaceContainerLow;
-    final activeColor = colorScheme.primary;
-    final inactiveColor = colorScheme.onSurfaceVariant;
-    final indicatorColor = colorScheme.primary.withValues(
-      alpha: isDark ? 0.24 : 0.14,
-    );
 
     final location = GoRouterState.of(context).matchedLocation;
     final currentIndex = _indexForLocation(location);
 
     return Scaffold(
-      backgroundColor: colorScheme.surfaceContainer,
+      backgroundColor: colorScheme.surfaceContainerLowest,
       body: child,
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -69,48 +64,28 @@ class HrShellScreen extends StatelessWidget {
             ),
           ],
         ),
-        child: SafeArea(
-          top: false,
-          child: Theme(
-            data: Theme.of(context).copyWith(
-              navigationBarTheme: NavigationBarThemeData(
-                height: 68,
-                backgroundColor: surfaceColor,
-                surfaceTintColor: Colors.transparent,
-                elevation: 0,
-                indicatorColor: indicatorColor,
-                indicatorShape: const StadiumBorder(),
-                labelTextStyle: WidgetStateProperty.resolveWith((states) {
-                  final selected = states.contains(WidgetState.selected);
-                  return TextStyle(
-                    fontSize: 11.5,
-                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                    color: selected ? activeColor : inactiveColor,
-                  );
-                }),
-                iconTheme: WidgetStateProperty.resolveWith((states) {
-                  final selected = states.contains(WidgetState.selected);
-                  return IconThemeData(
-                    size: 24,
-                    color: selected ? activeColor : inactiveColor,
-                  );
-                }),
+        child: M3ETheme(
+          data: M3ETheme.of(context).copyWith(
+            colorScheme: colorScheme.copyWith(
+              onSecondaryContainer: colorScheme.primary,
+              secondaryContainer: colorScheme.primary.withValues(
+                alpha: isDark ? 0.24 : 0.14,
               ),
             ),
-            child: NavigationBar(
-              selectedIndex: currentIndex,
-              onDestinationSelected: (index) => _navigate(context, index),
-              labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-              destinations: _items
-                  .map(
-                    (item) => NavigationDestination(
-                      icon: Icon(item.icon),
-                      selectedIcon: Icon(item.activeIcon),
-                      label: item.label,
-                    ),
-                  )
-                  .toList(),
-            ),
+          ),
+          child: M3ENavigationBar(
+            selectedIndex: currentIndex,
+            backgroundColor: colorScheme.surfaceContainerLowest,
+            onDestinationSelected: (index) => _navigate(context, index),
+            labelBehavior: M3ENavBarLabelBehavior.alwaysShow,
+            destinations: _items
+                .map(
+                  (item) => M3ENavigationBarDestination(
+                    icon: Icon(item.icon),
+                    label: item.label,
+                  ),
+                )
+                .toList(),
           ),
         ),
       ),

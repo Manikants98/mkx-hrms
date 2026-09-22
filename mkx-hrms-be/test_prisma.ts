@@ -1,0 +1,1 @@
+import { PrismaClient } from "@prisma/client"; const p = new PrismaClient(); p.employee.count({where: { department: "IT" } as any}).then(console.log).catch(console.error).finally(()=>p.$disconnect());

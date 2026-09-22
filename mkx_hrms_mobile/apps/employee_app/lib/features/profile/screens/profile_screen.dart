@@ -1,5 +1,7 @@
+import 'package:employee_app/features/leaves/models/leave_model.dart';
+import 'package:employee_app/features/leaves/widgets/apply_leave_bottom_sheet.dart';
 import 'package:flutter/material.dart';
-import 'package:material_3_expressive/material_3_expressive.dart' as m3e;
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/features/auth/state/auth_provider.dart';
 import 'package:mkx_core/utils/date_utils.dart';
@@ -8,11 +10,10 @@ import 'package:mkx_core/widgets/app_avatar.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
+import 'package:mkx_core/widgets/theme_config_page.dart';
 import 'package:provider/provider.dart';
 
-import '../../leaves/models/leave_model.dart';
 import '../../leaves/state/leaves_provider.dart';
-import '../../leaves/widgets/apply_leave_bottom_sheet.dart';
 
 /// Personal Employee Profile, Settings, Theme Mode, and Logout Screen
 class ProfileScreen extends StatefulWidget {
@@ -58,260 +59,218 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = m3e.M3ETheme.of(context).brightness == Brightness.dark;
+    final isDark = M3ETheme.of(context).brightness == Brightness.dark;
     final auth = context.watch<AuthProvider>();
     final leaves = context.watch<LeavesProvider>();
     final user = auth.currentUser;
+    final theme = M3ETheme.of(context);
 
     return Scaffold(
+      backgroundColor: theme.colorScheme.surfaceContainer,
       appBar: MkxAppBar(
         title: 'Profile',
         subtitle: 'Employment records and account preferences',
         actions: [
           IconButton(
-            icon: Icon(
-              Icons.logout_rounded,
-              size: 20,
-              color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
-            ),
-            onPressed: () => _handleLogout(context),
-            tooltip: 'Sign Out',
+            icon: const Icon(Icons.palette_outlined),
+            color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
+            onPressed: () => ThemeConfigPage.push(context),
+            tooltip: 'Theme Settings',
           ),
         ],
       ),
-      body: SafeArea(
-        top: false,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              m3e.M3ECard(
-                variant: m3e.M3ECardVariant.filled,
-                borderRadius: BorderRadius.circular(16),
-                color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                padding: const EdgeInsets.all(20),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AppAvatar(
-                      name: user?.name ?? 'Employee',
-                      size: 64,
-                      borderRadius: 8,
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  user?.name ?? 'Employee Name',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            M3ECard(
+              variant: M3ECardVariant.filled,
+              borderRadius: BorderRadius.circular(16),
+              color: M3ETheme.of(context).colorScheme.surfaceContainerLowest,
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppAvatar(
+                    name: user?.name ?? 'Employee',
+                    size: 64,
+                    borderRadius: 8,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                user?.name ?? 'Employee Name',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              StatusBadge(status: user?.status ?? 'Active'),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            user?.role ?? 'Role',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: isDark
-                                  ? AppColors.darkForeground
-                                  : AppColors.lightForeground,
                             ),
+                            const SizedBox(width: 8),
+                            StatusBadge(status: user?.status ?? 'Active'),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          user?.role ?? 'Role',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: isDark
+                                ? AppColors.darkForeground
+                                : AppColors.lightForeground,
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            user?.department ?? 'Department',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: isDark
-                                  ? AppColors.darkMuted
-                                  : AppColors.lightMuted,
-                            ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          user?.department ?? 'Department',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isDark
+                                ? AppColors.darkMuted
+                                : AppColors.lightMuted,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-
-              Text(
-                'Employment Details',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.2,
-                ),
-              ),
-              const SizedBox(height: 10),
-              SectionCard(
-                isDark: isDark,
-                children: [
-                  _buildInfoTileContent(
-                    icon: Icons.badge_outlined,
-                    label: 'Employee Code',
-                    value: user?.employeeId ?? 'EMP-001',
-                    isDark: isDark,
-                  ),
-                  _buildInfoTileContent(
-                    icon: Icons.alternate_email_rounded,
-                    label: 'Email',
-                    value: user?.email ?? '--',
-                    isDark: isDark,
-                  ),
-                  _buildInfoTileContent(
-                    icon: Icons.supervisor_account_outlined,
-                    label: 'Reporting Manager',
-                    value: user?.managerName ?? 'Department Head',
-                    isDark: isDark,
-                  ),
-                  _buildInfoTileContent(
-                    icon: Icons.calendar_today_outlined,
-                    label: 'Joining Date',
-                    value: AppDateUtils.formatDate(user?.joinDate),
-                    isDark: isDark,
-                  ),
-                  _buildInfoTileContent(
-                    icon: Icons.access_time_rounded,
-                    label: 'Timezone',
-                    value: 'Asia/Kolkata (IST)',
-                    isDark: isDark,
-                  ),
-                  _buildInfoTileContent(
-                    icon: Icons.schedule_outlined,
-                    label: 'Work Shift',
-                    value: user?.shiftName != null
-                        ? '${user!.shiftName}'
-                        : 'General',
-                    isDark: isDark,
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Leave Balances',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.2,
-                    ),
+            ),
+            const SizedBox(height: 10),
+
+            Text(
+              'Employment Details',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.2,
+              ),
+            ),
+            const SizedBox(height: 10),
+            SectionCard(
+              isDark: isDark,
+              children: [
+                _buildInfoTileContent(
+                  icon: Icons.badge_outlined,
+                  label: 'Employee Code',
+                  value: user?.employeeId ?? 'EMP-001',
+                  isDark: isDark,
+                ),
+                _buildInfoTileContent(
+                  icon: Icons.alternate_email_rounded,
+                  label: 'Email',
+                  value: user?.email ?? '--',
+                  isDark: isDark,
+                ),
+                _buildInfoTileContent(
+                  icon: Icons.supervisor_account_outlined,
+                  label: 'Reporting Manager',
+                  value: user?.managerName ?? 'Department Head',
+                  isDark: isDark,
+                ),
+                _buildInfoTileContent(
+                  icon: Icons.calendar_today_outlined,
+                  label: 'Joining Date',
+                  value: AppDateUtils.formatDate(user?.joinDate),
+                  isDark: isDark,
+                ),
+                _buildInfoTileContent(
+                  icon: Icons.access_time_rounded,
+                  label: 'Timezone',
+                  value: 'Asia/Kolkata (IST)',
+                  isDark: isDark,
+                ),
+                _buildInfoTileContent(
+                  icon: Icons.schedule_outlined,
+                  label: 'Work Shift',
+                  value: user?.shiftName != null
+                      ? '${user!.shiftName}'
+                      : 'General',
+                  isDark: isDark,
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Leave Balances',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.2,
                   ),
-                  InkWell(
-                    onTap: () {
-                      showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        backgroundColor: Colors.transparent,
-                        builder: (_) => const ApplyLeaveBottomSheet(),
-                      );
-                    },
-                    borderRadius: BorderRadius.circular(6),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.add_circle_outline_rounded,
-                            size: 14,
+                ),
+                InkWell(
+                  onTap: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (_) => const ApplyLeaveBottomSheet(),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(6),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.add_circle_outline_rounded,
+                          size: 14,
+                          color: isDark
+                              ? AppColors.darkPrimary
+                              : AppColors.lightPrimary,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Apply Leave',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
                             color: isDark
                                 ? AppColors.darkPrimary
                                 : AppColors.lightPrimary,
                           ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Apply Leave',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: isDark
-                                  ? AppColors.darkPrimary
-                                  : AppColors.lightPrimary,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            _buildLeaveBalancesCard(context, leaves, isDark),
+            const SizedBox(height: 32),
+
+            // Logout Button
+            M3EButton(
+              style: M3EButtonStyle.filled,
+              size: M3EButtonSize.sm,
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.logout_rounded, size: 18),
+                  SizedBox(width: 8),
+                  Text('Sign Out'),
                 ],
               ),
-              const SizedBox(height: 10),
-              _buildLeaveBalancesCard(context, leaves, isDark),
-              const SizedBox(height: 10),
-              Text(
-                'App Preferences',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.2,
-                ),
-              ),
-              const SizedBox(height: 10),
-              SectionTile(
-                isDark: isDark,
-                position: TilePosition.only,
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Theme Mode',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Choose between system, light, and dark zinc appearance.',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color:
-                            isDark ? AppColors.darkMuted : AppColors.lightMuted,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    _buildThemeChips(context, auth, isDark),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              // Logout Button
-              m3e.M3EButton(
-                style: m3e.M3EButtonStyle.filled,
-                size: m3e.M3EButtonSize.md,
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.logout_rounded, size: 18),
-                    SizedBox(width: 8),
-                    Text('Sign Out'),
-                  ],
-                ),
-                onPressed: () => _handleLogout(context),
-              ),
-              const SizedBox(height: 40),
-            ],
-          ),
+              onPressed: () => _handleLogout(context),
+            ),
+            const SizedBox(height: 40),
+          ],
         ),
       ),
     );
@@ -348,46 +307,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildThemeChips(
-    BuildContext context,
-    AuthProvider auth,
-    bool isDark,
-  ) {
-    final modes = [
-      (ThemeMode.system, 'System', Icons.settings_brightness_rounded),
-      (ThemeMode.light, 'Light', Icons.light_mode_rounded),
-      (ThemeMode.dark, 'Dark', Icons.dark_mode_rounded),
-    ];
-
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: modes.map((item) {
-          final isSelected = auth.themeMode == item.$1;
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: m3e.M3EChip(
-              label: item.$2,
-              type: m3e.M3EChipType.filter,
-              selected: isSelected,
-              elevated: isSelected,
-              leading: Icon(
-                item.$3,
-                size: 14,
-                color: isSelected
-                    ? (isDark
-                        ? AppColors.darkPrimaryForeground
-                        : AppColors.lightPrimaryForeground)
-                    : (isDark ? AppColors.darkMuted : AppColors.lightMuted),
-              ),
-              onPressed: () => auth.setThemeMode(item.$1),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
   /// Builds the leave quotas and remaining balances card in profile
   Widget _buildLeaveBalancesCard(
     BuildContext context,
@@ -405,7 +324,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: SizedBox(
                 width: 36,
                 height: 36,
-                child: m3e.M3EProgressIndicator.circularWavy(strokeWidth: 3))),
+                child: M3EProgressIndicator.circularWavy(strokeWidth: 3))),
       );
     }
 

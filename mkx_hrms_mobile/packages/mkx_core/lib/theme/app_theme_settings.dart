@@ -22,7 +22,38 @@ class AppThemeSettings extends ChangeNotifier {
     'Rose',
   ];
 
+  /// Family name registered for Google Sans Flex.
+  static const String googleSansFlex = 'Google Sans Flex';
+
+  /// Family name registered for Poppins.
+  static const String poppins = 'Poppins';
+
+  bool _autoTheming = true;
+  bool _dynamicColoring = true;
   Color _seedColor = seedOptions.first;
+  String? _fontFamily = googleSansFlex;
+
+  /// Whether the theme follows the platform brightness.
+  bool get autoTheming => _autoTheming;
+
+  set autoTheming(bool value) {
+    if (value == _autoTheming) {
+      return;
+    }
+    _autoTheming = value;
+    notifyListeners();
+  }
+
+  /// Whether device dynamic color overrides the seeded scheme.
+  bool get dynamicColoring => _dynamicColoring;
+
+  set dynamicColoring(bool value) {
+    if (value == _dynamicColoring) {
+      return;
+    }
+    _dynamicColoring = value;
+    notifyListeners();
+  }
 
   /// Seed used to generate the scheme when dynamic color is off.
   Color get seedColor => _seedColor;
@@ -32,6 +63,17 @@ class AppThemeSettings extends ChangeNotifier {
       return;
     }
     _seedColor = value;
+    notifyListeners();
+  }
+
+  /// Font family for the app, or null for the platform default.
+  String? get fontFamily => _fontFamily;
+
+  set fontFamily(String? value) {
+    if (value == _fontFamily) {
+      return;
+    }
+    _fontFamily = value;
     notifyListeners();
   }
 }

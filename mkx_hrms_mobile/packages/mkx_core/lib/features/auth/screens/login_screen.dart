@@ -61,12 +61,13 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final isDark = M3ETheme.of(context).brightness == Brightness.dark;
     final auth = context.watch<AuthProvider>();
-
+    final scheme = M3ETheme.of(context).colorScheme;
     return Scaffold(
+      backgroundColor: scheme.surfaceContainer,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 440),
               child: Form(
@@ -95,7 +96,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
                     Text(
                       'MKX HRMS',
                       textAlign: TextAlign.center,
@@ -118,7 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             isDark ? AppColors.darkMuted : AppColors.lightMuted,
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 20),
 
                     // Card Container
                     M3ECard(
@@ -152,7 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           CustomTextField(
                             controller: _emailController,
                             label: 'Corporate Email',
-                            hintText: 'name@mkx.dev',
+                            hintText: 'name@mkx.com',
                             keyboardType: TextInputType.emailAddress,
                             prefixIcon: Icon(
                               Icons.alternate_email_rounded,
@@ -221,7 +221,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           else
                             M3EButton(
                               style: M3EButtonStyle.filled,
-                              size: M3EButtonSize.md,
+                              size: M3EButtonSize.sm,
                               onPressed: _handleLogin,
                               child: const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,

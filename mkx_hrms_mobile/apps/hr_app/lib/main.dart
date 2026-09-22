@@ -129,31 +129,35 @@ class _HrAppState extends State<HrApp> {
             return Consumer<AuthProvider>(
               builder: (context, auth, _) {
                 final seedColor = AppThemeScope.of(context).seedColor;
-                final isCustomSeed =
-                    seedColor != AppThemeSettings.seedOptions.first;
+                final settings = AppThemeScope.of(context);
 
-                final lightScheme = isCustomSeed
-                    ? ColorScheme.fromSeed(
-                        seedColor: seedColor, brightness: Brightness.light)
-                    : _toFlutterColorScheme(lightDynamic);
+                final lightScheme = settings.dynamicColoring
+                    ? _toFlutterColorScheme(lightDynamic) ??
+                        ColorScheme.fromSeed(
+                            seedColor: seedColor, brightness: Brightness.light)
+                    : ColorScheme.fromSeed(
+                        seedColor: seedColor, brightness: Brightness.light);
 
-                final darkScheme = isCustomSeed
-                    ? ColorScheme.fromSeed(
-                        seedColor: seedColor, brightness: Brightness.dark)
-                    : _toFlutterColorScheme(darkDynamic);
+                final darkScheme = settings.dynamicColoring
+                    ? _toFlutterColorScheme(darkDynamic) ??
+                        ColorScheme.fromSeed(
+                            seedColor: seedColor, brightness: Brightness.dark)
+                    : ColorScheme.fromSeed(
+                        seedColor: seedColor, brightness: Brightness.dark);
 
                 return MaterialApp.router(
                   title: 'MKX HRMS Admin',
-                  theme: AppTheme.lightTheme(lightScheme),
-                  darkTheme: AppTheme.darkTheme(darkScheme),
-                  themeMode: auth.themeMode,
+                  theme: AppTheme.lightTheme(lightScheme, settings.fontFamily),
+                  darkTheme:
+                      AppTheme.darkTheme(darkScheme, settings.fontFamily),
+                  themeMode:
+                      settings.autoTheming ? ThemeMode.system : auth.themeMode,
                   routerConfig: _router,
                   debugShowCheckedModeBanner: false,
                   builder: (context, child) {
                     final isDark =
                         Theme.of(context).brightness == Brightness.dark;
-                    final primaryColor =
-                        M3ETheme.of(context).colorScheme.primary;
+                    final primaryColor = Theme.of(context).colorScheme.primary;
                     final baseTheme = isDark
                         ? M3EThemeData.dark(seedColor: primaryColor)
                         : M3EThemeData.light(seedColor: primaryColor);
@@ -168,6 +172,7 @@ class _HrAppState extends State<HrApp> {
                     return M3ETheme(
                       data: baseTheme.copyWith(
                         colorScheme: m3eColorScheme,
+                        fontFamily: settings.fontFamily,
                         loadingIndicatorTheme: const M3ELoadingIndicatorTheme(
                           containerWidth: 52,
                           containerHeight: 52,

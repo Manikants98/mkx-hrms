@@ -62,8 +62,9 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
                           'Employee record not found',
                           style: TextStyle(
                             fontSize: 14,
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: M3ETheme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant,
                           ),
                         ),
                       )
@@ -198,7 +199,7 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
       variant: M3ECardVariant.filled,
       borderRadius: BorderRadius.circular(16),
       padding: const EdgeInsets.all(20),
-      color: Theme.of(context).colorScheme.surfaceContainerLow,
+      color: M3ETheme.of(context).colorScheme.surfaceContainerLowest,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -249,7 +250,7 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
           fontSize: 11.5,
           fontWeight: FontWeight.w600,
           letterSpacing: 0.6,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
+          color: M3ETheme.of(context).colorScheme.onSurfaceVariant,
         ),
       ),
     );

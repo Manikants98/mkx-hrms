@@ -43,7 +43,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
       ),
       body: SafeArea(
         top: false,
-        child: M3ERefreshIndicator(
+        child: M3ERefreshIndicator.contained(
           onRefresh: () => context.read<DashboardProvider>().loadStats(),
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -76,7 +76,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
                 value: stats.totalEmployees.toString(),
                 subtext: 'Active workforce',
                 icon: Icons.people_outline_rounded,
-                iconColor: Theme.of(context).colorScheme.primary,
+                iconColor: M3ETheme.of(context).colorScheme.primary,
               ),
             ),
             const SizedBox(width: 10),
@@ -127,15 +127,18 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
       variant: M3ECardVariant.filled,
       borderRadius: BorderRadius.circular(16),
       padding: const EdgeInsets.all(16),
-      color: colorScheme.surfaceDim,
+      color: colorScheme.surfaceContainerLowest,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             "Today's Attendance Ratio",
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14.5,
               fontWeight: FontWeight.w700,
+              color: isDark
+                  ? M3ETheme.of(context).colorScheme.onSurface
+                  : Colors.black,
             ),
           ),
           const SizedBox(height: 12),
@@ -157,7 +160,8 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
                   Expanded(
                     flex: stats.absentToday,
                     child: Container(
-                        height: 10, color: Theme.of(context).colorScheme.error),
+                        height: 10,
+                        color: M3ETheme.of(context).colorScheme.error),
                   ),
               ],
             ),
@@ -181,7 +185,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
                 context,
               ),
               _buildLegendDot(
-                Theme.of(context).colorScheme.error,
+                Colors.red,
                 'Absent',
                 stats.absentToday,
                 isDark,
@@ -208,7 +212,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
           '$label ($count)',
           style: TextStyle(
             fontSize: 12,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            color: M3ETheme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
       ],
@@ -227,7 +231,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
               fontSize: 11.5,
               fontWeight: FontWeight.w600,
               letterSpacing: 0.6,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              color: M3ETheme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
         ),
@@ -242,7 +246,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
                 'No recent activities recorded',
                 style: TextStyle(
                   fontSize: 13,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  color: M3ETheme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ),

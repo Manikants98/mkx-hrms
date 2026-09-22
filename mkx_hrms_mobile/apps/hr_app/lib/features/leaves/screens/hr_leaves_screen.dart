@@ -44,16 +44,15 @@ class _HrLeavesScreenState extends State<HrLeavesScreen> {
       ),
       body: SafeArea(
         top: false,
-        child: M3ERefreshIndicator(
+        child: M3ERefreshIndicator.contained(
           onRefresh: () => provider.loadLeaves(),
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildStatusFilters(isDark, provider),
-                const SizedBox(height: 10),
                 if (provider.isLoading && provider.leaves.isEmpty)
                   const Center(
                     child: Padding(
@@ -96,26 +95,31 @@ class _HrLeavesScreenState extends State<HrLeavesScreen> {
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      child: Row(
-        children: _tabs.map((tab) {
-          final isSelected = provider.statusFilter == tab;
+      child: M3EButtonGroup(
+        type: M3EButtonGroupType.connected,
+        shape: M3EButtonShape.square,
+        size: M3EButtonSize.xs,
+        style: M3EButtonStyle.filled,
+        neighborSquish: true,
+        decoration: M3EToggleButtonDecoration(
+          backgroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return M3ETheme.of(context).colorScheme.primary;
+            }
+            return M3ETheme.of(context).colorScheme.surfaceContainerLowest;
+          }),
+        ),
+        selectedIndex: _tabs.indexOf(provider.statusFilter),
+        onSelectedIndexChanged: (int? index) {
+          if (index != null && index >= 0 && index < _tabs.length) {
+            provider.setStatusFilter(_tabs[index]);
+          }
+        },
+        actions: _tabs.map((tab) {
           final icon = tabIcons[tab] ?? Icons.label_outline_rounded;
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: M3EChip(
-              label: tab,
-              type: M3EChipType.filter,
-              selected: isSelected,
-              elevated: isSelected,
-              leading: Icon(
-                icon,
-                size: 14,
-                color: isSelected
-                    ? Theme.of(context).colorScheme.onPrimary
-                    : Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-              onPressed: () => provider.setStatusFilter(tab),
-            ),
+          return M3EButtonGroupAction(
+            label: Text(tab),
+            icon: Icon(icon, size: 14),
           );
         }).toList(),
       ),
@@ -201,18 +205,22 @@ class _LeaveTile extends StatelessWidget {
               Expanded(
                 child: M3EButton(
                   style: M3EButtonStyle.outlined,
-                  size: M3EButtonSize.sm,
-                  onPressed: () => _handleReject(context, provider, leave.id),
+                  size: M3EButtonSize.xs,
+                  decoration: M3EButtonDecoration(
+                    side:
+                        WidgetStateProperty.all(BorderSide(color: Colors.red)),
+                  ),
+                  onPressed: () => _handleReject(context, provider, leave),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.close_rounded, size: 16, color: scheme.error),
+                      Icon(Icons.close_rounded, size: 16, color: Colors.red),
                       const SizedBox(width: 6),
                       Text(
                         'Reject',
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
-                          color: scheme.error,
+                          color: Colors.red,
                         ),
                       ),
                     ],
@@ -223,8 +231,12 @@ class _LeaveTile extends StatelessWidget {
               Expanded(
                 child: M3EButton(
                   style: M3EButtonStyle.filled,
-                  size: M3EButtonSize.sm,
-                  onPressed: () => _handleApprove(context, provider, leave.id),
+                  size: M3EButtonSize.xs,
+                  decoration: M3EButtonDecoration(
+                    backgroundColor: WidgetStateProperty.all(Colors.green),
+                    foregroundColor: WidgetStateProperty.all(Colors.white),
+                  ),
+                  onPressed: () => _handleApprove(context, provider, leave),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -277,7 +289,7 @@ class _LeaveTile extends StatelessWidget {
   Future<void> _handleApprove(
     BuildContext context,
     HrLeavesProvider provider,
-    int leaveId,
+    HrLeaveModel leave,
   ) async {
     final confirmed = await UiHelpers.showConfirmDialog(
       context: context,
@@ -287,7 +299,7 @@ class _LeaveTile extends StatelessWidget {
       confirmText: 'Approve',
     );
     if (confirmed == true && context.mounted) {
-      final ok = await provider.approveLeave(leaveId);
+      final ok = await provider.approveLeave(leave.id);
       if (context.mounted) {
         UiHelpers.showSnackBar(
           context,
@@ -304,7 +316,7 @@ class _LeaveTile extends StatelessWidget {
   Future<void> _handleReject(
     BuildContext context,
     HrLeavesProvider provider,
-    int leaveId,
+    HrLeaveModel leave,
   ) async {
     final confirmed = await UiHelpers.showConfirmDialog(
       context: context,
@@ -315,7 +327,7 @@ class _LeaveTile extends StatelessWidget {
       isDestructive: true,
     );
     if (confirmed == true && context.mounted) {
-      final ok = await provider.rejectLeave(leaveId);
+      final ok = await provider.rejectLeave(leave.id);
       if (context.mounted) {
         UiHelpers.showSnackBar(
           context,

@@ -5,7 +5,7 @@ import '../theme/example_theme_scope.dart';
 import '../theme/example_theme_settings.dart';
 
 /// Screen for switching auto theming, dynamic color, seed, and type.
-///
+
 /// Every change is applied to the running app immediately.
 class ThemeConfigPage extends StatelessWidget {
   /// Creates the theme config screen.

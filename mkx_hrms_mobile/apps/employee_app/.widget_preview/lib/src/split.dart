@@ -39,9 +39,9 @@ final class SplitPane extends StatefulWidget {
     required this.initialFractions,
     this.minSizes,
     this.splitters,
-  }) : assert(children.length >= 2),
-       assert(initialFractions.length >= 2),
-       assert(children.length == initialFractions.length) {
+  })  : assert(children.length >= 2),
+        assert(initialFractions.length >= 2),
+        assert(children.length == initialFractions.length) {
     _verifyFractionsSumTo1(initialFractions);
     if (minSizes != null) {
       assert(minSizes!.length == children.length);
@@ -199,9 +199,8 @@ final class _SplitPaneState extends State<SplitPane> {
     final sizes = List.generate(fractions.length, (i) => sizeForIndex(i));
 
     void updateSpacing(DragUpdateDetails dragDetails, int splitterIndex) {
-      final dragDelta = isHorizontal
-          ? dragDetails.delta.dx
-          : dragDetails.delta.dy;
+      final dragDelta =
+          isHorizontal ? dragDetails.delta.dx : dragDetails.delta.dy;
       final fractionalDelta = dragDelta / axisSize;
 
       // Returns the actual delta applied to elements before the splitter.
@@ -346,7 +345,7 @@ final class DefaultSplitter extends StatelessWidget {
         child: Icon(
           Icons.drag_handle,
           size: iconSize,
-          color: Theme.of(context).focusColor,
+          color: M3ETheme.of(context).focusColor,
         ),
       ),
     );

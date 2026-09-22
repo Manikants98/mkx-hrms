@@ -30,7 +30,7 @@ export const getAttendance = async (
       status?: string;
       location?: string;
       date?: { gte?: Date; lte?: Date };
-      employee?: { department_rel?: { name?: string } };
+      employee?: { department_rel?: { name?: string }; manager_id?: number };
     } = {};
 
     const andConditions: Array<Record<string, unknown>> = [];
@@ -73,6 +73,17 @@ export const getAttendance = async (
         dateFilter.lte = new Date(`${endDate}T23:59:59.999Z`);
       }
       whereClause.date = dateFilter;
+    }
+
+    const userRole = (req.user?.role || "").toLowerCase();
+    const isManager = userRole.includes("manager");
+    const isAdminOrHR = userRole.includes("admin") || userRole.includes("hr");
+
+    if (isManager && !isAdminOrHR && req.user?.employee_db_id) {
+      whereClause.employee = {
+        ...whereClause.employee,
+        manager_id: req.user.employee_db_id,
+      };
     }
 
     if (andConditions.length > 0) {
@@ -148,27 +159,47 @@ export const getAttendanceStats = async (
     const start = new Date(`${startDateStr}T00:00:00.000Z`);
     const end = new Date(`${endDateStr}T23:59:59.999Z`);
 
-    const employeeWhere: { status?: string; department?: string } = {
+    const employeeWhere: {
+      status?: string;
+      department_rel?: { name?: string };
+      manager_id?: number;
+    } = {
       status: "Active",
     };
     if (department !== "All") {
-      employeeWhere.department = department;
+      employeeWhere.department_rel = { name: department };
     }
+
+    const userRole = (req.user?.role || "").toLowerCase();
+    const isManager = userRole.includes("manager");
+    const isAdminOrHR = userRole.includes("admin") || userRole.includes("hr");
+
+    if (isManager && !isAdminOrHR && req.user?.employee_db_id) {
+      employeeWhere.manager_id = req.user.employee_db_id;
+    }
+
     const totalEmployees = await prisma.employee.count({ where: employeeWhere });
 
     const attendanceWhere: {
       date: { gte: Date; lte: Date };
       location?: string;
-      employee?: { department?: string };
+      employee?: { department_rel?: { name?: string }; manager_id?: number };
     } = {
       date: { gte: start, lte: end },
     };
+
+    if (isManager && !isAdminOrHR && req.user?.employee_db_id) {
+      attendanceWhere.employee = { manager_id: req.user.employee_db_id };
+    }
 
     if (location !== "All") {
       attendanceWhere.location = location;
     }
     if (department !== "All") {
-      attendanceWhere.employee = { department };
+      attendanceWhere.employee = {
+        ...attendanceWhere.employee,
+        department_rel: { name: department },
+      };
     }
 
     const records = await prisma.attendance.findMany({

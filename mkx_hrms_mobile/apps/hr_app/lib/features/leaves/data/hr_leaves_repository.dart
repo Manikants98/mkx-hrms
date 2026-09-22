@@ -36,14 +36,20 @@ class HrLeavesRepository {
 
   /// Approves a leave request by [leaveId].
   Future<void> approveLeave(int leaveId) async {
-    await _client.patch(ApiEndpoints.approveLeave(leaveId));
+    await _client.patch(
+      ApiEndpoints.leaveStatus(leaveId),
+      data: {'status': 'Approved'},
+    );
   }
 
   /// Rejects a leave request by [leaveId] with an optional [reason].
   Future<void> rejectLeave(int leaveId, {String? reason}) async {
     await _client.patch(
-      ApiEndpoints.rejectLeave(leaveId),
-      data: reason != null ? {'reason': reason} : null,
+      ApiEndpoints.leaveStatus(leaveId),
+      data: {
+        'status': 'Rejected',
+        if (reason != null && reason.trim().isNotEmpty) 'remark': reason,
+      },
     );
   }
 }

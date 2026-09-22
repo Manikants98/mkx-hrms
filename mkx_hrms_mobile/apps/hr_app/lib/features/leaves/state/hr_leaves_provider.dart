@@ -47,8 +47,7 @@ class HrLeavesProvider extends ChangeNotifier {
 
     try {
       await _repo.approveLeave(leaveId);
-      _leaves.removeWhere((l) => l.id == leaveId);
-      notifyListeners();
+      await loadLeaves();
       return true;
     } catch (e) {
       _errorMessage = e.toString().replaceAll('Exception: ', '');
@@ -66,8 +65,7 @@ class HrLeavesProvider extends ChangeNotifier {
 
     try {
       await _repo.rejectLeave(leaveId, reason: reason);
-      _leaves.removeWhere((l) => l.id == leaveId);
-      notifyListeners();
+      await loadLeaves();
       return true;
     } catch (e) {
       _errorMessage = e.toString().replaceAll('Exception: ', '');

@@ -37,9 +37,9 @@ class HrLeaveModel {
   factory HrLeaveModel.fromJson(Map<String, dynamic> json) {
     final employee = json['employee'] as Map<String, dynamic>? ?? {};
     return HrLeaveModel(
-      id: json['id'] is int
-          ? json['id']
-          : int.tryParse(json['id'].toString()) ?? 0,
+      id: json['db_id'] != null
+          ? (json['db_id'] is int ? json['db_id'] : int.tryParse(json['db_id'].toString()) ?? 0)
+          : (json['id'] is int ? json['id'] : int.tryParse(json['id'].toString()) ?? 0),
       employeeId: employee['id'] is int
           ? employee['id'] as int
           : int.tryParse(

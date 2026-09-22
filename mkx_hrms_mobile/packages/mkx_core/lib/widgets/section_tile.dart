@@ -60,7 +60,7 @@ class SectionTile extends StatelessWidget {
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: scheme.surfaceDim,
+        color: scheme.surfaceContainerLowest,
         borderRadius:
             isStandalone ? BorderRadius.circular(14) : BorderRadius.circular(3),
       ),

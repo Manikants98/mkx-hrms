@@ -464,7 +464,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                 else
                   M3EButton(
                     style: M3EButtonStyle.filled,
-                    size: M3EButtonSize.md,
+                    size: M3EButtonSize.sm,
                     onPressed: _handleSubmit,
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,

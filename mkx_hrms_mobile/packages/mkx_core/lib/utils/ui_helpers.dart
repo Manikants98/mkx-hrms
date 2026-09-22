@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:material_3_expressive/foundations/theme/m3e_theme.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+
 import '../constants/app_colors.dart';
 
 /// Helper methods for SnackBars, dialogs, and UI feedback using system fonts.
@@ -51,58 +52,47 @@ class UiHelpers {
     String cancelText = 'Cancel',
     bool isDestructive = false,
   }) {
-    final isDark = M3ETheme.of(context).brightness == Brightness.dark;
-    return showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? AppColors.darkCard : AppColors.lightCard,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-          side: BorderSide(
-            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+    final theme = M3ETheme.of(context);
+    final scheme = theme.colorScheme;
+
+    return M3EDialog.show<bool>(
+      context,
+      dialog: Builder(
+        builder: (dialogCtx) => M3EDialog(
+          title: title,
+          icon: isDestructive
+              ? Icon(Icons.error_outline_rounded, color: Colors.red)
+              : const Icon(Icons.info_outline_rounded),
+          content: Text(
+            message,
+            textAlign: TextAlign.center,
+            style: theme.typeScale.bodyMedium
+                .copyWith(color: scheme.onSurfaceVariant),
           ),
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        content: Text(
-          message,
-          style: const TextStyle(fontSize: 14),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(
-              cancelText,
-              style: TextStyle(
-                color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
-                fontWeight: FontWeight.w500,
-              ),
+          actions: [
+            M3EButton(
+              style: M3EButtonStyle.text,
+              decoration: isDestructive
+                  ? M3EButtonDecoration(
+                      foregroundColor: WidgetStatePropertyAll(Colors.red),
+                    )
+                  : null,
+              onPressed: () => Navigator.of(dialogCtx).pop(false),
+              child: Text(cancelText),
             ),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: isDestructive
-                  ? AppColors.error
-                  : (isDark ? AppColors.darkPrimary : AppColors.lightPrimary),
-              foregroundColor: isDestructive
-                  ? Colors.white
-                  : (isDark
-                      ? AppColors.darkPrimaryForeground
-                      : AppColors.lightPrimaryForeground),
-              minimumSize: const Size(90, 36),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
+            M3EButton(
+              style: M3EButtonStyle.filled,
+              decoration: isDestructive
+                  ? M3EButtonDecoration(
+                      backgroundColor: WidgetStatePropertyAll(Colors.red),
+                      foregroundColor: WidgetStatePropertyAll(Colors.white),
+                    )
+                  : null,
+              onPressed: () => Navigator.of(dialogCtx).pop(true),
+              child: Text(confirmText),
             ),
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(confirmText),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

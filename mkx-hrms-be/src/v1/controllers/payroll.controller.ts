@@ -27,7 +27,7 @@ export const getPayroll = async (
       AND?: Array<Record<string, unknown>>;
       status?: string;
       pay_date?: { gte?: Date; lte?: Date };
-      employee?: { department_rel?: { name?: string } };
+      employee?: { department_rel?: { name?: string }; manager_id?: number };
     } = {};
 
     const andConditions: Array<Record<string, unknown>> = [];
@@ -69,6 +69,17 @@ export const getPayroll = async (
         dateFilter.lte = end;
       }
       whereClause.pay_date = dateFilter;
+    }
+
+    const userRole = (req.user?.role || "").toLowerCase();
+    const isManager = userRole.includes("manager");
+    const isAdminOrHR = userRole.includes("admin") || userRole.includes("hr");
+
+    if (isManager && !isAdminOrHR && req.user?.employee_db_id) {
+      whereClause.employee = {
+        ...whereClause.employee,
+        manager_id: req.user.employee_db_id,
+      };
     }
 
     if (andConditions.length > 0) {
@@ -189,19 +200,30 @@ export const getPayroll = async (
  * @param next - Next middleware delegate
  */
 export const getPayrollStats = async (
-  _req: Request,
+  req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
   try {
+    const userRole = (req.user?.role || "").toLowerCase();
+    const isManager = userRole.includes("manager");
+    const isAdminOrHR = userRole.includes("admin") || userRole.includes("hr");
+
+    const baseWhere: any = {};
+    if (isManager && !isAdminOrHR && req.user?.employee_db_id) {
+      baseWhere.employee = { manager_id: req.user.employee_db_id };
+    }
+
     const todayStr = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
     const todayDate = new Date(`${todayStr}T00:00:00.000Z`);
 
-    const records = await prisma.payroll.findMany();
+    const records = await prisma.payroll.findMany({ where: baseWhere });
     const totalNet = records.reduce((acc, curr) => acc + Number(curr.net_pay), 0);
     const avgSalary = records.length > 0 ? Math.round(totalNet / records.length) * 12 : 0;
 
-    const pendingRecords = await prisma.payroll.findMany({ where: { status: "Pending" } });
+    const pendingRecords = await prisma.payroll.findMany({
+      where: { ...baseWhere, status: "Pending" },
+    });
     const pendingTotal = pendingRecords.reduce((acc, curr) => acc + Number(curr.net_pay), 0);
     const pendingCount = pendingRecords.length;
 
@@ -210,6 +232,7 @@ export const getPayrollStats = async (
      */
     const upcomingPayroll = await prisma.payroll.findFirst({
       where: {
+        ...baseWhere,
         pay_date: { gte: todayDate },
       },
       orderBy: { pay_date: "asc" },

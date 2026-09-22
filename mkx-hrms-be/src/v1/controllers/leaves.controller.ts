@@ -27,7 +27,7 @@ export const getLeaves = async (req: Request, res: Response, next: NextFunction)
       leave_type_rel?: { name?: { equals?: string; mode?: "insensitive" } };
       start_date?: { gte?: Date };
       end_date?: { lte?: Date };
-      employee?: { department_rel?: { name?: string } };
+      employee?: { department_rel?: { name?: string }; manager_id?: number };
     } = {};
 
     const andConditions: Array<Record<string, unknown>> = [];
@@ -71,6 +71,17 @@ export const getLeaves = async (req: Request, res: Response, next: NextFunction)
       const end = new Date(endDate);
       end.setHours(23, 59, 59, 999);
       whereClause.end_date = { lte: end };
+    }
+
+    const userRole = (req.user?.role || "").toLowerCase();
+    const isManager = userRole.includes("manager");
+    const isAdminOrHR = userRole.includes("admin") || userRole.includes("hr");
+
+    if (isManager && !isAdminOrHR && req.user?.employee_db_id) {
+      whereClause.employee = {
+        ...whereClause.employee,
+        manager_id: req.user.employee_db_id,
+      };
     }
 
     if (andConditions.length > 0) {
@@ -141,11 +152,20 @@ export const getLeaves = async (req: Request, res: Response, next: NextFunction)
  * @param next - Next middleware delegate
  */
 export const getLeaveStats = async (
-  _req: Request,
+  req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
   try {
+    const userRole = (req.user?.role || "").toLowerCase();
+    const isManager = userRole.includes("manager");
+    const isAdminOrHR = userRole.includes("admin") || userRole.includes("hr");
+
+    const baseWhere: any = {};
+    if (isManager && !isAdminOrHR && req.user?.employee_db_id) {
+      baseWhere.employee = { manager_id: req.user.employee_db_id };
+    }
+
     const todayStr = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
     const todayDate = new Date(`${todayStr}T00:00:00.000Z`);
 
@@ -159,15 +179,16 @@ export const getLeaveStats = async (
     const monthStart = new Date(Date.UTC(year, month - 1, 1));
     const monthEnd = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
 
-    const pendingCount = await prisma.leave.count({ where: { status: "Pending" } });
-    const approvedCount = await prisma.leave.count({ where: { status: "Approved" } });
-    const rejectedCount = await prisma.leave.count({ where: { status: "Rejected" } });
+    const pendingCount = await prisma.leave.count({ where: { ...baseWhere, status: "Pending" } });
+    const approvedCount = await prisma.leave.count({ where: { ...baseWhere, status: "Approved" } });
+    const rejectedCount = await prisma.leave.count({ where: { ...baseWhere, status: "Rejected" } });
 
     /**
      * Determine staff currently away on approved leave today
      */
     const activeLeavesToday = await prisma.leave.findMany({
       where: {
+        ...baseWhere,
         status: "Approved",
         start_date: { lte: todayDate },
         end_date: { gte: todayDate },
@@ -181,6 +202,7 @@ export const getLeaveStats = async (
      */
     const plannedThisMonth = await prisma.leave.count({
       where: {
+        ...baseWhere,
         status: "Approved",
         start_date: { lte: monthEnd },
         end_date: { gte: monthStart },

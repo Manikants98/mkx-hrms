@@ -36,60 +36,18 @@ class CustomTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = M3ETheme.of(context);
-    final scheme = theme.colorScheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (label != null) ...[
-          Text(
-            label!,
-            style: theme.typeScale.labelLarge.copyWith(
-              color: scheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: 6),
-        ],
-        TextField(
-          controller: controller,
-          obscureText: obscureText,
-          keyboardType: keyboardType,
-          maxLines: maxLines,
-          readOnly: readOnly,
-          onTap: onTap,
-          onChanged: onChanged,
-          style: TextStyle(
-            fontSize: 14,
-            color: scheme.onSurface,
-          ),
-          decoration: InputDecoration(
-            hintText: hintText,
-            errorText: errorText,
-            prefixIcon: prefixIcon,
-            suffixIcon: suffixIcon,
-            filled: true,
-            fillColor: scheme.surfaceContainerHighest,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: scheme.outline),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: scheme.outline),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: scheme.primary, width: 2),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: scheme.error),
-            ),
-          ),
-        ),
-      ],
+    return M3ETextField(
+      controller: controller,
+      label: label ?? hintText,
+      errorText: errorText,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      maxLines: maxLines,
+      enabled: !readOnly,
+      onChanged: onChanged,
+      leading: prefixIcon,
+      trailing: suffixIcon,
+      variant: M3ETextFieldVariant.outlined,
     );
   }
 }

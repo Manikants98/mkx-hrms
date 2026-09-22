@@ -9,6 +9,7 @@ import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
 import 'package:mkx_core/theme/app_theme_settings.dart';
 import 'package:mkx_core/theme/app_theme_scope.dart';
+import 'package:mkx_core/widgets/theme_config_page.dart';
 import 'package:provider/provider.dart';
 
 /// HR Admin Profile, Settings, Theme Mode, and Logout Screen
@@ -56,7 +57,7 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
           IconButton(
             icon: const Icon(Icons.palette_outlined),
             color: colorScheme.onSurface,
-            onPressed: () => _showPalettePicker(context),
+            onPressed: () => ThemeConfigPage.push(context),
           ),
           const SizedBox(width: 8),
         ],
@@ -71,7 +72,7 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
               M3ECard(
                 variant: M3ECardVariant.filled,
                 borderRadius: BorderRadius.circular(16),
-                color: colorScheme.surfaceContainerLow,
+                color: colorScheme.surfaceContainerLowest,
                 padding: const EdgeInsets.all(20),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -214,7 +215,8 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      _buildThemeChips(context, auth, isDark),
+                      _buildThemeChips(
+                          context, auth, isDark, AppThemeScope.of(context)),
                     ],
                   ),
                 ),
@@ -224,7 +226,7 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
               // Logout Button
               M3EButton(
                 style: M3EButtonStyle.filled,
-                size: M3EButtonSize.md,
+                size: M3EButtonSize.sm,
                 onPressed: () => _handleLogout(context),
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -240,91 +242,6 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  void _showPalettePicker(BuildContext context) {
-    final settings = AppThemeScope.of(context);
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Theme.of(context).colorScheme.surfaceContainerLow,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Theme Palette',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: List.generate(
-                    AppThemeSettings.seedOptions.length,
-                    (index) {
-                      final color = AppThemeSettings.seedOptions[index];
-                      final label = AppThemeSettings.seedLabels[index];
-                      final isSelected = settings.seedColor == color;
-
-                      return GestureDetector(
-                        onTap: () {
-                          settings.seedColor = color;
-                          Navigator.pop(context);
-                        },
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                color: color,
-                                shape: BoxShape.circle,
-                                border: isSelected
-                                    ? Border.all(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface,
-                                        width: 2)
-                                    : null,
-                              ),
-                              child: isSelected
-                                  ? const Icon(Icons.check, color: Colors.white)
-                                  : null,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              label,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: isSelected
-                                    ? FontWeight.w600
-                                    : FontWeight.normal,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 
@@ -364,35 +281,47 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
     BuildContext context,
     AuthProvider auth,
     bool isDark,
+    AppThemeSettings settings,
   ) {
     final colorScheme = M3ETheme.of(context).colorScheme;
     final modes = [
-      (ThemeMode.system, 'System', Icons.settings_brightness_rounded),
       (ThemeMode.light, 'Light', Icons.light_mode_rounded),
+      (ThemeMode.system, 'System', Icons.settings_brightness_rounded),
       (ThemeMode.dark, 'Dark', Icons.dark_mode_rounded),
     ];
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      child: Row(
-        children: modes.map((item) {
-          final isSelected = auth.themeMode == item.$1;
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: M3EChip(
-              label: item.$2,
-              type: M3EChipType.filter,
-              selected: isSelected,
-              elevated: isSelected,
-              leading: Icon(
-                item.$3,
-                size: 14,
-                color: isSelected
-                    ? colorScheme.onPrimary
-                    : colorScheme.onSurfaceVariant,
-              ),
-              onPressed: () => auth.setThemeMode(item.$1),
-            ),
+      child: M3EButtonGroup(
+        type: M3EButtonGroupType.connected,
+        shape: M3EButtonShape.square,
+        size: M3EButtonSize.sm,
+        style: M3EButtonStyle.filled,
+        neighborSquish: true,
+        decoration: M3EToggleButtonDecoration(
+          backgroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return colorScheme.primary;
+            }
+            return colorScheme.surfaceContainer;
+          }),
+        ),
+        selectedIndex: modes.indexWhere((m) => m.$1 == auth.themeMode),
+        onSelectedIndexChanged: (int? index) {
+          if (index != null && index >= 0 && index < modes.length) {
+            final item = modes[index];
+            if (item.$1 == ThemeMode.system) {
+              settings.autoTheming = true;
+            } else {
+              settings.autoTheming = false;
+            }
+            auth.setThemeMode(item.$1);
+          }
+        },
+        actions: modes.map((item) {
+          return M3EButtonGroupAction(
+            label: Text(item.$2),
+            icon: Icon(item.$3, size: 14),
           );
         }).toList(),
       ),

@@ -100,6 +100,14 @@ export const getEmployees = async (
       whereClause.join_date = dateFilter;
     }
 
+    const userRole = (req.user?.role || "").toLowerCase();
+    const isManager = userRole.includes("manager");
+    const isAdminOrHR = userRole.includes("admin") || userRole.includes("hr");
+
+    if (isManager && !isAdminOrHR && req.user?.employee_db_id) {
+      whereClause.manager_id = req.user.employee_db_id;
+    }
+
     if (andConditions.length > 0) {
       whereClause.AND = andConditions;
     }
@@ -212,20 +220,30 @@ export const getEmployees = async (
  * @param next - Next middleware delegate
  */
 export const getEmployeeStats = async (
-  _req: Request,
+  req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const total = await prisma.employee.count();
-    const active = await prisma.employee.count({ where: { status: "Active" } });
-    const inactive = await prisma.employee.count({ where: { status: "Inactive" } });
+    const userRole = (req.user?.role || "").toLowerCase();
+    const isManager = userRole.includes("manager");
+    const isAdminOrHR = userRole.includes("admin") || userRole.includes("hr");
+
+    const baseWhere: any = {};
+    if (isManager && !isAdminOrHR && req.user?.employee_db_id) {
+      baseWhere.manager_id = req.user.employee_db_id;
+    }
+
+    const total = await prisma.employee.count({ where: baseWhere });
+    const active = await prisma.employee.count({ where: { ...baseWhere, status: "Active" } });
+    const inactive = await prisma.employee.count({ where: { ...baseWhere, status: "Inactive" } });
 
     const sixtyDaysAgo = new Date();
     sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
 
     const newHires = await prisma.employee.count({
       where: {
+        ...baseWhere,
         join_date: {
           gte: sixtyDaysAgo,
         },

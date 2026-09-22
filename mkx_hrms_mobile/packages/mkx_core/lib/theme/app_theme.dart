@@ -15,14 +15,17 @@ class AppTheme {
   ///
   /// Pass [dynamicColorScheme] from [DynamicColorBuilder] to enable
   /// Material You wallpaper-based accent colours.
-  static ThemeData lightTheme([dynamic dynamicColorScheme]) {
+  static ThemeData lightTheme(
+      [dynamic dynamicColorScheme, String? fontFamily]) {
     final defaultScheme = const ColorScheme.light();
     final colorScheme = defaultScheme.copyWith(
       brightness: Brightness.light,
       primary: dynamicColorScheme?.primary ?? AppColors.lightPrimary,
-      onPrimary: dynamicColorScheme?.onPrimary ?? AppColors.lightPrimaryForeground,
+      onPrimary:
+          dynamicColorScheme?.onPrimary ?? AppColors.lightPrimaryForeground,
       secondary: dynamicColorScheme?.secondary ?? AppColors.lightSecondary,
-      onSecondary: dynamicColorScheme?.onSecondary ?? AppColors.lightSecondaryForeground,
+      onSecondary:
+          dynamicColorScheme?.onSecondary ?? AppColors.lightSecondaryForeground,
       // Always use our tokens for surfaces so the layout stays consistent.
       surface: AppColors.lightCard,
       onSurface: AppColors.lightForeground,
@@ -52,9 +55,11 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.lightCard,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         hintStyle: const TextStyle(color: AppColors.lightMuted, fontSize: 14),
-        labelStyle: const TextStyle(color: AppColors.lightForeground, fontSize: 14),
+        labelStyle:
+            const TextStyle(color: AppColors.lightForeground, fontSize: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,
@@ -83,17 +88,19 @@ class AppTheme {
           foregroundColor: colorScheme.onPrimary,
           elevation: 0,
           minimumSize: const Size.fromHeight(48),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
         ),
       ),
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: AppColors.lightCard,
         foregroundColor: AppColors.lightForeground,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(
+          fontFamily: fontFamily,
           color: AppColors.lightForeground,
           fontSize: 18,
           fontWeight: FontWeight.w700,
@@ -112,6 +119,11 @@ class AppTheme {
           const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
         ),
       ),
+      textTheme: base.textTheme.apply(
+        fontFamily: fontFamily,
+        bodyColor: AppColors.lightForeground,
+        displayColor: AppColors.lightForeground,
+      ),
     );
   }
 
@@ -119,14 +131,16 @@ class AppTheme {
   ///
   /// Pass [dynamicColorScheme] from [DynamicColorBuilder] to enable
   /// Material You wallpaper-based accent colours.
-  static ThemeData darkTheme([dynamic dynamicColorScheme]) {
+  static ThemeData darkTheme([dynamic dynamicColorScheme, String? fontFamily]) {
     final defaultScheme = const ColorScheme.dark();
     final colorScheme = defaultScheme.copyWith(
       brightness: Brightness.dark,
       primary: dynamicColorScheme?.primary ?? AppColors.darkPrimary,
-      onPrimary: dynamicColorScheme?.onPrimary ?? AppColors.darkPrimaryForeground,
+      onPrimary:
+          dynamicColorScheme?.onPrimary ?? AppColors.darkPrimaryForeground,
       secondary: dynamicColorScheme?.secondary ?? AppColors.darkSecondary,
-      onSecondary: dynamicColorScheme?.onSecondary ?? AppColors.darkSecondaryForeground,
+      onSecondary:
+          dynamicColorScheme?.onSecondary ?? AppColors.darkSecondaryForeground,
       // Always use our tokens for surfaces.
       surface: AppColors.darkCard,
       onSurface: AppColors.darkForeground,
@@ -156,9 +170,11 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.darkCard,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         hintStyle: const TextStyle(color: AppColors.darkMuted, fontSize: 14),
-        labelStyle: const TextStyle(color: AppColors.darkForeground, fontSize: 14),
+        labelStyle:
+            const TextStyle(color: AppColors.darkForeground, fontSize: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,
@@ -187,17 +203,18 @@ class AppTheme {
           foregroundColor: colorScheme.onPrimary,
           elevation: 0,
           minimumSize: const Size.fromHeight(48),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
         ),
       ),
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: AppColors.darkCard,
         foregroundColor: AppColors.darkForeground,
         elevation: 0,
         scrolledUnderElevation: 0,
-        centerTitle: false,
         titleTextStyle: TextStyle(
+          fontFamily: fontFamily,
           color: AppColors.darkForeground,
           fontSize: 18,
           fontWeight: FontWeight.w700,
@@ -215,6 +232,11 @@ class AppTheme {
         labelTextStyle: WidgetStateProperty.all(
           const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
         ),
+      ),
+      textTheme: base.textTheme.apply(
+        fontFamily: fontFamily,
+        bodyColor: AppColors.darkForeground,
+        displayColor: AppColors.darkForeground,
       ),
     );
   }

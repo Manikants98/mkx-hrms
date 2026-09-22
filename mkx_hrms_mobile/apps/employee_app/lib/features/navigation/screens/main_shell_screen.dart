@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:material_3_expressive/foundations/theme/m3e_theme.dart';
-import 'package:mkx_core/constants/app_colors.dart';
-import '../../attendance/screens/attendance_dashboard_screen.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+
+import '../../attendance/screens/dashboard_screen.dart';
 import '../../leaves/screens/leaves_screen.dart';
 import '../../payroll/screens/payroll_screen.dart';
 import '../../profile/screens/profile_screen.dart';
@@ -21,7 +21,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = const [
-    AttendanceDashboardScreen(key: ValueKey(0)),
+    DashboardScreen(key: ValueKey(0)),
     LeavesScreen(key: ValueKey(1)),
     PayrollScreen(key: ValueKey(2)),
     ProfileScreen(key: ValueKey(3)),
@@ -55,12 +55,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
     final isDark = M3ETheme.of(context).brightness == Brightness.dark;
 
     final colorScheme = M3ETheme.of(context).colorScheme;
-    final surfaceColor = isDark ? AppColors.darkCard : AppColors.lightCard;
-    final activeColor = colorScheme.primary;
-    final inactiveColor = isDark ? AppColors.darkMuted : AppColors.lightMuted;
-    final indicatorColor = colorScheme.primary.withValues(
-      alpha: isDark ? 0.24 : 0.14,
-    );
+    final surfaceColor = colorScheme.surfaceContainerLow;
 
     return Scaffold(
       body: AnimatedSwitcher(
@@ -80,50 +75,29 @@ class _MainShellScreenState extends State<MainShellScreen> {
             ),
           ],
         ),
-        child: SafeArea(
-          top: false,
-          child: Theme(
-            data: Theme.of(context).copyWith(
-              navigationBarTheme: NavigationBarThemeData(
-                height: 68,
-                backgroundColor: surfaceColor,
-                surfaceTintColor: Colors.transparent,
-                elevation: 0,
-                indicatorColor: indicatorColor,
-                indicatorShape: const StadiumBorder(),
-                labelTextStyle: WidgetStateProperty.resolveWith((states) {
-                  final selected = states.contains(WidgetState.selected);
-                  return TextStyle(
-                    fontSize: 11.5,
-                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                    color: selected ? activeColor : inactiveColor,
-                  );
-                }),
-                iconTheme: WidgetStateProperty.resolveWith((states) {
-                  final selected = states.contains(WidgetState.selected);
-                  return IconThemeData(
-                    size: 24,
-                    color: selected ? activeColor : inactiveColor,
-                  );
-                }),
+        child: M3ETheme(
+          data: M3ETheme.of(context).copyWith(
+            colorScheme: colorScheme.copyWith(
+              onSecondaryContainer: colorScheme.primary,
+              secondaryContainer: colorScheme.primary.withValues(
+                alpha: isDark ? 0.24 : 0.14,
               ),
             ),
-            child: NavigationBar(
-              selectedIndex: _currentIndex,
-              onDestinationSelected: (index) =>
-                  setState(() => _currentIndex = index),
-              animationDuration: const Duration(milliseconds: 350),
-              labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-              destinations: _items
-                  .map(
-                    (item) => NavigationDestination(
-                      icon: Icon(item.icon),
-                      selectedIcon: Icon(item.activeIcon),
-                      label: item.label,
-                    ),
-                  )
-                  .toList(),
-            ),
+          ),
+          child: M3ENavigationBar(
+            selectedIndex: _currentIndex,
+            backgroundColor: colorScheme.surfaceContainerLowest,
+            onDestinationSelected: (index) =>
+                setState(() => _currentIndex = index),
+            labelBehavior: M3ENavBarLabelBehavior.alwaysShow,
+            destinations: _items
+                .map(
+                  (item) => M3ENavigationBarDestination(
+                    icon: Icon(item.icon),
+                    label: item.label,
+                  ),
+                )
+                .toList(),
           ),
         ),
       ),

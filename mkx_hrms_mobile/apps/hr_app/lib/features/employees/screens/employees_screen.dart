@@ -50,7 +50,7 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
       ),
       body: SafeArea(
         top: false,
-        child: M3ERefreshIndicator(
+        child: M3ERefreshIndicator.contained(
           onRefresh: () => context.read<EmployeesProvider>().loadEmployees(),
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -59,9 +59,7 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildSearchBar(isDark),
-                const SizedBox(height: 10),
                 _buildFilterChips(isDark),
-                const SizedBox(height: 10),
                 _buildEmployeeList(isDark),
               ],
             ),
@@ -79,12 +77,12 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
         hintText: 'Search by name, email or code...',
         hintStyle: TextStyle(
           fontSize: 13.5,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
+          color: M3ETheme.of(context).colorScheme.onSurfaceVariant,
         ),
         prefixIcon: Icon(
           Icons.search_rounded,
           size: 20,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
+          color: M3ETheme.of(context).colorScheme.onSurfaceVariant,
         ),
         suffixIcon: _searchController.text.isNotEmpty
             ? IconButton(
@@ -96,27 +94,15 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
               )
             : null,
         filled: true,
-        fillColor: Theme.of(context).colorScheme.surfaceContainerLow,
+        fillColor: M3ETheme.of(context).colorScheme.surfaceContainerLowest,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14,
           vertical: 12,
         ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: Theme.of(context).colorScheme.outlineVariant,
-          ),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: Theme.of(context).colorScheme.outlineVariant,
-          ),
-        ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
-            color: Theme.of(context).colorScheme.primary,
+            color: M3ETheme.of(context).colorScheme.primary,
             width: 1.5,
           ),
         ),
@@ -134,57 +120,46 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (provider.isLoadingDepartments)
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: List.generate(
-                4,
-                (index) => Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: Container(
-                    width: index == 0 ? 50 : 90.0 + (index * 10),
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color:
-                          Theme.of(context).colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: M3EButtonGroup(
+            type: M3EButtonGroupType.connected,
+            shape: M3EButtonShape.square,
+            size: M3EButtonSize.xs,
+            style: M3EButtonStyle.filled,
+            neighborSquish: true,
+            decoration: M3EToggleButtonDecoration(
+              backgroundColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return M3ETheme.of(context).colorScheme.primary;
+                }
+                return M3ETheme.of(context).colorScheme.surfaceContainerLowest;
+              }),
+            ),
+            selectedIndex: provider.departments.indexWhere((dept) =>
+                provider.departmentFilter == dept ||
+                (dept == 'All' && provider.departmentFilter.isEmpty)),
+            onSelectedIndexChanged: (int? index) {
+              if (index != null &&
+                  index >= 0 &&
+                  index < provider.departments.length) {
+                final dept = provider.departments[index];
+                provider.setDepartmentFilter(dept == 'All' ? '' : dept);
+              }
+            },
+            actions: provider.departments.map((dept) {
+              return M3EButtonGroupAction(
+                label: Text(dept),
+                icon: Icon(
+                  dept == 'All'
+                      ? Icons.groups_outlined
+                      : Icons.apartment_rounded,
+                  size: 14,
                 ),
-              ),
-            ),
-          )
-        else
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: provider.departments.map((dept) {
-                final isSelected = provider.departmentFilter == dept ||
-                    (dept == 'All' && provider.departmentFilter.isEmpty);
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: M3EChip(
-                    label: dept,
-                    type: M3EChipType.filter,
-                    selected: isSelected,
-                    elevated: isSelected,
-                    leading: Icon(
-                      dept == 'All'
-                          ? Icons.groups_outlined
-                          : Icons.apartment_rounded,
-                      size: 14,
-                      color: isSelected
-                          ? Theme.of(context).colorScheme.onPrimary
-                          : Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                    onPressed: () =>
-                        provider.setDepartmentFilter(dept == 'All' ? '' : dept),
-                  ),
-                );
-              }).toList(),
-            ),
+              );
+            }).toList(),
           ),
+        ),
       ],
     );
   }
@@ -268,10 +243,11 @@ class _EmployeeRow extends StatelessWidget {
                     employee.name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14.5,
                       fontWeight: FontWeight.w700,
                       letterSpacing: -0.2,
+                      color: M3ETheme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 2),

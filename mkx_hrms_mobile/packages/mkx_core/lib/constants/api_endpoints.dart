@@ -42,11 +42,8 @@ class ApiEndpoints {
   /// `GET /leaves` — all employee leave requests (supports ?status= filter)
   static const String allLeaves = '/leaves';
 
-  /// `PATCH /leaves/:id/approve`
-  static String approveLeave(int id) => '/leaves/$id/approve';
-
-  /// `PATCH /leaves/:id/reject`
-  static String rejectLeave(int id) => '/leaves/$id/reject';
+  /// `PATCH /leaves/:id/status`
+  static String leaveStatus(int id) => '/leaves/$id/status';
 
   // ── HR Admin — Attendance ─────────────────────────────────────────────────
   /// `GET /attendance` — all employee attendance (supports ?date= filter)

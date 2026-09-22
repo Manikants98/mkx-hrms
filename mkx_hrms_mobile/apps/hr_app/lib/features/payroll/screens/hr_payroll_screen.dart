@@ -55,7 +55,7 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
 
     await showModalBottomSheet(
       context: context,
-      backgroundColor: Theme.of(context).colorScheme.surfaceContainerLow,
+      backgroundColor: M3ETheme.of(context).colorScheme.surfaceContainerLow,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -119,8 +119,8 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
                         child: Container(
                           decoration: BoxDecoration(
                             color: selected
-                                ? Theme.of(context).colorScheme.primary
-                                : Theme.of(context)
+                                ? M3ETheme.of(context).colorScheme.primary
+                                : M3ETheme.of(context)
                                     .colorScheme
                                     .surfaceContainerHighest,
                             borderRadius: BorderRadius.circular(8),
@@ -132,8 +132,8 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: selected
-                                  ? Theme.of(context).colorScheme.onPrimary
-                                  : Theme.of(context).colorScheme.onSurface,
+                                  ? M3ETheme.of(context).colorScheme.onPrimary
+                                  : M3ETheme.of(context).colorScheme.onSurface,
                             ),
                           ),
                         ),
@@ -193,7 +193,7 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
           IconButton(
             icon: Icon(
               Icons.calendar_month_rounded,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              color: M3ETheme.of(context).colorScheme.onSurfaceVariant,
             ),
             tooltip: 'Select Month',
             onPressed: () => _showMonthPicker(context, provider),
@@ -202,9 +202,9 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
       ),
       body: SafeArea(
         top: false,
-        child: RefreshIndicator(
+        child: M3ERefreshIndicator.contained(
           onRefresh: () async => provider.loadPayroll(),
-          color: Theme.of(context).colorScheme.primary,
+          color: M3ETheme.of(context).colorScheme.primary,
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(10),
@@ -276,8 +276,8 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
                 f.$2,
                 size: 14,
                 color: isSelected
-                    ? Theme.of(context).colorScheme.onPrimary
-                    : Theme.of(context).colorScheme.onSurfaceVariant,
+                    ? M3ETheme.of(context).colorScheme.onPrimary
+                    : M3ETheme.of(context).colorScheme.onSurfaceVariant,
               ),
               onPressed: () => setState(() => _statusFilter = f.$1),
             ),
@@ -368,7 +368,7 @@ class _PayrollRow extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            color: M3ETheme.of(context).colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(
@@ -388,7 +388,7 @@ class _PayrollRow extends StatelessWidget {
               _SalaryCol(
                 label: 'Deductions',
                 value: currencyFormat.format(payroll.deductions),
-                color: Theme.of(context).colorScheme.error,
+                color: M3ETheme.of(context).colorScheme.error,
                 isDark: isDark,
               ),
               _SalaryCol(
@@ -420,7 +420,7 @@ class _PayrollRow extends StatelessWidget {
                       height: 14,
                       child: M3EProgressIndicator.circularWavy(
                         strokeWidth: 2,
-                        color: Theme.of(context).colorScheme.primary,
+                        color: M3ETheme.of(context).colorScheme.primary,
                       ),
                     )
                   else
@@ -495,7 +495,7 @@ class _SalaryCol extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 11,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            color: M3ETheme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
         const SizedBox(height: 2),
