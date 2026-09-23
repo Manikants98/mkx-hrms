@@ -108,10 +108,7 @@ export const getDashboardOverview = async (
 
     const employeeWhere: Record<string, unknown> = {};
     if (isManager && !isAdminOrHR && managerEmployeeId) {
-      employeeWhere.OR = [
-        { manager_id: managerEmployeeId },
-        { id: managerEmployeeId }
-      ];
+      employeeWhere.manager_id = managerEmployeeId;
     }
 
     const totalEmployees = await prisma.employee.count({ where: employeeWhere });
@@ -128,7 +125,7 @@ export const getDashboardOverview = async (
         start_date: { lte: todayDate },
         end_date: { gte: todayDate },
         ...(isManager && !isAdminOrHR && managerEmployeeId
-          ? { employee: { OR: [{ manager_id: managerEmployeeId }, { id: managerEmployeeId }] } }
+          ? { employee: { manager_id: managerEmployeeId } }
           : {}),
       },
       select: { employee_id: true },
@@ -139,7 +136,7 @@ export const getDashboardOverview = async (
       where: {
         status: "Pending",
         ...(isManager && !isAdminOrHR && managerEmployeeId
-          ? { employee: { OR: [{ manager_id: managerEmployeeId }, { id: managerEmployeeId }] } }
+          ? { employee: { manager_id: managerEmployeeId } }
           : {}),
       },
     });
@@ -153,7 +150,7 @@ export const getDashboardOverview = async (
       record_id: { contains: todayStr },
     };
     if (isManager && !isAdminOrHR && managerEmployeeId) {
-      attendanceWhere.employee = { OR: [{ manager_id: managerEmployeeId }, { id: managerEmployeeId }] };
+      attendanceWhere.employee = { manager_id: managerEmployeeId };
     }
 
     const todayAttendance = await prisma.attendance.findMany({
@@ -172,11 +169,7 @@ export const getDashboardOverview = async (
 
     const activityWhere: Record<string, unknown> = {};
     if (isManager && !isAdminOrHR && managerEmployeeId) {
-      activityWhere.OR = [
-        { employee: { manager_id: managerEmployeeId } },
-        { employee_id: managerEmployeeId },
-        ...(req.user?.id ? [{ user_id: req.user.id }] : []),
-      ];
+      activityWhere.employee = { manager_id: managerEmployeeId };
     }
 
     const activities = await prisma.activityLog.findMany({
@@ -367,11 +360,7 @@ export const getAllActivities = async (
 
     if (isManager && !isAdminOrHR && managerEmployeeId) {
       andConditions.push({
-        OR: [
-          { employee: { manager_id: managerEmployeeId } },
-          { employee_id: managerEmployeeId },
-          ...(req.user?.id ? [{ user_id: req.user.id }] : []),
-        ],
+        employee: { manager_id: managerEmployeeId }
       });
     }
 
@@ -459,10 +448,7 @@ export const getWorkforceTrend = async (
 
     const employeeWhere: Record<string, unknown> = {};
     if (isManager && !isAdminOrHR && managerEmployeeId) {
-      employeeWhere.OR = [
-        { manager_id: managerEmployeeId },
-        { id: managerEmployeeId }
-      ];
+      employeeWhere.manager_id = managerEmployeeId;
     }
 
     const now = new Date();
