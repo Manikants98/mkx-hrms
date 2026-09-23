@@ -198,10 +198,12 @@ export const getDashboardOverview = async (
         coreDescription = coreDescription.split(" • ")[0];
       }
 
+      const cleanName = act.name.replace(/\s*\([^)]*\)/g, "").trim();
+
       return {
         id: act.id,
-        initials: act.initials || act.name.charAt(0).toUpperCase(),
-        name: act.name,
+        initials: act.initials || cleanName.charAt(0).toUpperCase(),
+        name: cleanName,
         subtext: `${coreDescription} • ${timeStr}`,
         diff: coreDescription,
         time_ago: timeStr,
@@ -390,10 +392,12 @@ export const getAllActivities = async (
         coreDescription = coreDescription.split(" • ")[0];
       }
 
+      const cleanName = act.name.replace(/\s*\([^)]*\)/g, "").trim();
+
       return {
         id: act.id,
-        initials: act.initials || act.name.charAt(0).toUpperCase(),
-        name: act.name,
+        initials: act.initials || cleanName.charAt(0).toUpperCase(),
+        name: cleanName,
         subtext: `${coreDescription} • ${timeStr}`,
         diff: coreDescription,
         time_ago: timeStr,

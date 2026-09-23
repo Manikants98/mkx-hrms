@@ -297,15 +297,20 @@ class _ActivityRow extends StatelessWidget {
       color = const Color(0xffa855f7);
     }
 
-    if (titleLower.contains('attendance') || subtitleLower.contains('clock')) {
+    if (titleLower.contains('attendance') ||
+        subtitleLower.contains('clock') ||
+        subtitleLower.contains('attendance')) {
       icon = Icons.access_time_filled_rounded;
-    } else if (titleLower.contains('leave')) {
+    } else if (titleLower.contains('leave') ||
+        subtitleLower.contains('leave')) {
       icon = Icons.event_note_rounded;
     } else if (titleLower.contains('payroll') ||
-        subtitleLower.contains('payroll')) {
+        subtitleLower.contains('payroll') ||
+        subtitleLower.contains('pay')) {
       icon = Icons.payments_rounded;
     } else if (titleLower.contains('employee') ||
-        subtitleLower.contains('profile')) {
+        subtitleLower.contains('profile') ||
+        subtitleLower.contains('record')) {
       icon = Icons.manage_accounts_rounded;
     } else if (titleLower.contains('hire') || typeLower == 'hire') {
       icon = Icons.person_add_rounded;
