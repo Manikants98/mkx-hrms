@@ -281,28 +281,36 @@ class _ActivityRow extends StatelessWidget {
     IconData icon;
     Color color;
 
-    switch (activity.type.toLowerCase()) {
-      case 'leave':
-        icon = Icons.event_note_rounded;
-        color = Colors.orange;
-        break;
-      case 'hire':
-      case 'success':
-        icon = Icons.person_add_rounded;
-        color = Colors.green;
-        break;
-      case 'payroll':
-        icon = Icons.payments_rounded;
-        color = M3ETheme.of(context).colorScheme.primary;
-        break;
-      case 'error':
-      case 'deleted':
-        icon = Icons.delete_outline_rounded;
-        color = M3ETheme.of(context).colorScheme.error;
-        break;
-      default:
-        icon = Icons.notifications_rounded;
-        color = const Color(0xffa855f7);
+    final typeLower = activity.type.toLowerCase();
+    final titleLower = activity.title.toLowerCase();
+    final subtitleLower = activity.subtitle.toLowerCase();
+
+    if (typeLower == 'error' || typeLower == 'deleted') {
+      color = M3ETheme.of(context).colorScheme.error;
+    } else if (typeLower == 'warning' || titleLower.contains('leave')) {
+      color = Colors.orange;
+    } else if (typeLower == 'success' || typeLower == 'hire') {
+      color = Colors.green;
+    } else if (typeLower == 'payroll') {
+      color = M3ETheme.of(context).colorScheme.primary;
+    } else {
+      color = const Color(0xffa855f7);
+    }
+
+    if (titleLower.contains('attendance') || subtitleLower.contains('clock')) {
+      icon = Icons.access_time_filled_rounded;
+    } else if (titleLower.contains('leave')) {
+      icon = Icons.event_note_rounded;
+    } else if (titleLower.contains('payroll') ||
+        subtitleLower.contains('payroll')) {
+      icon = Icons.payments_rounded;
+    } else if (titleLower.contains('employee') ||
+        subtitleLower.contains('profile')) {
+      icon = Icons.manage_accounts_rounded;
+    } else if (titleLower.contains('hire') || typeLower == 'hire') {
+      icon = Icons.person_add_rounded;
+    } else {
+      icon = Icons.notifications_rounded;
     }
 
     final mutedColor = M3ETheme.of(context).colorScheme.onSurfaceVariant;
@@ -335,8 +343,6 @@ class _ActivityRow extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   activity.subtitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 12, color: mutedColor),
                 ),
               ],

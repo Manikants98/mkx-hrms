@@ -122,7 +122,19 @@ export const getEmployees = async (
     }
 
     if (isManager && !isAdminOrHR && managerEmployeeId) {
-      whereClause.manager_id = managerEmployeeId;
+      if (andConditions.length === 0) {
+        whereClause.OR = [
+          { manager_id: managerEmployeeId },
+          { id: managerEmployeeId }
+        ];
+      } else {
+        andConditions.push({
+          OR: [
+            { manager_id: managerEmployeeId },
+            { id: managerEmployeeId }
+          ]
+        });
+      }
       delete whereClause.manager;
     }
 
@@ -268,7 +280,10 @@ export const getEmployeeStats = async (
 
     const baseWhere: Record<string, unknown> = {};
     if (isManager && !isAdminOrHR && managerEmployeeId) {
-      baseWhere.manager_id = managerEmployeeId;
+      baseWhere.OR = [
+        { manager_id: managerEmployeeId },
+        { id: managerEmployeeId }
+      ];
     }
 
     const total = await prisma.employee.count({ where: baseWhere });
