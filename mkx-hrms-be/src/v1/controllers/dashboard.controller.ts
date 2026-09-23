@@ -158,14 +158,15 @@ export const getDashboardOverview = async (
       include: { employee: true },
     });
 
-    const presentCount = todayAttendance.filter(
-      (a) => a.status === "Present" || (a.check_in && a.status !== "Absent"),
+    const onTimeCount = todayAttendance.filter(
+      (a) => a.status === "Present" || (a.check_in && a.status !== "Absent" && a.status !== "Late"),
     ).length;
     const lateCount = todayAttendance.filter((a) => a.status === "Late").length;
     const explicitAbsent = todayAttendance.filter((a) => a.status === "Absent").length;
     const recordedEmpIds = new Set(todayAttendance.map((a) => a.employee_id));
     const unrecordedCount = Math.max(0, activeEmployees - recordedEmpIds.size);
     const absentCount = explicitAbsent + unrecordedCount;
+    const totalPresentPhysically = onTimeCount + lateCount;
 
     const activityWhere: Record<string, unknown> = {};
     if (isManager && !isAdminOrHR && managerEmployeeId) {
@@ -291,7 +292,7 @@ export const getDashboardOverview = async (
       kpi_metrics: {
         total_employees: totalEmployees,
         active_workforce: activeEmployees,
-        present_today: presentCount,
+        present_today: totalPresentPhysically,
         absent_today: absentCount,
         late_today: lateCount,
         on_leave_today: onLeaveToday,
@@ -299,7 +300,7 @@ export const getDashboardOverview = async (
         active_candidates: activeCandidates,
       },
       attendance: {
-        present: presentCount,
+        present: onTimeCount,
         absent: absentCount,
         late: lateCount,
         on_leave: onLeaveToday,
