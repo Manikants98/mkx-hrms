@@ -126,13 +126,16 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
                 ),
               ),
               const SizedBox(height: 10),
-
-              const Text(
-                'Employment Details',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.2,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Text(
+                  'EMPLOYEMENT DETAILS',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.3,
+                    color: M3ETheme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
               const SizedBox(height: 10),
@@ -180,13 +183,16 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
                 ],
               ),
               const SizedBox(height: 10),
-
-              const Text(
-                'App Preferences',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.2,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Text(
+                  'APP PREFERENCES',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.3,
+                    color: M3ETheme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
               const SizedBox(height: 10),
@@ -220,9 +226,7 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 32),
-
-              // Logout Button
+              const SizedBox(height: 10),
               M3EButton(
                 style: M3EButtonStyle.filled,
                 size: M3EButtonSize.sm,
@@ -236,7 +240,7 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 10),
             ],
           ),
         ),

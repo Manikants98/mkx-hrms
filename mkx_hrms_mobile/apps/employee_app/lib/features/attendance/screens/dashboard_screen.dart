@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
-import 'package:provider/provider.dart';
 import 'package:mkx_core/constants/app_colors.dart';
+import 'package:mkx_core/features/auth/state/auth_provider.dart';
 import 'package:mkx_core/utils/date_utils.dart';
 import 'package:mkx_core/utils/ui_helpers.dart';
 import 'package:mkx_core/widgets/empty_state.dart';
@@ -9,7 +9,8 @@ import 'package:mkx_core/widgets/metric_card.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
-import 'package:mkx_core/features/auth/state/auth_provider.dart';
+import 'package:provider/provider.dart';
+
 import '../../leaves/state/leaves_provider.dart';
 import '../../leaves/widgets/apply_leave_bottom_sheet.dart';
 import '../state/attendance_provider.dart';
@@ -153,13 +154,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 onPunchOut: _handlePunchOut,
               ),
               const SizedBox(height: 10),
-
-              Text(
-                'Monthly Attendance',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.2,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Text(
+                  'MONTHLY ATTENDANCE',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.3,
+                    color: M3ETheme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
               const SizedBox(height: 10),
@@ -172,9 +176,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       subtext: 'This month',
                       icon: Icons.check_circle_outline_rounded,
                       iconColor: AppColors.success,
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(14),
+                        topRight: Radius.circular(3),
+                        bottomLeft: Radius.circular(3),
+                        bottomRight: Radius.circular(3),
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 4),
                   Expanded(
                     child: MetricCard(
                       title: 'Late Punches',
@@ -182,11 +192,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       subtext: 'After 10:00 AM',
                       icon: Icons.access_time_rounded,
                       iconColor: AppColors.warning,
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(3),
+                        topRight: Radius.circular(14),
+                        bottomLeft: Radius.circular(3),
+                        bottomRight: Radius.circular(3),
+                      ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 4),
               Row(
                 children: [
                   Expanded(
@@ -196,6 +212,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       subtext: 'Available days',
                       icon: Icons.beach_access_rounded,
                       iconColor: AppColors.info,
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(3),
+                        topRight: Radius.circular(3),
+                        bottomLeft: Radius.circular(14),
+                        bottomRight: Radius.circular(3),
+                      ),
                       onTap: () {
                         showModalBottomSheet(
                           context: context,
@@ -206,7 +228,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       },
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 4),
                   Expanded(
                     child: MetricCard(
                       title: 'Pending Leaves',
@@ -216,36 +238,54 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           : '$pendingLeaveRequests awaiting review',
                       icon: Icons.hourglass_top_rounded,
                       iconColor: const Color(0xffa855f7),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(3),
+                        topRight: Radius.circular(3),
+                        bottomLeft: Radius.circular(3),
+                        bottomRight: Radius.circular(14),
+                      ),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 10),
-
-              // Recent Attendance History List
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Recent Activity',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.2,
-                    ),
+              SizedBox(
+                width: double.infinity,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'RECENT ACTIVITY',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.3,
+                          color:
+                              M3ETheme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          Text(
+                            'THIS WEEK',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 0.3,
+                              color: M3ETheme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  Text(
-                    'Last 30 Days',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color:
-                          isDark ? AppColors.darkMuted : AppColors.lightMuted,
-                    ),
-                  ),
-                ],
+                ),
               ),
               const SizedBox(height: 10),
-
               if (attendance.isLoading && attendance.history.isEmpty)
                 SectionTile(
                   isDark: isDark,
@@ -268,77 +308,91 @@ class _DashboardScreenState extends State<DashboardScreen> {
               else
                 SectionCard(
                   isDark: isDark,
-                  children: attendance.history.map((item) {
-                    return Row(
-                      children: [
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? AppColors.darkSecondary
-                                : AppColors.lightSecondary,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                AppDateUtils.formatDate(
-                                  item.date,
-                                ).split(' ')[0],
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: isDark
-                                      ? AppColors.darkMuted
-                                      : AppColors.lightMuted,
-                                ),
+                  children: attendance.history
+                      .where((item) {
+                        final date = DateTime.tryParse(item.date);
+                        if (date == null) return false;
+
+                        final now = DateTime.now();
+                        final startOfWeek =
+                            DateTime(now.year, now.month, now.day)
+                                .subtract(Duration(days: now.weekday - 1));
+
+                        return date.weekday != DateTime.sunday &&
+                            !date.isBefore(startOfWeek);
+                      })
+                      .take(7)
+                      .map((item) {
+                        return Row(
+                          children: [
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? AppColors.darkSecondary
+                                    : AppColors.lightSecondary,
+                                borderRadius: BorderRadius.circular(8),
                               ),
-                              Text(
-                                item.date.split('-').last,
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w800,
-                                  color: isDark
-                                      ? AppColors.darkForeground
-                                      : AppColors.lightForeground,
-                                ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    AppDateUtils.formatDate(
+                                      item.date,
+                                    ).split(' ')[0],
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: isDark
+                                          ? AppColors.darkMuted
+                                          : AppColors.lightMuted,
+                                    ),
+                                  ),
+                                  Text(
+                                    item.date.split('-').last,
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w800,
+                                      color: isDark
+                                          ? AppColors.darkForeground
+                                          : AppColors.lightForeground,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${item.checkIn} - ${item.checkOut}',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '${item.checkIn} - ${item.checkOut}',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${item.workHours} • ${item.location}',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: isDark
+                                          ? AppColors.darkMuted
+                                          : AppColors.lightMuted,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '${item.workHours} • ${item.location}',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: isDark
-                                      ? AppColors.darkMuted
-                                      : AppColors.lightMuted,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        StatusBadge(status: item.status),
-                      ],
-                    );
-                  }).toList(),
+                            ),
+                            StatusBadge(status: item.status),
+                          ],
+                        );
+                      })
+                      .toList(),
                 ),
-              const SizedBox(height: 40),
             ],
           ),
         ),

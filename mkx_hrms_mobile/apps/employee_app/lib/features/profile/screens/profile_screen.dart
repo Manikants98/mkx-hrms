@@ -147,13 +147,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             const SizedBox(height: 10),
-
-            Text(
-              'Employment Details',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                letterSpacing: -0.2,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Text(
+                'EMPLOYEMENT DETAILS',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.3,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
             const SizedBox(height: 10),
@@ -204,12 +207,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Leave Balances',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.2,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Text(
+                    'LEAVE BALANCES',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.3,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
                 InkWell(
@@ -256,13 +263,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 10),
             _buildLeaveBalancesCard(context, leaves, isDark),
             const SizedBox(height: 10),
-
-            const Text(
-              'App Preferences',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                letterSpacing: -0.2,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Text(
+                'APP PREFERENCES',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.3,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
             const SizedBox(height: 10),
@@ -296,9 +306,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 32),
-
-            // Logout Button
+            const SizedBox(height: 10),
             M3EButton(
               style: M3EButtonStyle.filled,
               size: M3EButtonSize.sm,
@@ -312,7 +320,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               onPressed: () => _handleLogout(context),
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 10),
           ],
         ),
       ),

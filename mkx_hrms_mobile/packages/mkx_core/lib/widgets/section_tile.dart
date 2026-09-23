@@ -35,6 +35,7 @@ class SectionTile extends StatelessWidget {
     required this.isDark,
     this.position = TilePosition.only,
     this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    this.customBorderRadius,
   });
 
   /// The widget displayed inside the tile.
@@ -49,6 +50,9 @@ class SectionTile extends StatelessWidget {
   /// Internal padding of the tile.
   final EdgeInsetsGeometry padding;
 
+  /// Custom border radius override.
+  final BorderRadiusGeometry? customBorderRadius;
+
   @override
   Widget build(BuildContext context) {
     final M3EThemeData theme = M3ETheme.of(context);
@@ -61,8 +65,7 @@ class SectionTile extends StatelessWidget {
       padding: padding,
       decoration: BoxDecoration(
         color: scheme.surfaceContainerLowest,
-        borderRadius:
-            isStandalone ? BorderRadius.circular(14) : BorderRadius.circular(3),
+        borderRadius: customBorderRadius ?? (isStandalone ? BorderRadius.circular(14) : BorderRadius.circular(3)),
       ),
       child: child,
     );

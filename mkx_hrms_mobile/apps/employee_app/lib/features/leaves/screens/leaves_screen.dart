@@ -156,9 +156,17 @@ class _LeavesScreenState extends State<LeavesScreen> {
                       'Tap the "+ Apply" button above to submit your first leave application.',
                   action: M3EButton(
                     style: M3EButtonStyle.filled,
-                    size: M3EButtonSize.md,
+                    size: M3EButtonSize.sm,
                     onPressed: _openApplyModal,
-                    child: const Text('Apply for Leave'),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.add_rounded, size: 16),
+                        SizedBox(width: 4),
+                        Text('Apply for Leave'),
+                      ],
+                    ),
                   ),
                 )
               else

@@ -13,6 +13,7 @@ class MetricCard extends StatelessWidget {
   final Color iconColor;
   final Color? iconBgColor;
   final VoidCallback? onTap;
+  final BorderRadiusGeometry? borderRadius;
 
   const MetricCard({
     super.key,
@@ -23,6 +24,7 @@ class MetricCard extends StatelessWidget {
     this.iconColor = AppColors.info,
     this.iconBgColor,
     this.onTap,
+    this.borderRadius,
   });
 
   @override
@@ -30,14 +32,16 @@ class MetricCard extends StatelessWidget {
     final theme = M3ETheme.of(context);
     final scheme = theme.colorScheme;
     final bgTint = iconBgColor ?? iconColor.withValues(alpha: 0.12);
+    final finalRadius = borderRadius ?? BorderRadius.circular(14);
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: finalRadius.resolve(Directionality.of(context)),
       child: SectionTile(
         isDark: theme.brightness == Brightness.dark,
         position: TilePosition.only,
         padding: const EdgeInsets.all(16),
+        customBorderRadius: finalRadius,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,

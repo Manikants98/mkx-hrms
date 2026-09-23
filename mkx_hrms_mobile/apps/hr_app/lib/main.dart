@@ -7,6 +7,7 @@ import 'package:mkx_core/features/auth/state/auth_provider.dart';
 import 'package:mkx_core/theme/app_theme.dart';
 import 'package:mkx_core/theme/app_theme_scope.dart';
 import 'package:mkx_core/theme/app_theme_settings.dart';
+import 'package:mkx_core/widgets/splash_screen.dart';
 import 'package:provider/provider.dart';
 
 import 'features/attendance/screens/hr_attendance_screen.dart';
@@ -53,13 +54,26 @@ class _HrAppState extends State<HrApp> {
         final isLoggedIn = _authProvider.isAuthenticated;
         final isInitializing = _authProvider.isInitializing;
         final isGoingToLogin = state.matchedLocation == '/login';
+        final isGoingToSplash = state.matchedLocation == '/splash';
 
-        if (isInitializing) return null;
-        if (!isLoggedIn && !isGoingToLogin) return '/login';
-        if (isLoggedIn && isGoingToLogin) return '/';
+        if (isInitializing && !isGoingToSplash) return '/splash';
+        if (isInitializing && isGoingToSplash) return null;
+
+        if (!isInitializing && isGoingToSplash) {
+          return isLoggedIn ? '/' : '/login';
+        }
+
+        if (!isInitializing && !isLoggedIn && !isGoingToLogin) return '/login';
+        if (!isInitializing && isLoggedIn && isGoingToLogin) return '/';
         return null;
       },
       routes: [
+        GoRoute(
+          path: '/splash',
+          builder: (context, state) => const AppSplashScreen(
+            appType: AppType.hr,
+          ),
+        ),
         GoRoute(
           path: '/login',
           builder: (context, state) => const LoginScreen(),

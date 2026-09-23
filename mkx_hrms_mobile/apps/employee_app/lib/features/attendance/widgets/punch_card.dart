@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:mkx_core/constants/app_colors.dart';
@@ -24,11 +25,32 @@ class PunchCard extends StatelessWidget {
     required this.onPunchOut,
   });
 
+  String _computeLiveTotalHours(String checkIn, DateTime now) {
+    try {
+      final format = DateFormat('hh:mm a');
+      final checkInTime = format.parse(checkIn);
+      final nowTime = DateTime(1970, 1, 1, now.hour, now.minute);
+      var duration = nowTime.difference(checkInTime);
+      if (duration.isNegative) {
+        duration += const Duration(days: 1);
+      }
+      final hours = duration.inHours;
+      final minutes = duration.inMinutes.remainder(60);
+      return '${hours}h ${minutes.toString().padLeft(2, '0')}m';
+    } catch (e) {
+      return '0h 00m';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = M3ETheme.of(context).brightness == Brightness.dark;
     final hasCheckedIn = record?.hasCheckedIn ?? false;
     final hasCheckedOut = record?.hasCheckedOut ?? false;
+
+    final displayWorkHours = (hasCheckedIn && !hasCheckedOut)
+        ? _computeLiveTotalHours(record!.checkIn, currentTime)
+        : (record?.workHours ?? '0h 00m');
 
     return SectionTile(
       isDark: isDark,
@@ -37,7 +59,6 @@ class PunchCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Header Date & Status Badge
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -53,8 +74,6 @@ class PunchCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-
-          // Digital Live Clock
           Text(
             AppDateUtils.formatTime(currentTime),
             style: TextStyle(
@@ -85,8 +104,6 @@ class PunchCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
-
-          // Check In & Check Out Time Badges
           M3ECard(
             variant: M3ECardVariant.filled,
             borderRadius: BorderRadius.circular(16),
@@ -108,7 +125,7 @@ class PunchCard extends StatelessWidget {
                     ),
                   ),
                   Container(
-                    width: 2,
+                    width: 4,
                     color:
                         M3ETheme.of(context).colorScheme.surfaceContainerLowest,
                   ),
@@ -125,7 +142,7 @@ class PunchCard extends StatelessWidget {
                     ),
                   ),
                   Container(
-                    width: 2,
+                    width: 4,
                     color:
                         M3ETheme.of(context).colorScheme.surfaceContainerLowest,
                   ),
@@ -135,7 +152,7 @@ class PunchCard extends StatelessWidget {
                       child: _buildTimeColumn(
                         context,
                         title: 'Total Hours',
-                        time: record?.workHours ?? '0h 00m',
+                        time: displayWorkHours,
                         icon: Icons.timer_outlined,
                         iconColor: AppColors.info,
                       ),
@@ -146,8 +163,6 @@ class PunchCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-
-          // Action Button
           if (!hasCheckedIn)
             if (isPunching)
               Center(
@@ -197,10 +212,7 @@ class PunchCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color:
                     isDark ? AppColors.successBgDark : AppColors.successBgLight,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: AppColors.success.withValues(alpha: 0.3),
-                ),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,

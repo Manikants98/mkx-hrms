@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
 
 import '../../attendance/screens/dashboard_screen.dart';
+import '../../attendance/screens/attendance_history_screen.dart';
 import '../../leaves/screens/leaves_screen.dart';
 import '../../payroll/screens/payroll_screen.dart';
 import '../../profile/screens/profile_screen.dart';
@@ -23,8 +24,9 @@ class _MainShellScreenState extends State<MainShellScreen> {
   final List<Widget> _screens = const [
     DashboardScreen(key: ValueKey(0)),
     LeavesScreen(key: ValueKey(1)),
-    PayrollScreen(key: ValueKey(2)),
-    ProfileScreen(key: ValueKey(3)),
+    AttendanceHistoryScreen(key: ValueKey(2)),
+    PayrollScreen(key: ValueKey(3)),
+    ProfileScreen(key: ValueKey(4)),
   ];
 
   static const List<_NavItemData> _items = [
@@ -37,6 +39,11 @@ class _MainShellScreenState extends State<MainShellScreen> {
       label: 'Leaves',
       icon: Icons.event_note_outlined,
       activeIcon: Icons.event_note_rounded,
+    ),
+    _NavItemData(
+      label: 'Attendance',
+      icon: Icons.calendar_month_outlined,
+      activeIcon: Icons.calendar_month_rounded,
     ),
     _NavItemData(
       label: 'Payslips',

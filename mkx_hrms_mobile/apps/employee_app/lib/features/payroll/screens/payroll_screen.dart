@@ -130,7 +130,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                                         vertical: 16, horizontal: 12),
                                     child: Column(
                                       crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                          CrossAxisAlignment.center,
                                       children: [
                                         Text(
                                           'Base Salary',
@@ -161,7 +161,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                                   ),
                                 ),
                                 Container(
-                                  width: 2,
+                                  width: 4,
                                   color: theme.surfaceContainerLowest,
                                 ),
                                 Expanded(
@@ -170,7 +170,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                                         vertical: 16, horizontal: 12),
                                     child: Column(
                                       crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                          CrossAxisAlignment.center,
                                       children: [
                                         Text(
                                           'Allowances',
@@ -199,7 +199,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                                   ),
                                 ),
                                 Container(
-                                  width: 2,
+                                  width: 4,
                                   color: theme.surfaceContainerLowest,
                                 ),
                                 Expanded(
@@ -208,7 +208,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                                         vertical: 16, horizontal: 12),
                                     child: Column(
                                       crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                          CrossAxisAlignment.center,
                                       children: [
                                         Text(
                                           'Deductions',

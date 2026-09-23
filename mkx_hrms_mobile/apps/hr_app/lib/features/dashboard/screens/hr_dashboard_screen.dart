@@ -5,6 +5,7 @@ import 'package:mkx_core/widgets/metric_card.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:provider/provider.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../../dashboard/models/dashboard_stats_model.dart';
 import '../../dashboard/state/dashboard_provider.dart';
@@ -51,12 +52,11 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                _buildAttendanceSection(isDark, provider.stats),
+                const SizedBox(height: 4),
                 _buildMetricsGrid(isDark, provider.stats),
                 const SizedBox(height: 10),
-                _buildAttendanceSection(isDark, provider.stats),
-                const SizedBox(height: 12),
                 _buildRecentActivity(isDark, provider.stats),
-                const SizedBox(height: 16),
               ],
             ),
           ),
@@ -67,8 +67,10 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
 
   Widget _buildMetricsGrid(bool isDark, DashboardStatsModel stats) {
     return Column(
+      spacing: 4,
       children: [
         Row(
+          spacing: 4,
           children: [
             Expanded(
               child: MetricCard(
@@ -77,9 +79,14 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
                 subtext: 'Active workforce',
                 icon: Icons.people_outline_rounded,
                 iconColor: M3ETheme.of(context).colorScheme.primary,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(10),
+                  bottomLeft: Radius.circular(3),
+                  bottomRight: Radius.circular(3),
+                  topRight: Radius.circular(3),
+                ),
               ),
             ),
-            const SizedBox(width: 10),
             Expanded(
               child: MetricCard(
                 title: 'Present Today',
@@ -87,12 +94,18 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
                 subtext: 'On duty',
                 icon: Icons.check_circle_outline_rounded,
                 iconColor: Colors.green,
+                borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(10),
+                  bottomLeft: Radius.circular(3),
+                  bottomRight: Radius.circular(3),
+                  topLeft: Radius.circular(3),
+                ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 10),
         Row(
+          spacing: 4,
           children: [
             Expanded(
               child: MetricCard(
@@ -101,9 +114,14 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
                 subtext: 'Awaiting approval',
                 icon: Icons.hourglass_top_rounded,
                 iconColor: Colors.orange,
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(10),
+                  bottomRight: Radius.circular(3),
+                  topRight: Radius.circular(3),
+                  topLeft: Radius.circular(3),
+                ),
               ),
             ),
-            const SizedBox(width: 10),
             Expanded(
               child: MetricCard(
                 title: 'Open Positions',
@@ -111,6 +129,12 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
                 subtext: 'Recruitment pipelines',
                 icon: Icons.work_outline_rounded,
                 iconColor: const Color(0xffa855f7),
+                borderRadius: BorderRadius.only(
+                  bottomRight: Radius.circular(10),
+                  bottomLeft: Radius.circular(3),
+                  topRight: Radius.circular(3),
+                  topLeft: Radius.circular(3),
+                ),
               ),
             ),
           ],
@@ -123,6 +147,11 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
     final total = stats.presentToday + stats.absentToday + stats.lateToday;
     if (total == 0) return const SizedBox.shrink();
     final colorScheme = M3ETheme.of(context).colorScheme;
+
+    final Color presentColor = isDark ? Colors.green.shade500 : Colors.green;
+    final Color lateColor = isDark ? Colors.orange.shade500 : Colors.orange;
+    final Color absentColor = isDark ? Colors.red.shade500 : Colors.red;
+
     return M3ECard(
       variant: M3ECardVariant.filled,
       borderRadius: BorderRadius.circular(16),
@@ -132,7 +161,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Today's Attendance Ratio",
+            "Today's Attendance",
             style: TextStyle(
               fontSize: 14.5,
               fontWeight: FontWeight.w700,
@@ -141,51 +170,94 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
                   : Colors.black,
             ),
           ),
-          const SizedBox(height: 12),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: Row(
-              children: [
-                if (stats.presentToday > 0)
-                  Expanded(
-                    flex: stats.presentToday,
-                    child: Container(height: 10, color: Colors.green),
+          const SizedBox(height: 20),
+          Center(
+            child: SizedBox(
+              height: 220,
+              width: double.infinity,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  SfCircularChart(
+                    margin: EdgeInsets.zero,
+                    series: <CircularSeries>[
+                      DoughnutSeries<_ChartData, String>(
+                        dataSource: [
+                          _ChartData(
+                              'Present', stats.presentToday, presentColor),
+                          _ChartData('Late', stats.lateToday, lateColor),
+                          _ChartData('Absent', stats.absentToday, absentColor),
+                        ],
+                        xValueMapper: (_ChartData data, _) => data.category,
+                        yValueMapper: (_ChartData data, _) => data.value,
+                        pointColorMapper: (_ChartData data, _) => data.color,
+                        innerRadius: '60%',
+                        radius: '100%',
+                        animationDuration: 1000,
+                        dataLabelMapper: (_ChartData data, _) {
+                          if (data.value == 0) return '';
+                          return data.category;
+                        },
+                        dataLabelSettings: DataLabelSettings(
+                          isVisible: true,
+                          labelPosition: ChartDataLabelPosition.outside,
+                          connectorLineSettings: const ConnectorLineSettings(
+                            type: ConnectorType.line,
+                            length: '10%',
+                          ),
+                          textStyle: TextStyle(
+                            color: isDark ? Colors.white : Colors.black,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      )
+                    ],
                   ),
-                if (stats.lateToday > 0)
-                  Expanded(
-                    flex: stats.lateToday,
-                    child: Container(height: 10, color: Colors.orange),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '$total',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? colorScheme.onSurface : Colors.black,
+                        ),
+                      ),
+                      Text(
+                        'Total',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                   ),
-                if (stats.absentToday > 0)
-                  Expanded(
-                    flex: stats.absentToday,
-                    child: Container(
-                        height: 10,
-                        color: M3ETheme.of(context).colorScheme.error),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _buildLegendDot(
-                Colors.green,
+                presentColor,
                 'Present',
                 stats.presentToday,
                 isDark,
                 context,
               ),
               _buildLegendDot(
-                Colors.orange,
+                lateColor,
                 'Late',
                 stats.lateToday,
                 isDark,
                 context,
               ),
               _buildLegendDot(
-                Colors.red,
+                absentColor,
                 'Absent',
                 stats.absentToday,
                 isDark,
@@ -228,14 +300,14 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
           child: Text(
             'RECENT ACTIVITIES',
             style: TextStyle(
-              fontSize: 11.5,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.6,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.3,
               color: M3ETheme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 10),
         if (stats.recentActivity.isEmpty)
           SectionTile(
             isDark: isDark,
@@ -323,6 +395,7 @@ class _ActivityRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             width: 36,
@@ -364,4 +437,11 @@ class _ActivityRow extends StatelessWidget {
       ),
     );
   }
+}
+
+class _ChartData {
+  _ChartData(this.category, this.value, this.color);
+  final String category;
+  final int value;
+  final Color color;
 }
