@@ -77,7 +77,7 @@ function parseShiftMinutes(timeStr: string): number {
  * @param next - Next middleware delegate
  */
 export const getDashboardOverview = async (
-  _req: Request,
+  req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
@@ -85,9 +85,35 @@ export const getDashboardOverview = async (
     const todayStr = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
     const todayDate = new Date(`${todayStr}T00:00:00.000Z`);
 
-    const totalEmployees = await prisma.employee.count();
+    const userRole = (req.user?.role || "").toLowerCase();
+    const isManager = userRole.includes("manager");
+    const isAdminOrHR = userRole.includes("admin") || userRole.includes("hr");
+
+    let managerEmployeeId = req.user?.employee_db_id;
+    if (!managerEmployeeId && req.user?.id && isManager && !isAdminOrHR) {
+      const emp = await prisma.employee.findFirst({
+        where: {
+          OR: [
+            { user_id: req.user.id },
+            { email: { equals: req.user.email, mode: "insensitive" } },
+            ...(req.user.employee_code ? [{ employee_id: req.user.employee_code }] : []),
+          ],
+        },
+        select: { id: true },
+      });
+      if (emp) {
+        managerEmployeeId = emp.id;
+      }
+    }
+
+    const employeeWhere: Record<string, unknown> = {};
+    if (isManager && !isAdminOrHR && managerEmployeeId) {
+      employeeWhere.manager_id = managerEmployeeId;
+    }
+
+    const totalEmployees = await prisma.employee.count({ where: employeeWhere });
     const activeEmployees = await prisma.employee.count({
-      where: { status: "Active" },
+      where: { ...employeeWhere, status: "Active" },
     });
 
     /**
@@ -98,11 +124,48 @@ export const getDashboardOverview = async (
         status: "Approved",
         start_date: { lte: todayDate },
         end_date: { gte: todayDate },
+        ...(isManager && !isAdminOrHR && managerEmployeeId
+          ? { employee: { manager_id: managerEmployeeId } }
+          : {}),
       },
       select: { employee_id: true },
     });
     const onLeaveToday = new Set(activeLeavesToday.map((l) => l.employee_id)).size;
-    const activeCandidates = await prisma.candidate.count({ where: { status: "Active" } });
+
+    const pendingLeaves = await prisma.leave.count({
+      where: {
+        status: "Pending",
+        ...(isManager && !isAdminOrHR && managerEmployeeId
+          ? { employee: { manager_id: managerEmployeeId } }
+          : {}),
+      },
+    });
+
+    const activeCandidates =
+      isManager && !isAdminOrHR
+        ? 0
+        : await prisma.candidate.count({ where: { status: "Active" } });
+
+    const attendanceWhere: Record<string, unknown> = {
+      record_id: { contains: todayStr },
+    };
+    if (isManager && !isAdminOrHR && managerEmployeeId) {
+      attendanceWhere.employee = { manager_id: managerEmployeeId };
+    }
+
+    const todayAttendance = await prisma.attendance.findMany({
+      where: attendanceWhere,
+      include: { employee: true },
+    });
+
+    const presentCount = todayAttendance.filter(
+      (a) => a.status === "Present" || (a.check_in && a.status !== "Absent"),
+    ).length;
+    const lateCount = todayAttendance.filter((a) => a.status === "Late").length;
+    const explicitAbsent = todayAttendance.filter((a) => a.status === "Absent").length;
+    const recordedEmpIds = new Set(todayAttendance.map((a) => a.employee_id));
+    const unrecordedCount = Math.max(0, activeEmployees - recordedEmpIds.size);
+    const absentCount = explicitAbsent + unrecordedCount;
 
     const activities = await prisma.activityLog.findMany({
       orderBy: { created_at: "desc" },
@@ -110,7 +173,10 @@ export const getDashboardOverview = async (
     });
 
     const allEmployees = await prisma.employee.findMany({
-      where: { status: "Active" },
+      where: {
+        ...employeeWhere,
+        status: "Active",
+      },
       take: 5,
       include: {
         role_rel: true,
@@ -220,9 +286,21 @@ export const getDashboardOverview = async (
       kpi_metrics: {
         total_employees: totalEmployees,
         active_workforce: activeEmployees,
+        present_today: presentCount,
+        absent_today: absentCount,
+        late_today: lateCount,
         on_leave_today: onLeaveToday,
+        pending_leaves: pendingLeaves,
         active_candidates: activeCandidates,
       },
+      attendance: {
+        present: presentCount,
+        absent: absentCount,
+        late: lateCount,
+        on_leave: onLeaveToday,
+        total: totalEmployees,
+      },
+      pending_leaves: pendingLeaves,
       recent_activities: formattedActivities,
       top_performers: formattedPerformers,
     };
@@ -310,11 +388,37 @@ export const getAllActivities = async (
  * @param next - Next middleware delegate
  */
 export const getWorkforceTrend = async (
-  _req: Request,
+  req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
   try {
+    const userRole = (req.user?.role || "").toLowerCase();
+    const isManager = userRole.includes("manager");
+    const isAdminOrHR = userRole.includes("admin") || userRole.includes("hr");
+
+    let managerEmployeeId = req.user?.employee_db_id;
+    if (!managerEmployeeId && req.user?.id && isManager && !isAdminOrHR) {
+      const emp = await prisma.employee.findFirst({
+        where: {
+          OR: [
+            { user_id: req.user.id },
+            { email: { equals: req.user.email, mode: "insensitive" } },
+            ...(req.user.employee_code ? [{ employee_id: req.user.employee_code }] : []),
+          ],
+        },
+        select: { id: true },
+      });
+      if (emp) {
+        managerEmployeeId = emp.id;
+      }
+    }
+
+    const employeeWhere: Record<string, unknown> = {};
+    if (isManager && !isAdminOrHR && managerEmployeeId) {
+      employeeWhere.manager_id = managerEmployeeId;
+    }
+
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth() + 1;
@@ -335,6 +439,7 @@ export const getWorkforceTrend = async (
     ];
 
     const allEmployees = await prisma.employee.findMany({
+      where: employeeWhere,
       select: { created_at: true },
       orderBy: { created_at: "asc" },
     });

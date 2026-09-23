@@ -2,13 +2,12 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
-import 'package:provider/provider.dart';
-
 import 'package:mkx_core/features/auth/screens/login_screen.dart';
 import 'package:mkx_core/features/auth/state/auth_provider.dart';
 import 'package:mkx_core/theme/app_theme.dart';
-import 'package:mkx_core/theme/app_theme_settings.dart';
 import 'package:mkx_core/theme/app_theme_scope.dart';
+import 'package:mkx_core/theme/app_theme_settings.dart';
+import 'package:provider/provider.dart';
 
 import 'features/attendance/screens/hr_attendance_screen.dart';
 import 'features/attendance/state/hr_attendance_provider.dart';

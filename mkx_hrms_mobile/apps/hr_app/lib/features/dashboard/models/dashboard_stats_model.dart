@@ -37,14 +37,22 @@ class DashboardStatsModel {
 
     final present = attendance.containsKey('present')
         ? _parseInt(attendance['present'])
-        : (activeWorkforce > 0 ? (activeWorkforce - onLeave) : 0);
+        : (kpis.containsKey('present_today')
+            ? _parseInt(kpis['present_today'])
+            : 0);
     final absent = attendance.containsKey('absent')
         ? _parseInt(attendance['absent'])
-        : onLeave;
-    final lateCount = _parseInt(attendance['late']);
+        : (kpis.containsKey('absent_today')
+            ? _parseInt(kpis['absent_today'])
+            : onLeave);
+    final lateCount = attendance.containsKey('late')
+        ? _parseInt(attendance['late'])
+        : _parseInt(kpis['late_today']);
     final pendingLeaves = json.containsKey('pending_leaves')
         ? _parseInt(json['pending_leaves'])
-        : onLeave;
+        : (kpis.containsKey('pending_leaves')
+            ? _parseInt(kpis['pending_leaves'])
+            : onLeave);
 
     return DashboardStatsModel(
       totalEmployees: totalEmp,

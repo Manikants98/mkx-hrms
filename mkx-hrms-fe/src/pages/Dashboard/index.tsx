@@ -79,8 +79,8 @@ export default function Dashboard(): React.ReactElement {
           icon={<Users className="w-4 h-4" />}
         />
         <MetricCard
-          title="Active Attendance"
-          value={String(metrics?.active_workforce ?? 0)}
+          title="Present Today"
+          value={String(metrics?.present_today ?? dashboardResponse?.data?.attendance?.present ?? 0)}
           icon={<UserCheck className="w-4 h-4" />}
         />
         <MetricCard

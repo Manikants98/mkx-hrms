@@ -45,9 +45,21 @@ export interface DashboardOverview {
   kpi_metrics: {
     total_employees: number;
     active_workforce: number;
+    present_today?: number;
+    absent_today?: number;
+    late_today?: number;
     on_leave_today: number;
+    pending_leaves?: number;
     active_candidates: number;
   };
+  attendance?: {
+    present: number;
+    absent: number;
+    late: number;
+    on_leave: number;
+    total: number;
+  };
+  pending_leaves?: number;
   recent_activities: RecentActivity[];
   top_performers: TopPerformer[];
 }
