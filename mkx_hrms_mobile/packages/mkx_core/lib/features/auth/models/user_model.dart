@@ -15,6 +15,7 @@ class UserModel {
   final String? avatar;
   final String? joinDate;
   final String? managerName;
+  final String? managerAvatar;
   final String? timezone;
   final String? shiftName;
   final String? shiftTime;
@@ -34,6 +35,7 @@ class UserModel {
     this.avatar,
     this.joinDate,
     this.managerName,
+    this.managerAvatar,
     this.timezone,
     this.shiftName,
     this.shiftTime,
@@ -58,6 +60,7 @@ class UserModel {
       avatar: json['avatar']?.toString(),
       joinDate: json['join_date']?.toString(),
       managerName: json['manager_name']?.toString(),
+      managerAvatar: json['manager_avatar']?.toString(),
       timezone: json['timezone']?.toString(),
       shiftName: json['shift']?.toString() ?? json['shift_name']?.toString(),
       shiftTime: json['shift_time']?.toString(),
@@ -82,6 +85,7 @@ class UserModel {
       'avatar': avatar,
       'join_date': joinDate,
       'manager_name': managerName,
+      'manager_avatar': managerAvatar,
       'timezone': timezone,
       'shift': shiftName,
       'shift_time': shiftTime,

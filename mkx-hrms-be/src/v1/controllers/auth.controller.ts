@@ -104,6 +104,7 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
       status: employee?.status || user.status || "Active",
       join_date: employee?.join_date ? employee.join_date.toISOString().split("T")[0] : null,
       manager_name: employee?.manager?.name || null,
+      manager_avatar: employee?.manager?.avatar || null,
       timezone: user.timezone,
     };
 
@@ -224,6 +225,7 @@ export const getMe = async (req: Request, res: Response, next: NextFunction): Pr
       status: employee?.status || user.status || "Active",
       join_date: employee?.join_date ? employee.join_date.toISOString().split("T")[0] : null,
       manager_name: employee?.manager?.name || null,
+      manager_avatar: employee?.manager?.avatar || null,
       timezone: user.timezone,
     };
 

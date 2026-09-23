@@ -45,6 +45,7 @@ class _HrAppState extends State<HrApp> {
     super.initState();
     _authProvider = AuthProvider();
     _themeSettings = AppThemeSettings();
+    _themeSettings.loadSettings();
     _router = GoRouter(
       initialLocation: '/',
       refreshListenable: _authProvider,

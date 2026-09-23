@@ -10,6 +10,7 @@ const JWT_EXPIRES_IN = (process.env.JWT_EXPIRES_IN || "7d") as string;
 export interface AuthTokenPayload {
   id: number;
   email: string;
+  name?: string;
   role?: string;
   employee_db_id?: number;
   employee_code?: string;

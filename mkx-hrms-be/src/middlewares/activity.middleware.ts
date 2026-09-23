@@ -180,27 +180,34 @@ export const activityTrackingMiddleware = async (
     }
 
     try {
-      let actorUserId: number | null = null;
-      let actorEmployeeId: number | null = null;
+      let actorUserId: number | null = req.user?.id || null;
+      let actorEmployeeId: number | null = req.user?.employee_db_id || null;
+      let actorName: string = req.user?.name || "";
 
       const authHeader = req.headers.authorization;
-      if (authHeader && authHeader.startsWith("Bearer ")) {
+      if (!actorUserId && authHeader && authHeader.startsWith("Bearer ")) {
         const token = authHeader.split(" ")[1];
         const decoded = verifyToken(token);
         if (decoded?.id) {
           actorUserId = decoded.id;
-          const user = await prisma.user.findUnique({
-            where: { id: decoded.id },
-            include: { employee: true },
-          });
-          if (user?.employee?.id) {
-            actorEmployeeId = user.employee.id;
-          }
+          actorName = decoded.name || "";
+          actorEmployeeId = decoded.employee_db_id || null;
+        }
+      }
+
+      if ((!actorName || !actorEmployeeId) && actorUserId) {
+        const user = await prisma.user.findUnique({
+          where: { id: actorUserId },
+          include: { employee: true },
+        });
+        if (user) {
+          actorName = actorName || user.employee?.name || (user.first_name ? `${user.first_name} ${user.last_name}`.trim() : null) || "User";
+          actorEmployeeId = actorEmployeeId || user.employee?.id || null;
         }
       }
 
       const body = req.body && typeof req.body === "object" ? req.body : {};
-      let name = "System";
+      let name = actorName || "System";
       let subtext = "Action completed";
       let statusLabel = "Updated";
       let statusType: "success" | "warning" | "error" | "info" = "info";
@@ -258,6 +265,45 @@ export const activityTrackingMiddleware = async (
           statusType = "error";
           bgAlpha = "rgba(241, 77, 76, 0.1)";
         }
+      } else if (pathWithoutQuery.includes("/attendance")) {
+        if (pathWithoutQuery.includes("/punch")) {
+          const empName = actorName || snapshot?.name || body.employee_name || "Employee";
+          name = `${empName} (Attendance)`;
+          const punchType = (body.type || body.punch_type || "").toString().toLowerCase();
+          const isOut = punchType.includes("out");
+          subtext = isOut ? "Clocked out for the shift" : "Clocked in for shift";
+          statusLabel = isOut ? "Clock Out" : "Clock In";
+          statusType = isOut ? "warning" : "success";
+          bgAlpha = isOut ? "rgba(255, 139, 37, 0.1)" : "rgba(16, 185, 129, 0.1)";
+        } else if (pathWithoutQuery.includes("/generate-daily")) {
+          const opName = actorName || "HR Admin";
+          name = `${opName} (Attendance)`;
+          subtext = "Generated daily attendance logs for active workforce";
+          statusLabel = "Generated";
+          statusType = "info";
+          bgAlpha = "rgba(0, 177, 216, 0.1)";
+        } else {
+          const empName = snapshot?.employee?.name || snapshot?.name || actorName || "Employee";
+          name = `${empName} (Attendance)`;
+          subtext = `Updated attendance records (${method} ${pathWithoutQuery})`;
+          statusLabel = method === "POST" ? "Created" : method === "DELETE" ? "Deleted" : "Updated";
+          statusType = method === "DELETE" ? "error" : "info";
+          bgAlpha = "rgba(0, 177, 216, 0.1)";
+        }
+      } else if (pathWithoutQuery.includes("/payroll")) {
+        const opName = actorName || "HR Admin";
+        name = `${opName} (Payroll)`;
+        if (pathWithoutQuery.includes("/generate")) {
+          subtext = "Generated payroll runs for billing cycle";
+          statusLabel = "Processed";
+          statusType = "success";
+          bgAlpha = "rgba(16, 185, 129, 0.1)";
+        } else {
+          subtext = `Payroll record ${method === "POST" ? "created" : method === "DELETE" ? "deleted" : "updated"}`;
+          statusLabel = method === "POST" ? "Created" : method === "DELETE" ? "Deleted" : "Updated";
+          statusType = method === "DELETE" ? "error" : "info";
+          bgAlpha = "rgba(0, 177, 216, 0.1)";
+        }
       } else if (pathWithoutQuery.includes("/leaves")) {
         if (method === "PATCH" || method === "PUT") {
           const empName = snapshot?.employee?.name || "Employee";
@@ -277,7 +323,7 @@ export const activityTrackingMiddleware = async (
             bgAlpha = "rgba(255, 139, 37, 0.1)";
           }
         } else if (method === "POST") {
-          name = `${body.employee_name || "Employee"} (Leave Req)`;
+          name = `${body.employee_name || actorName || "Employee"} (Leave Req)`;
           subtext = `Requested ${body.leave_type || "Annual"} leave (${body.days_count || 1} days)`;
           statusLabel = "Pending";
           statusType = "warning";
@@ -322,13 +368,13 @@ export const activityTrackingMiddleware = async (
         }
       } else if (pathWithoutQuery.includes("/blogs")) {
         if (method === "POST") {
-          name = `${body.author_name || "Admin"} (Blog)`;
+          name = `${body.author_name || actorName || "Admin"} (Blog)`;
           subtext = `Created article: "${body.title || "Untitled"}"`;
           statusLabel = (body.status as string) || "Draft";
           statusType = body.status === "Published" ? "success" : "warning";
           bgAlpha = statusType === "success" ? "rgba(69, 186, 80, 0.1)" : "rgba(255, 139, 37, 0.1)";
         } else if (method === "PUT" || method === "PATCH") {
-          name = `${snapshot?.author_name || body.author_name || "Admin"} (Blog)`;
+          name = `${snapshot?.author_name || body.author_name || actorName || "Admin"} (Blog)`;
           const diffs: string[] = [];
           if (snapshot && body.status && body.status !== snapshot.status) {
             diffs.push(`Status: "${snapshot.status}" → "${body.status}"`);
@@ -351,14 +397,15 @@ export const activityTrackingMiddleware = async (
                 ? "rgba(255, 139, 37, 0.1)"
                 : "rgba(0, 177, 216, 0.1)";
         } else if (method === "DELETE") {
-          name = `${snapshot?.author_name || "Admin"} (Blog)`;
+          name = `${snapshot?.author_name || actorName || "Admin"} (Blog)`;
           subtext = `Deleted article: "${snapshot?.title || "Article"}"`;
           statusLabel = "Deleted";
           statusType = "error";
           bgAlpha = "rgba(241, 77, 76, 0.1)";
         }
       } else {
-        name = "System Operation";
+        const actor = actorName ? `${actorName}` : "System Operation";
+        name = actor;
         subtext = `${method} ${pathWithoutQuery}`;
         statusLabel = method === "DELETE" ? "Deleted" : method === "POST" ? "Created" : "Updated";
         statusType = method === "DELETE" ? "error" : "info";

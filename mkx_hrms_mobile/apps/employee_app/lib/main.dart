@@ -35,6 +35,7 @@ class _MkxHrmsAppState extends State<MkxHrmsApp> {
   void initState() {
     super.initState();
     _themeSettings = AppThemeSettings();
+    _themeSettings.loadSettings();
   }
 
   @override
@@ -226,7 +227,7 @@ class AppM3EChipTheme extends m3e.M3EChipTheme {
           : const Color(0x00000000);
     }
     if (selected) {
-      return isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
+      return scheme.primary;
     }
     return isDark ? AppColors.darkCard : AppColors.lightCard;
   }
@@ -238,13 +239,11 @@ class AppM3EChipTheme extends m3e.M3EChipTheme {
     required bool selected,
   }) {
     if (!enabled) {
-      return isDark ? AppColors.darkMuted : AppColors.lightMuted;
+      return scheme.onSurfaceVariant;
     }
     if (selected) {
-      return isDark
-          ? AppColors.darkPrimaryForeground
-          : AppColors.lightPrimaryForeground;
+      return scheme.onPrimary;
     }
-    return isDark ? AppColors.darkMuted : AppColors.lightMuted;
+    return scheme.onSurfaceVariant;
   }
 }

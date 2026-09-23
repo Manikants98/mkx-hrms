@@ -72,9 +72,12 @@ export const authenticateToken = async (
       const resolvedRole =
         dbUser.role?.name || emp?.role_rel?.name || decoded.role || "Employee";
 
+      const resolvedName = emp?.name || (dbUser.first_name ? `${dbUser.first_name} ${dbUser.last_name}`.trim() : null) || decoded.name || "User";
+
       req.user = {
         id: dbUser.id,
         email: dbUser.email,
+        name: resolvedName,
         role: resolvedRole,
         employee_db_id: emp?.id || decoded.employee_db_id,
         employee_code:

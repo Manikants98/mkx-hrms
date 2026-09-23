@@ -9,6 +9,10 @@ class TokenStorage {
   static const String _keyUser = 'cached_user';
   static const String _keyThemeMode = 'theme_mode';
   static const String _keyCustomBaseUrl = 'custom_base_url';
+  static const String _keyAutoTheming = 'theme_auto_theming';
+  static const String _keyDynamicColoring = 'theme_dynamic_coloring';
+  static const String _keySeedColor = 'theme_seed_color';
+  static const String _keyFontFamily = 'theme_font_family';
 
   SharedPreferences? _prefs;
 
@@ -51,6 +55,50 @@ class TokenStorage {
   Future<String> getThemeMode() async {
     final p = await _asyncPrefs;
     return p.getString(_keyThemeMode) ?? 'system';
+  }
+
+  Future<void> saveAutoTheming(bool value) async {
+    final p = await _asyncPrefs;
+    await p.setBool(_keyAutoTheming, value);
+  }
+
+  Future<bool> getAutoTheming() async {
+    final p = await _asyncPrefs;
+    return p.getBool(_keyAutoTheming) ?? true;
+  }
+
+  Future<void> saveDynamicColoring(bool value) async {
+    final p = await _asyncPrefs;
+    await p.setBool(_keyDynamicColoring, value);
+  }
+
+  Future<bool> getDynamicColoring() async {
+    final p = await _asyncPrefs;
+    return p.getBool(_keyDynamicColoring) ?? true;
+  }
+
+  Future<void> saveSeedColor(int colorValue) async {
+    final p = await _asyncPrefs;
+    await p.setInt(_keySeedColor, colorValue);
+  }
+
+  Future<int?> getSeedColor() async {
+    final p = await _asyncPrefs;
+    return p.getInt(_keySeedColor);
+  }
+
+  Future<void> saveFontFamily(String? family) async {
+    final p = await _asyncPrefs;
+    if (family == null) {
+      await p.setString(_keyFontFamily, '');
+    } else {
+      await p.setString(_keyFontFamily, family);
+    }
+  }
+
+  Future<String?> getFontFamily() async {
+    final p = await _asyncPrefs;
+    return p.getString(_keyFontFamily);
   }
 
   Future<void> saveBaseUrl(String url) async {

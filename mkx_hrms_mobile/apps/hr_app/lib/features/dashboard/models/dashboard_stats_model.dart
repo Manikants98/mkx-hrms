@@ -21,15 +21,13 @@ class DashboardStatsModel {
   factory DashboardStatsModel.fromJson(Map<String, dynamic> json) {
     final kpis = json['kpi_metrics'] as Map<String, dynamic>? ?? json;
     final attendance = json['attendance'] as Map<String, dynamic>? ?? {};
-    final activityList =
-        (json['recent_activities'] ?? json['recent_activity'])
+    final activityList = (json['recent_activities'] ?? json['recent_activity'])
             as List<dynamic>? ??
         [];
 
     final totalEmp = _parseInt(
       kpis['total_employees'] ?? json['total_employees'],
     );
-    final activeWorkforce = _parseInt(kpis['active_workforce']);
     final onLeave = _parseInt(kpis['on_leave_today']);
     final openPos = _parseInt(
       kpis['active_candidates'] ?? json['open_positions'],
@@ -69,14 +67,14 @@ class DashboardStatsModel {
 
   /// Fallback stats model used when the dashboard endpoint is unavailable
   factory DashboardStatsModel.empty() => const DashboardStatsModel(
-    totalEmployees: 0,
-    presentToday: 0,
-    absentToday: 0,
-    lateToday: 0,
-    pendingLeaves: 0,
-    openPositions: 0,
-    recentActivity: [],
-  );
+        totalEmployees: 0,
+        presentToday: 0,
+        absentToday: 0,
+        lateToday: 0,
+        pendingLeaves: 0,
+        openPositions: 0,
+        recentActivity: [],
+      );
 
   static int _parseInt(dynamic value) =>
       value is int ? value : int.tryParse(value?.toString() ?? '') ?? 0;
@@ -101,18 +99,14 @@ class RecentActivityModel {
         title: (json['title'] != null && json['title'].toString().isNotEmpty)
             ? json['title'].toString()
             : (json['name']?.toString() ?? ''),
-        subtitle:
-            (json['subtitle'] != null &&
-                    json['subtitle'].toString().isNotEmpty)
-                ? json['subtitle'].toString()
-                : (json['diff']?.toString() ??
-                    json['subtext']?.toString() ??
-                    ''),
+        subtitle: (json['subtitle'] != null &&
+                json['subtitle'].toString().isNotEmpty)
+            ? json['subtitle'].toString()
+            : (json['diff']?.toString() ?? json['subtext']?.toString() ?? ''),
         type: json['type']?.toString() ??
             json['status_type']?.toString() ??
             'info',
-        timeAgo: json['time_ago']?.toString() ??
-            json['timeAgo']?.toString() ??
-            '',
+        timeAgo:
+            json['time_ago']?.toString() ?? json['timeAgo']?.toString() ?? '',
       );
 }

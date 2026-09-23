@@ -7,9 +7,8 @@ import 'package:mkx_core/widgets/app_avatar.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
-import 'package:mkx_core/theme/app_theme_settings.dart';
-import 'package:mkx_core/theme/app_theme_scope.dart';
 import 'package:mkx_core/widgets/theme_config_page.dart';
+import 'package:mkx_core/widgets/theme_mode_selector.dart';
 import 'package:provider/provider.dart';
 
 /// HR Admin Profile, Settings, Theme Mode, and Logout Screen
@@ -79,6 +78,7 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
                   children: [
                     AppAvatar(
                       name: user?.name ?? 'HR Admin',
+                      imageUrl: user?.avatar,
                       size: 64,
                       borderRadius: 8,
                     ),
@@ -215,8 +215,7 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      _buildThemeChips(
-                          context, auth, isDark, AppThemeScope.of(context)),
+                      const ThemeModeSelector(),
                     ],
                   ),
                 ),
@@ -274,57 +273,6 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
           style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
         ),
       ],
-    );
-  }
-
-  Widget _buildThemeChips(
-    BuildContext context,
-    AuthProvider auth,
-    bool isDark,
-    AppThemeSettings settings,
-  ) {
-    final colorScheme = M3ETheme.of(context).colorScheme;
-    final modes = [
-      (ThemeMode.light, 'Light', Icons.light_mode_rounded),
-      (ThemeMode.system, 'System', Icons.settings_brightness_rounded),
-      (ThemeMode.dark, 'Dark', Icons.dark_mode_rounded),
-    ];
-
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: M3EButtonGroup(
-        type: M3EButtonGroupType.connected,
-        shape: M3EButtonShape.square,
-        size: M3EButtonSize.sm,
-        style: M3EButtonStyle.filled,
-        neighborSquish: true,
-        decoration: M3EToggleButtonDecoration(
-          backgroundColor: WidgetStateProperty.resolveWith((states) {
-            if (states.contains(WidgetState.selected)) {
-              return colorScheme.primary;
-            }
-            return colorScheme.surfaceContainer;
-          }),
-        ),
-        selectedIndex: modes.indexWhere((m) => m.$1 == auth.themeMode),
-        onSelectedIndexChanged: (int? index) {
-          if (index != null && index >= 0 && index < modes.length) {
-            final item = modes[index];
-            if (item.$1 == ThemeMode.system) {
-              settings.autoTheming = true;
-            } else {
-              settings.autoTheming = false;
-            }
-            auth.setThemeMode(item.$1);
-          }
-        },
-        actions: modes.map((item) {
-          return M3EButtonGroupAction(
-            label: Text(item.$2),
-            icon: Icon(item.$3, size: 14),
-          );
-        }).toList(),
-      ),
     );
   }
 }

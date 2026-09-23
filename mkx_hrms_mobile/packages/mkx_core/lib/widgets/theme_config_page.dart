@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:provider/provider.dart';
 
+import '../features/auth/state/auth_provider.dart';
 import '../theme/app_theme_scope.dart';
 import '../theme/app_theme_settings.dart';
+import 'theme_mode_selector.dart';
 
-/// A page for configuring the app's theme settings.
+/**
+ * A page for configuring the app's theme settings.
+ */
 class ThemeConfigPage extends StatelessWidget {
   const ThemeConfigPage({super.key});
 
@@ -34,7 +39,9 @@ class ThemeConfigPage extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
           children: <Widget>[
-            _toggles(theme, settings),
+            _themeModeSection(theme, settings, context),
+            const SizedBox(height: 24),
+            _toggles(theme, settings, context),
             const SizedBox(height: 24),
             _seeds(theme, settings),
             const SizedBox(height: 24),
@@ -45,7 +52,38 @@ class ThemeConfigPage extends StatelessWidget {
     );
   }
 
-  Widget _toggles(M3EThemeData theme, AppThemeSettings settings) {
+  Widget _themeModeSection(
+    M3EThemeData theme,
+    AppThemeSettings settings,
+    BuildContext context,
+  ) {
+    final scheme = theme.colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          'Theme mode',
+          style: theme.typeScale.titleMedium.copyWith(color: scheme.onSurface),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Choose between system, light, and dark appearance.',
+          style: theme.typeScale.bodyMedium.copyWith(
+            color: scheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 16),
+        const ThemeModeSelector(),
+      ],
+    );
+  }
+
+  Widget _toggles(
+    M3EThemeData theme,
+    AppThemeSettings settings,
+    BuildContext context,
+  ) {
     final List<Widget> rows = <Widget>[
       M3EListItem(
         headline: 'Auto theming',
@@ -53,7 +91,12 @@ class ThemeConfigPage extends StatelessWidget {
         trailing: M3ESwitch(
           value: settings.autoTheming,
           semanticLabel: 'Auto theming',
-          onChanged: (bool value) => settings.autoTheming = value,
+          onChanged: (bool value) {
+            settings.autoTheming = value;
+            if (value) {
+              context.read<AuthProvider>().setThemeMode(ThemeMode.system);
+            }
+          },
         ),
       ),
       M3EListItem(

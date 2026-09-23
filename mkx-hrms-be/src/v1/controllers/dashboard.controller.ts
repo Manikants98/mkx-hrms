@@ -108,7 +108,10 @@ export const getDashboardOverview = async (
 
     const employeeWhere: Record<string, unknown> = {};
     if (isManager && !isAdminOrHR && managerEmployeeId) {
-      employeeWhere.manager_id = managerEmployeeId;
+      employeeWhere.OR = [
+        { manager_id: managerEmployeeId },
+        { id: managerEmployeeId }
+      ];
     }
 
     const totalEmployees = await prisma.employee.count({ where: employeeWhere });
@@ -125,7 +128,7 @@ export const getDashboardOverview = async (
         start_date: { lte: todayDate },
         end_date: { gte: todayDate },
         ...(isManager && !isAdminOrHR && managerEmployeeId
-          ? { employee: { manager_id: managerEmployeeId } }
+          ? { employee: { OR: [{ manager_id: managerEmployeeId }, { id: managerEmployeeId }] } }
           : {}),
       },
       select: { employee_id: true },
@@ -136,7 +139,7 @@ export const getDashboardOverview = async (
       where: {
         status: "Pending",
         ...(isManager && !isAdminOrHR && managerEmployeeId
-          ? { employee: { manager_id: managerEmployeeId } }
+          ? { employee: { OR: [{ manager_id: managerEmployeeId }, { id: managerEmployeeId }] } }
           : {}),
       },
     });
@@ -150,7 +153,7 @@ export const getDashboardOverview = async (
       record_id: { contains: todayStr },
     };
     if (isManager && !isAdminOrHR && managerEmployeeId) {
-      attendanceWhere.employee = { manager_id: managerEmployeeId };
+      attendanceWhere.employee = { OR: [{ manager_id: managerEmployeeId }, { id: managerEmployeeId }] };
     }
 
     const todayAttendance = await prisma.attendance.findMany({
@@ -167,7 +170,17 @@ export const getDashboardOverview = async (
     const unrecordedCount = Math.max(0, activeEmployees - recordedEmpIds.size);
     const absentCount = explicitAbsent + unrecordedCount;
 
+    const activityWhere: Record<string, unknown> = {};
+    if (isManager && !isAdminOrHR && managerEmployeeId) {
+      activityWhere.OR = [
+        { employee: { manager_id: managerEmployeeId } },
+        { employee_id: managerEmployeeId },
+        ...(req.user?.id ? [{ user_id: req.user.id }] : []),
+      ];
+    }
+
     const activities = await prisma.activityLog.findMany({
+      where: activityWhere,
       orderBy: { created_at: "desc" },
       take: 5,
     });
@@ -177,7 +190,6 @@ export const getDashboardOverview = async (
         ...employeeWhere,
         status: "Active",
       },
-      take: 5,
       include: {
         role_rel: true,
         department_rel: true,
@@ -332,6 +344,37 @@ export const getAllActivities = async (
 
     const andConditions: Array<Record<string, unknown>> = [];
 
+    const userRole = (req.user?.role || "").toLowerCase();
+    const isManager = userRole.includes("manager");
+    const isAdminOrHR = userRole.includes("admin") || userRole.includes("hr");
+
+    let managerEmployeeId = req.user?.employee_db_id;
+    if (!managerEmployeeId && req.user?.id && isManager && !isAdminOrHR) {
+      const emp = await prisma.employee.findFirst({
+        where: {
+          OR: [
+            { user_id: req.user.id },
+            { email: { equals: req.user.email, mode: "insensitive" } },
+            ...(req.user.employee_code ? [{ employee_id: req.user.employee_code }] : []),
+          ],
+        },
+        select: { id: true },
+      });
+      if (emp) {
+        managerEmployeeId = emp.id;
+      }
+    }
+
+    if (isManager && !isAdminOrHR && managerEmployeeId) {
+      andConditions.push({
+        OR: [
+          { employee: { manager_id: managerEmployeeId } },
+          { employee_id: managerEmployeeId },
+          ...(req.user?.id ? [{ user_id: req.user.id }] : []),
+        ],
+      });
+    }
+
     if (search.trim()) {
       andConditions.push({
         OR: [
@@ -416,7 +459,10 @@ export const getWorkforceTrend = async (
 
     const employeeWhere: Record<string, unknown> = {};
     if (isManager && !isAdminOrHR && managerEmployeeId) {
-      employeeWhere.manager_id = managerEmployeeId;
+      employeeWhere.OR = [
+        { manager_id: managerEmployeeId },
+        { id: managerEmployeeId }
+      ];
     }
 
     const now = new Date();

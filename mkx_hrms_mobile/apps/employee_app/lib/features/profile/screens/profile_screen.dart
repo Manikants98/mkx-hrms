@@ -11,6 +11,7 @@ import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
 import 'package:mkx_core/widgets/theme_config_page.dart';
+import 'package:mkx_core/widgets/theme_mode_selector.dart';
 import 'package:provider/provider.dart';
 
 import '../../leaves/state/leaves_provider.dart';
@@ -94,6 +95,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   AppAvatar(
                     name: user?.name ?? 'Employee',
+                    imageUrl: user?.avatar,
                     size: 64,
                     borderRadius: 8,
                   ),
@@ -253,6 +255,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 10),
             _buildLeaveBalancesCard(context, leaves, isDark),
+            const SizedBox(height: 10),
+
+            const Text(
+              'App Preferences',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.2,
+              ),
+            ),
+            const SizedBox(height: 10),
+            SectionTile(
+              isDark: isDark,
+              position: TilePosition.only,
+              padding: const EdgeInsets.all(16),
+              child: SizedBox(
+                width: double.infinity,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Theme Mode',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Choose between system, light, and dark zinc appearance.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    const ThemeModeSelector(),
+                  ],
+                ),
+              ),
+            ),
             const SizedBox(height: 32),
 
             // Logout Button
