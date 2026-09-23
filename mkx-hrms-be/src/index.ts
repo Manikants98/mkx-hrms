@@ -14,6 +14,7 @@ if (typeof dns.setDefaultResultOrder === "function") {
 import { prisma } from "./libraries/prisma";
 import { logger } from "./utils/logger";
 import { responseMiddleware } from "./middlewares/response.middleware";
+import { authenticateToken } from "./middlewares/auth.middleware";
 import { activityTrackingMiddleware } from "./middlewares/activity.middleware";
 import { errorHandler, notFoundHandler } from "./middlewares/error.middleware";
 import v1Routes from "./v1/routes";
@@ -33,6 +34,11 @@ app.use(morgan("dev"));
  * Standard API response decorator middleware
  */
 app.use(responseMiddleware);
+
+/**
+ * Global token authentication middleware populating authenticated user context
+ */
+app.use(authenticateToken);
 
 /**
  * Automated mutation and entity diff tracking middleware

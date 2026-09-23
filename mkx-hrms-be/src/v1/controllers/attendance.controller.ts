@@ -79,10 +79,27 @@ export const getAttendance = async (
     const isManager = userRole.includes("manager");
     const isAdminOrHR = userRole.includes("admin") || userRole.includes("hr");
 
-    if (isManager && !isAdminOrHR && req.user?.employee_db_id) {
+    let managerEmployeeId = req.user?.employee_db_id;
+    if (!managerEmployeeId && req.user?.id && isManager && !isAdminOrHR) {
+      const emp = await prisma.employee.findFirst({
+        where: {
+          OR: [
+            { user_id: req.user.id },
+            { email: { equals: req.user.email, mode: "insensitive" } },
+            ...(req.user.employee_code ? [{ employee_id: req.user.employee_code }] : []),
+          ],
+        },
+        select: { id: true },
+      });
+      if (emp) {
+        managerEmployeeId = emp.id;
+      }
+    }
+
+    if (isManager && !isAdminOrHR && managerEmployeeId) {
       whereClause.employee = {
         ...whereClause.employee,
-        manager_id: req.user.employee_db_id,
+        manager_id: managerEmployeeId,
       };
     }
 
@@ -174,8 +191,25 @@ export const getAttendanceStats = async (
     const isManager = userRole.includes("manager");
     const isAdminOrHR = userRole.includes("admin") || userRole.includes("hr");
 
-    if (isManager && !isAdminOrHR && req.user?.employee_db_id) {
-      employeeWhere.manager_id = req.user.employee_db_id;
+    let managerEmployeeId = req.user?.employee_db_id;
+    if (!managerEmployeeId && req.user?.id && isManager && !isAdminOrHR) {
+      const emp = await prisma.employee.findFirst({
+        where: {
+          OR: [
+            { user_id: req.user.id },
+            { email: { equals: req.user.email, mode: "insensitive" } },
+            ...(req.user.employee_code ? [{ employee_id: req.user.employee_code }] : []),
+          ],
+        },
+        select: { id: true },
+      });
+      if (emp) {
+        managerEmployeeId = emp.id;
+      }
+    }
+
+    if (isManager && !isAdminOrHR && managerEmployeeId) {
+      employeeWhere.manager_id = managerEmployeeId;
     }
 
     const totalEmployees = await prisma.employee.count({ where: employeeWhere });
@@ -188,8 +222,8 @@ export const getAttendanceStats = async (
       date: { gte: start, lte: end },
     };
 
-    if (isManager && !isAdminOrHR && req.user?.employee_db_id) {
-      attendanceWhere.employee = { manager_id: req.user.employee_db_id };
+    if (isManager && !isAdminOrHR && managerEmployeeId) {
+      attendanceWhere.employee = { manager_id: managerEmployeeId };
     }
 
     if (location !== "All") {
@@ -282,12 +316,39 @@ export const getAttendanceStats = async (
  * @param next - Next middleware delegate
  */
 export const exportAttendance = async (
-  _req: Request,
+  req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
   try {
+    const userRole = (req.user?.role || "").toLowerCase();
+    const isManager = userRole.includes("manager");
+    const isAdminOrHR = userRole.includes("admin") || userRole.includes("hr");
+
+    let managerEmployeeId = req.user?.employee_db_id;
+    if (!managerEmployeeId && req.user?.id && isManager && !isAdminOrHR) {
+      const emp = await prisma.employee.findFirst({
+        where: {
+          OR: [
+            { user_id: req.user.id },
+            { email: { equals: req.user.email, mode: "insensitive" } },
+            ...(req.user.employee_code ? [{ employee_id: req.user.employee_code }] : []),
+          ],
+        },
+        select: { id: true },
+      });
+      if (emp) {
+        managerEmployeeId = emp.id;
+      }
+    }
+
+    const exportWhere: Record<string, unknown> = {};
+    if (isManager && !isAdminOrHR && managerEmployeeId) {
+      exportWhere.employee = { manager_id: managerEmployeeId };
+    }
+
     const records = await prisma.attendance.findMany({
+      where: exportWhere,
       orderBy: { date: "desc" },
       include: {
         employee: {

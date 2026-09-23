@@ -77,10 +77,27 @@ export const getLeaves = async (req: Request, res: Response, next: NextFunction)
     const isManager = userRole.includes("manager");
     const isAdminOrHR = userRole.includes("admin") || userRole.includes("hr");
 
-    if (isManager && !isAdminOrHR && req.user?.employee_db_id) {
+    let managerEmployeeId = req.user?.employee_db_id;
+    if (!managerEmployeeId && req.user?.id && isManager && !isAdminOrHR) {
+      const emp = await prisma.employee.findFirst({
+        where: {
+          OR: [
+            { user_id: req.user.id },
+            { email: { equals: req.user.email, mode: "insensitive" } },
+            ...(req.user.employee_code ? [{ employee_id: req.user.employee_code }] : []),
+          ],
+        },
+        select: { id: true },
+      });
+      if (emp) {
+        managerEmployeeId = emp.id;
+      }
+    }
+
+    if (isManager && !isAdminOrHR && managerEmployeeId) {
       whereClause.employee = {
         ...whereClause.employee,
-        manager_id: req.user.employee_db_id,
+        manager_id: managerEmployeeId,
       };
     }
 
@@ -161,9 +178,26 @@ export const getLeaveStats = async (
     const isManager = userRole.includes("manager");
     const isAdminOrHR = userRole.includes("admin") || userRole.includes("hr");
 
-    const baseWhere: any = {};
-    if (isManager && !isAdminOrHR && req.user?.employee_db_id) {
-      baseWhere.employee = { manager_id: req.user.employee_db_id };
+    let managerEmployeeId = req.user?.employee_db_id;
+    if (!managerEmployeeId && req.user?.id && isManager && !isAdminOrHR) {
+      const emp = await prisma.employee.findFirst({
+        where: {
+          OR: [
+            { user_id: req.user.id },
+            { email: { equals: req.user.email, mode: "insensitive" } },
+            ...(req.user.employee_code ? [{ employee_id: req.user.employee_code }] : []),
+          ],
+        },
+        select: { id: true },
+      });
+      if (emp) {
+        managerEmployeeId = emp.id;
+      }
+    }
+
+    const baseWhere: Record<string, unknown> = {};
+    if (isManager && !isAdminOrHR && managerEmployeeId) {
+      baseWhere.employee = { manager_id: managerEmployeeId };
     }
 
     const todayStr = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
@@ -411,12 +445,39 @@ export const updateLeaveStatus = async (
  * @param next - Next middleware delegate
  */
 export const exportLeaves = async (
-  _req: Request,
+  req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
   try {
+    const userRole = (req.user?.role || "").toLowerCase();
+    const isManager = userRole.includes("manager");
+    const isAdminOrHR = userRole.includes("admin") || userRole.includes("hr");
+
+    let managerEmployeeId = req.user?.employee_db_id;
+    if (!managerEmployeeId && req.user?.id && isManager && !isAdminOrHR) {
+      const emp = await prisma.employee.findFirst({
+        where: {
+          OR: [
+            { user_id: req.user.id },
+            { email: { equals: req.user.email, mode: "insensitive" } },
+            ...(req.user.employee_code ? [{ employee_id: req.user.employee_code }] : []),
+          ],
+        },
+        select: { id: true },
+      });
+      if (emp) {
+        managerEmployeeId = emp.id;
+      }
+    }
+
+    const exportWhere: Record<string, unknown> = {};
+    if (isManager && !isAdminOrHR && managerEmployeeId) {
+      exportWhere.employee = { manager_id: managerEmployeeId };
+    }
+
     const leaves = await prisma.leave.findMany({
+      where: exportWhere,
       orderBy: { created_at: "desc" },
       include: {
         employee: {

@@ -104,8 +104,26 @@ export const getEmployees = async (
     const isManager = userRole.includes("manager");
     const isAdminOrHR = userRole.includes("admin") || userRole.includes("hr");
 
-    if (isManager && !isAdminOrHR && req.user?.employee_db_id) {
-      whereClause.manager_id = req.user.employee_db_id;
+    let managerEmployeeId = req.user?.employee_db_id;
+    if (!managerEmployeeId && req.user?.id && isManager && !isAdminOrHR) {
+      const emp = await prisma.employee.findFirst({
+        where: {
+          OR: [
+            { user_id: req.user.id },
+            { email: { equals: req.user.email, mode: "insensitive" } },
+            ...(req.user.employee_code ? [{ employee_id: req.user.employee_code }] : []),
+          ],
+        },
+        select: { id: true },
+      });
+      if (emp) {
+        managerEmployeeId = emp.id;
+      }
+    }
+
+    if (isManager && !isAdminOrHR && managerEmployeeId) {
+      whereClause.manager_id = managerEmployeeId;
+      delete whereClause.manager;
     }
 
     if (andConditions.length > 0) {
@@ -231,9 +249,26 @@ export const getEmployeeStats = async (
     const isManager = userRole.includes("manager");
     const isAdminOrHR = userRole.includes("admin") || userRole.includes("hr");
 
-    const baseWhere: any = {};
-    if (isManager && !isAdminOrHR && req.user?.employee_db_id) {
-      baseWhere.manager_id = req.user.employee_db_id;
+    let managerEmployeeId = req.user?.employee_db_id;
+    if (!managerEmployeeId && req.user?.id && isManager && !isAdminOrHR) {
+      const emp = await prisma.employee.findFirst({
+        where: {
+          OR: [
+            { user_id: req.user.id },
+            { email: { equals: req.user.email, mode: "insensitive" } },
+            ...(req.user.employee_code ? [{ employee_id: req.user.employee_code }] : []),
+          ],
+        },
+        select: { id: true },
+      });
+      if (emp) {
+        managerEmployeeId = emp.id;
+      }
+    }
+
+    const baseWhere: Record<string, unknown> = {};
+    if (isManager && !isAdminOrHR && managerEmployeeId) {
+      baseWhere.manager_id = managerEmployeeId;
     }
 
     const total = await prisma.employee.count({ where: baseWhere });
@@ -797,12 +832,39 @@ export const deleteEmployee = async (
  * @param next - Next middleware delegate
  */
 export const exportEmployees = async (
-  _req: Request,
+  req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
   try {
+    const userRole = (req.user?.role || "").toLowerCase();
+    const isManager = userRole.includes("manager");
+    const isAdminOrHR = userRole.includes("admin") || userRole.includes("hr");
+
+    let managerEmployeeId = req.user?.employee_db_id;
+    if (!managerEmployeeId && req.user?.id && isManager && !isAdminOrHR) {
+      const emp = await prisma.employee.findFirst({
+        where: {
+          OR: [
+            { user_id: req.user.id },
+            { email: { equals: req.user.email, mode: "insensitive" } },
+            ...(req.user.employee_code ? [{ employee_id: req.user.employee_code }] : []),
+          ],
+        },
+        select: { id: true },
+      });
+      if (emp) {
+        managerEmployeeId = emp.id;
+      }
+    }
+
+    const exportWhere: Record<string, unknown> = {};
+    if (isManager && !isAdminOrHR && managerEmployeeId) {
+      exportWhere.manager_id = managerEmployeeId;
+    }
+
     const employees = await prisma.employee.findMany({
+      where: exportWhere,
       orderBy: { id: "asc" },
       include: {
         role_rel: true,
@@ -848,11 +910,32 @@ export const exportEmployees = async (
  * @param next - Express next middleware function
  */
 export const getEmployeeFilters = async (
-  _req: Request,
+  req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
   try {
+    const userRole = (req.user?.role || "").toLowerCase();
+    const isManager = userRole.includes("manager");
+    const isAdminOrHR = userRole.includes("admin") || userRole.includes("hr");
+
+    let managerEmployeeId = req.user?.employee_db_id;
+    if (!managerEmployeeId && req.user?.id && isManager && !isAdminOrHR) {
+      const emp = await prisma.employee.findFirst({
+        where: {
+          OR: [
+            { user_id: req.user.id },
+            { email: { equals: req.user.email, mode: "insensitive" } },
+            ...(req.user.employee_code ? [{ employee_id: req.user.employee_code }] : []),
+          ],
+        },
+        select: { id: true },
+      });
+      if (emp) {
+        managerEmployeeId = emp.id;
+      }
+    }
+
     const dbDepartments = await prisma.department.findMany({
       where: { status: "Active" },
       orderBy: { name: "asc" },
@@ -871,7 +954,13 @@ export const getEmployeeFilters = async (
       select: { id: true, name: true, start_time: true, end_time: true },
     });
 
+    const empFilterWhere: Record<string, unknown> = {};
+    if (isManager && !isAdminOrHR && managerEmployeeId) {
+      empFilterWhere.manager_id = managerEmployeeId;
+    }
+
     const dbEmployees = await prisma.employee.findMany({
+      where: empFilterWhere,
       include: {
         manager: true,
       },

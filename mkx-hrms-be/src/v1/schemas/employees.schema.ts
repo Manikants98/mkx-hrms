@@ -17,8 +17,8 @@ export const createEmployeeSchema = z.object({
     shift: z.string().optional(),
     join_date: z.string().optional(),
     status: z.string().optional(),
-    address: z.string().optional(),
-    phone: z.string().optional(),
+    address: z.string().nullable().optional(),
+    phone: z.string().nullable().optional(),
   }),
 });
 
@@ -37,8 +37,8 @@ export const updateEmployeeSchema = z.object({
     status: z.string().optional(),
     join_date: z.string().nullable().optional(),
     birth_date: z.string().nullable().optional(),
-    address: z.string().optional(),
-    phone: z.string().optional(),
+    address: z.string().nullable().optional(),
+    phone: z.string().nullable().optional(),
     avatar: z.string().nullable().optional(),
     salary_structures: z
       .array(
