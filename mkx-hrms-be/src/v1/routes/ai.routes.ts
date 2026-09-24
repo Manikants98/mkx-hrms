@@ -1,9 +1,9 @@
 import { Router } from "express";
+import { requireAuth } from "../../middlewares/auth.middleware";
 import { chatWithAssistant } from "../controllers/ai.controller";
 
 const router = Router();
 
-// Endpoint for Smart Assistant interactions
-router.post("/chat", chatWithAssistant);
+router.post("/chat", requireAuth, chatWithAssistant);
 
 export default router;
