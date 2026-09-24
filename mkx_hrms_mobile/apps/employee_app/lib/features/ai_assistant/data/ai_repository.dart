@@ -9,10 +9,15 @@ class AiRepository {
 
   /// Sends a text prompt to the Gemini-powered assistant endpoint
   /// and returns the AI-generated reply.
-  Future<String> chat(String prompt) async {
+  Future<String> chat(String prompt, {List<Map<String, String>>? history}) async {
+    final Map<String, dynamic> data = {'prompt': prompt};
+    if (history != null && history.isNotEmpty) {
+      data['history'] = history;
+    }
+    
     final response = await _client.post(
       '/ai/chat',
-      data: {'prompt': prompt},
+      data: data,
     );
 
     if (response is Map<String, dynamic>) {

@@ -57,7 +57,22 @@ class AiProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final reply = await _repo.chat(prompt);
+      // Extract the last 6 messages as context (excluding the prompt we just added)
+      final contextMessages = _messages.length > 1 
+          ? _messages.sublist(
+              _messages.length > 7 ? _messages.length - 7 : 0, 
+              _messages.length - 1,
+            )
+          : <ChatMessage>[];
+
+      final List<Map<String, String>> historyPayload = contextMessages
+          .map((msg) => {
+                'role': msg.isUser ? 'user' : 'model',
+                'text': msg.text,
+              })
+          .toList();
+
+      final reply = await _repo.chat(prompt, history: historyPayload);
       _messages.add(ChatMessage(text: reply, isUser: false));
     } catch (e) {
       _messages.add(

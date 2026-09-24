@@ -16,7 +16,11 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
  */
 export const chatWithAssistant = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { prompt, mode } = req.body as { prompt?: string; mode?: "live" | "chat" };
+    const { prompt, mode, history } = req.body as { 
+      prompt?: string; 
+      mode?: "live" | "chat";
+      history?: Array<{ role: string; text: string }>;
+    };
 
     if (!prompt) {
       res.status(400).json({ success: false, error: "Prompt is required" });
@@ -100,6 +104,9 @@ CRITICAL FORMATTING INSTRUCTIONS:
     const systemInstruction = `
 You are "Smart Assistant", an intelligent HR concierge embedded in the MKX HRMS Employee App.
 Your job is to help the employee with HR-related queries in a helpful, friendly, and concise manner.
+You must adapt your language to match the employee's prompt:
+- If the employee asks in English, reply in professional conversational English.
+- If the employee asks in Hinglish or Hindi, reply naturally in "Hinglish" (a mix of Hindi and English written in the Latin alphabet).
 ${isLiveMode ? liveModeFormatting : chatModeFormatting}
 Do NOT make up data. Only answer based on the context provided below.
 
@@ -108,9 +115,17 @@ ${contextBlock}
 --- END CONTEXT ---
     `.trim();
 
+    let finalPrompt = prompt;
+    if (history && Array.isArray(history) && history.length > 0) {
+      const historyString = history
+        .map((msg) => `${msg.role === "user" ? "Employee" : "Smart Assistant"}: ${msg.text}`)
+        .join("\n\n");
+      finalPrompt = `Previous Conversation Context:\n${historyString}\n\nEmployee's New Prompt:\n${prompt}`;
+    }
+
     const response = await ai.models.generateContent({
       model: "gemini-flash-lite-latest",
-      contents: prompt,
+      contents: finalPrompt,
       config: {
         systemInstruction,
       },

@@ -26,6 +26,7 @@ class SmartAssistantScreen extends StatefulWidget {
 class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
   final TextEditingController _inputController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  int _lastMessageCount = 0;
 
   @override
   void initState() {
@@ -42,15 +43,18 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
     super.dispose();
   }
 
-  /// Smoothly scrolls the message list to the bottom after the next frame.
-  void _scrollToBottom() {
+  /// Smoothly scrolls or jumps the message list to the latest message.
+  void _scrollToBottom({bool animate = true}) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
+      if (!_scrollController.hasClients) return;
+      if (animate) {
         _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
+          0.0,
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
+      } else {
+        _scrollController.jumpTo(0.0);
       }
     });
   }
@@ -93,20 +97,31 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
     final theme = M3ETheme.of(context);
     final colorScheme = theme.colorScheme;
 
+    if (!ai.hasMessages) {
+      _lastMessageCount = 0;
+    } else if (ai.messages.length != _lastMessageCount) {
+      _lastMessageCount = ai.messages.length;
+      _scrollToBottom(animate: true);
+    }
+
     return Scaffold(
       backgroundColor: colorScheme.surface,
       resizeToAvoidBottomInset: true,
       appBar: _buildAppBar(ai, colorScheme),
       body: SafeArea(
-        bottom: false,
+        bottom: true,
         child: Column(
           children: [
             Expanded(
               child: ai.isFetchingHistory
                   ? Center(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        color: colorScheme.primary,
+                      child: SizedBox(
+                        width: 44,
+                        height: 44,
+                        child: M3EProgressIndicator.circularWavy(
+                          strokeWidth: 3,
+                          color: colorScheme.primary,
+                        ),
                       ),
                     )
                   : ai.hasMessages
@@ -413,26 +428,31 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
     );
   }
 
-  /// Screen 3 — Scrollable conversation message list.
+  /// Screen 3 — Scrollable conversation message list (anchored to latest messages).
   Widget _buildMessageList(AiProvider ai, M3EColorScheme colorScheme) {
     return ListView.builder(
       controller: _scrollController,
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      reverse: true,
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
       itemCount: ai.messages.length,
-      itemBuilder: (context, index) =>
-          _buildMessageItem(ai.messages[index], colorScheme),
+      itemBuilder: (context, index) {
+        final message = ai.messages[ai.messages.length - 1 - index];
+        return _buildMessageItem(message, colorScheme);
+      },
     );
   }
 
   /// Renders a user bubble or AI markdown card (with optional waveform for voice).
   Widget _buildMessageItem(ChatMessage msg, M3EColorScheme colorScheme) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+
     if (msg.isUser) {
       return Align(
         alignment: Alignment.centerRight,
         child: Container(
           margin: const EdgeInsets.only(bottom: 12),
           constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.78,
+            maxWidth: screenWidth * 0.78,
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
@@ -486,7 +506,7 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.86,
+          maxWidth: screenWidth * 0.86,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -630,7 +650,7 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
               SizedBox(
                 width: 14,
                 height: 14,
-                child: CircularProgressIndicator(
+                child: M3EProgressIndicator.circularWavy(
                   strokeWidth: 2,
                   color: colorScheme.primary,
                 ),
@@ -667,7 +687,7 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
         ),
       ),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.only(left: 12, right: 8, top: 2, bottom: 2),
         decoration: BoxDecoration(
           color: colorScheme.surfaceContainer,
           borderRadius: BorderRadius.circular(28),
@@ -675,22 +695,6 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
         ),
         child: Row(
           children: [
-            IconButton(
-              icon: Icon(
-                Icons.attach_file_rounded,
-                color: colorScheme.onSurfaceVariant,
-                size: 20,
-              ),
-              onPressed: () {},
-            ),
-            IconButton(
-              icon: Icon(
-                Icons.tune_rounded,
-                color: colorScheme.onSurfaceVariant,
-                size: 20,
-              ),
-              onPressed: () {},
-            ),
             Expanded(
               child: Theme(
                 data: Theme.of(context).copyWith(

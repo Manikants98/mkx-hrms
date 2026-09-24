@@ -87,7 +87,7 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
   /// Sets up the Text-To-Speech engine.
   Future<void> _initTts() async {
     try {
-      await _flutterTts.setLanguage("en-US");
+      await _flutterTts.setLanguage("en-IN");
       await _flutterTts.setSpeechRate(0.48);
       await _flutterTts.setVolume(1.0);
       await _flutterTts.setPitch(1.0);
@@ -173,7 +173,7 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
           partialResults: true,
           listenFor: const Duration(seconds: 30),
           pauseFor: const Duration(seconds: 3),
-          localeId: 'en_US',
+          localeId: 'en_IN',
         ),
       );
       if (mounted) setState(() {});
@@ -441,10 +441,10 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
                 _buildTopBar(colorScheme),
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         if (_userSpokenText.isNotEmpty) ...[
                           Container(
@@ -618,9 +618,9 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
             ),
           ] else if (isThinking) ...[
             SizedBox(
-              width: 10,
-              height: 10,
-              child: CircularProgressIndicator(
+              width: 12,
+              height: 12,
+              child: M3EProgressIndicator.circular(
                 strokeWidth: 2,
                 color: colorScheme.onPrimary,
               ),
@@ -666,7 +666,7 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
         text = _speechToText.isListening
             ? "Listening to your voice..."
             : _speechEnabled
-                ? "Tap mic to speak or select a chip"
+                ? "Tap mic to speak"
                 : "Microphone permission needed";
         break;
       case LiveAssistantState.thinking:
@@ -761,7 +761,7 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
       child: SizedBox(
         height: 84,
         child: Row(
-          spacing: 40,
+          spacing: 60,
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [

@@ -24,3 +24,18 @@ plugins {
 }
 
 include(":app")
+
+gradle.beforeProject {
+    if (name == "flutter_tts") {
+        val buildFile = buildFile
+        if (buildFile != null && buildFile.exists()) {
+            var content = buildFile.readText()
+            if (content.contains("apply plugin: 'kotlin-android'") || content.contains("apply plugin: \"kotlin-android\"")) {
+                content = content.replace("apply plugin: 'kotlin-android'", "// apply plugin: 'kotlin-android'")
+                content = content.replace("apply plugin: \"kotlin-android\"", "// apply plugin: \"kotlin-android\"")
+                content = content + "\n\nandroid { compileSdkVersion 34 }\n"
+                buildFile.writeText(content)
+            }
+        }
+    }
+}
