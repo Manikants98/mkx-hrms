@@ -95,6 +95,26 @@ class DioClient {
     }
   }
 
+  /// Perform a DELETE request
+  Future<dynamic> delete(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+  }) async {
+    try {
+      final response = await _dio.delete(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+      );
+      return _extractData(response);
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
+
   dynamic _extractData(Response response) {
     if (response.data is Map<String, dynamic>) {
       final map = response.data as Map<String, dynamic>;

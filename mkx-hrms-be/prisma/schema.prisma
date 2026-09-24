@@ -123,6 +123,7 @@ model Employee {
   notification_preferences NotificationPreference[]
   candidate                Candidate?
   interviews_conducted     CandidateInterview[]
+  ai_chats                 AiChatHistory[]
 
   @@map("employees")
 }
@@ -473,4 +474,16 @@ model CandidateInterview {
   interviewer    Employee? @relation(fields: [interviewer_id], references: [id], onDelete: SetNull)
 
   @@map("candidate_interviews")
+}
+
+model AiChatHistory {
+  id          Int      @id @default(autoincrement())
+  employee_id Int
+  prompt      String   @db.Text
+  response    String   @db.Text
+  created_at  DateTime @default(now())
+
+  employee    Employee @relation(fields: [employee_id], references: [id], onDelete: Cascade)
+
+  @@map("ai_chat_history")
 }

@@ -10,6 +10,7 @@ import 'package:mkx_core/theme/app_theme_settings.dart';
 import 'package:mkx_core/widgets/splash_screen.dart';
 import 'package:provider/provider.dart';
 
+import 'features/ai_assistant/state/ai_provider.dart';
 import 'features/attendance/state/attendance_provider.dart';
 import 'features/leaves/state/leaves_provider.dart';
 import 'features/navigation/screens/main_shell_screen.dart';
@@ -52,6 +53,7 @@ class _MkxHrmsAppState extends State<MkxHrmsApp> {
           ChangeNotifierProvider(create: (_) => AttendanceProvider()),
           ChangeNotifierProvider(create: (_) => LeavesProvider()),
           ChangeNotifierProvider(create: (_) => PayrollProvider()),
+          ChangeNotifierProvider(create: (_) => AiProvider()),
         ],
         child: AppThemeScope(
           settings: _themeSettings,

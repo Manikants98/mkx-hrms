@@ -100,6 +100,16 @@ ${contextBlock}
 
     const text = response.text ?? "";
 
+    if (user?.employee_db_id) {
+      await prisma.aiChatHistory.create({
+        data: {
+          employee_id: user.employee_db_id,
+          prompt,
+          response: text,
+        },
+      });
+    }
+
     res.status(200).json({ success: true, message: text });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error occurred";
@@ -110,3 +120,64 @@ ${contextBlock}
     });
   }
 };
+
+/**
+ * Controller to fetch chat history for the authenticated employee.
+ *
+ * @param req - Express request with `req.user`
+ * @param res - Express response
+ */
+export const getChatHistory = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const user = req.user;
+    if (!user?.employee_db_id) {
+      res.status(200).json({ success: true, history: [] });
+      return;
+    }
+
+    const history = await prisma.aiChatHistory.findMany({
+      where: { employee_id: user.employee_db_id },
+      orderBy: { created_at: "asc" },
+      take: 50,
+    });
+
+    res.status(200).json({ success: true, history });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error occurred";
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch chat history",
+      details: message,
+    });
+  }
+};
+
+/**
+ * Controller to clear chat history for the authenticated employee.
+ *
+ * @param req - Express request with `req.user`
+ * @param res - Express response
+ */
+export const clearChatHistory = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const user = req.user;
+    if (!user?.employee_db_id) {
+      res.status(200).json({ success: true });
+      return;
+    }
+
+    await prisma.aiChatHistory.deleteMany({
+      where: { employee_id: user.employee_db_id },
+    });
+
+    res.status(200).json({ success: true, message: "Chat history cleared" });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error occurred";
+    res.status(500).json({
+      success: false,
+      error: "Failed to clear chat history",
+      details: message,
+    });
+  }
+};
+
