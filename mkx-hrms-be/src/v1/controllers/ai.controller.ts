@@ -61,7 +61,7 @@ export const chatWithAssistant = async (req: Request, res: Response): Promise<vo
         const leaveInfo = employee.leave_balances
           .map(
             (lb) =>
-              `${lb.leave_type_rel.name}: ${lb.remaining} remaining (${lb.used} used / ${lb.allocated} allocated)`,
+              `${lb.leave_type_rel?.name ?? 'Leave'}: ${lb.remaining} remaining (${lb.used} used / ${lb.allocated} allocated)`,
           )
           .join("\n");
 
@@ -245,12 +245,12 @@ export const getDashboardInsights = async (req: Request, res: Response): Promise
     }
 
     const leaveInfo = employee.leave_balances
-      .map((lb) => `${lb.leave_type_rel.name}: ${lb.remaining} remaining`)
+      .map((lb) => `${lb.leave_type_rel?.name ?? 'Leave'}: ${lb.remaining} remaining`)
       .join(", ");
     
-    const lateDays = employee.attendance.filter(a => a.status.toUpperCase() === 'LATE').length;
-    const absentDays = employee.attendance.filter(a => a.status.toUpperCase() === 'ABSENT').length;
-    const presentDays = employee.attendance.filter(a => a.status.toUpperCase() === 'PRESENT').length;
+    const lateDays = employee.attendance.filter(a => a.status?.toUpperCase() === 'LATE').length;
+    const absentDays = employee.attendance.filter(a => a.status?.toUpperCase() === 'ABSENT').length;
+    const presentDays = employee.attendance.filter(a => a.status?.toUpperCase() === 'PRESENT').length;
 
     const contextBlock = `
 Leave Balances: ${leaveInfo || "None"}
@@ -282,7 +282,8 @@ No markdown formatting, just pure JSON.
     const text = response.text ?? "{}";
     let insights = { summary: "Have a great day at work!", suggestions: [] };
     try {
-      insights = JSON.parse(text);
+      const cleanJson = text.replace(/```json/gi, "").replace(/```/g, "").trim();
+      insights = JSON.parse(cleanJson);
     } catch (e) {
       // fallback if JSON parse fails
     }
