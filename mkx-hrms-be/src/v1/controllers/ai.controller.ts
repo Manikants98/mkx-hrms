@@ -16,8 +16,8 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
  */
 export const chatWithAssistant = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { prompt, mode, history } = req.body as { 
-      prompt?: string; 
+    const { prompt, mode, history } = req.body as {
+      prompt?: string;
       mode?: "live" | "chat";
       history?: Array<{ role: string; text: string }>;
     };
@@ -61,7 +61,7 @@ export const chatWithAssistant = async (req: Request, res: Response): Promise<vo
         const leaveInfo = employee.leave_balances
           .map(
             (lb) =>
-              `${lb.leave_type_rel?.name ?? 'Leave'}: ${lb.remaining} remaining (${lb.used} used / ${lb.allocated} allocated)`,
+              `${lb.leave_type_rel?.name ?? "Leave"}: ${lb.remaining} remaining (${lb.used} used / ${lb.allocated} allocated)`,
           )
           .join("\n");
 
@@ -224,7 +224,9 @@ export const getDashboardInsights = async (req: Request, res: Response): Promise
   try {
     const user = req.user;
     if (!user?.employee_db_id) {
-      res.status(200).json({ success: true, insights: { summary: "No data available.", suggestions: [] } });
+      res
+        .status(200)
+        .json({ success: true, insights: { summary: "No data available.", suggestions: [] } });
       return;
     }
 
@@ -240,17 +242,23 @@ export const getDashboardInsights = async (req: Request, res: Response): Promise
     });
 
     if (!employee) {
-      res.status(200).json({ success: true, insights: { summary: "No data available.", suggestions: [] } });
+      res
+        .status(200)
+        .json({ success: true, insights: { summary: "No data available.", suggestions: [] } });
       return;
     }
 
     const leaveInfo = employee.leave_balances
-      .map((lb) => `${lb.leave_type_rel?.name ?? 'Leave'}: ${lb.remaining} remaining`)
+      .map((lb) => `${lb.leave_type_rel?.name ?? "Leave"}: ${lb.remaining} remaining`)
       .join(", ");
-    
-    const lateDays = employee.attendance.filter(a => a.status?.toUpperCase() === 'LATE').length;
-    const absentDays = employee.attendance.filter(a => a.status?.toUpperCase() === 'ABSENT').length;
-    const presentDays = employee.attendance.filter(a => a.status?.toUpperCase() === 'PRESENT').length;
+
+    const lateDays = employee.attendance.filter((a) => a.status?.toUpperCase() === "LATE").length;
+    const absentDays = employee.attendance.filter(
+      (a) => a.status?.toUpperCase() === "ABSENT",
+    ).length;
+    const presentDays = employee.attendance.filter(
+      (a) => a.status?.toUpperCase() === "PRESENT",
+    ).length;
 
     const contextBlock = `
 Leave Balances: ${leaveInfo || "None"}
@@ -260,6 +268,7 @@ Last 30 Days Attendance: ${presentDays} Present, ${lateDays} Late, ${absentDays}
     const systemInstruction = `
 You are an AI Assistant for an HR app.
 Analyze the employee's data and provide a short personalized summary and 1-3 suggestions (reminders, warnings, or tips).
+If there is no significant HR data to report on, or just as a friendly touch, provide general workplace wellness tips (like "Don't forget to drink 4 liters of water today!", "Take a quick 5-minute stretch break", or ergonomic tips) as suggestions.
 Output strictly in JSON format matching this schema:
 {
   "summary": "Short 1-2 sentence friendly summary of their current status (e.g. attendance performance, leaves available).",
@@ -282,7 +291,10 @@ No markdown formatting, just pure JSON.
     const text = response.text ?? "{}";
     let insights = { summary: "Have a great day at work!", suggestions: [] };
     try {
-      const cleanJson = text.replace(/```json/gi, "").replace(/```/g, "").trim();
+      const cleanJson = text
+        .replace(/```json/gi, "")
+        .replace(/```/g, "")
+        .trim();
       insights = JSON.parse(cleanJson);
     } catch (e) {
       // fallback if JSON parse fails
@@ -298,4 +310,3 @@ No markdown formatting, just pure JSON.
     });
   }
 };
-
