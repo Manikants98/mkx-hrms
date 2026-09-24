@@ -13,6 +13,7 @@ import blogsRoutes from "./blogs.routes";
 import mastersRoutes from "./masters.routes";
 import jobPostingsRoutes from "./job-postings.routes";
 import contactRoutes from "./contact.routes";
+import aiRoutes from "./ai.routes";
 
 const router = Router();
 
@@ -32,5 +33,6 @@ router.use("/blogs", blogsRoutes);
 router.use("/masters", mastersRoutes);
 router.use("/job-postings", jobPostingsRoutes);
 router.use("/contact", contactRoutes);
+router.use("/ai", aiRoutes);
 
 export default router;

@@ -63,8 +63,8 @@ class _LeavesScreenState extends State<LeavesScreen> {
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: M3EButton(
-              style: M3EButtonStyle.outlined,
-              size: M3EButtonSize.sm,
+              style: M3EButtonStyle.elevated,
+              size: M3EButtonSize.xs,
               onPressed: _openApplyModal,
               child: const Row(
                 children: [

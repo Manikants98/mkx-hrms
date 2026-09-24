@@ -6,6 +6,7 @@ import '../../attendance/screens/attendance_history_screen.dart';
 import '../../leaves/screens/leaves_screen.dart';
 import '../../payroll/screens/payroll_screen.dart';
 import '../../profile/screens/profile_screen.dart';
+import '../../ai_assistant/widgets/smart_assistant_sheet.dart';
 
 /// Gmail-style Bottom Navigation Shell housing the 4 primary employee modules.
 /// Uses Material 3's NavigationBar with a pill-shaped selection indicator,
@@ -70,6 +71,18 @@ class _MainShellScreenState extends State<MainShellScreen> {
         switchInCurve: Curves.easeOut,
         switchOutCurve: Curves.easeIn,
         child: _screens[_currentIndex],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (context) => const SmartAssistantSheet(),
+          );
+        },
+        backgroundColor: colorScheme.primary,
+        child: Icon(Icons.auto_awesome, color: colorScheme.onPrimary),
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
