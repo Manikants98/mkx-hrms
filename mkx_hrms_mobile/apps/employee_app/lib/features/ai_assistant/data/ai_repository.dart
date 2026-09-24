@@ -45,4 +45,15 @@ class AiRepository {
   Future<void> clearHistory() async {
     await _client.delete('/ai/history');
   }
+
+  /// Fetches AI-generated insights for the dashboard
+  Future<Map<String, dynamic>?> getDashboardInsights() async {
+    try {
+      final response = await _client.get('/ai/dashboard-insights');
+      if (response is Map<String, dynamic> && response['success'] == true) {
+        return response['insights'] as Map<String, dynamic>?;
+      }
+    } catch (_) {}
+    return null;
+  }
 }

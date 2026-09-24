@@ -14,12 +14,16 @@ class AiProvider extends ChangeNotifier {
   bool _isLoading = false;
   bool _isFetchingHistory = true;
   String? _errorMessage;
+  Map<String, dynamic>? _dashboardInsights;
+  bool _isLoadingInsights = false;
 
   List<ChatMessage> get messages => List.unmodifiable(_messages);
   bool get isLoading => _isLoading;
   bool get isFetchingHistory => _isFetchingHistory;
   String? get errorMessage => _errorMessage;
   bool get hasMessages => _messages.isNotEmpty;
+  Map<String, dynamic>? get dashboardInsights => _dashboardInsights;
+  bool get isLoadingInsights => _isLoadingInsights;
 
   /// Loads stored conversation history from the server on first open.
   Future<void> loadHistory() async {
@@ -108,6 +112,19 @@ class AiProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       _errorMessage = e.toString().replaceAll('Exception: ', '');
+      notifyListeners();
+    }
+  }
+
+  /// Loads AI dashboard insights
+  Future<void> loadDashboardInsights() async {
+    _isLoadingInsights = true;
+    notifyListeners();
+    
+    try {
+      _dashboardInsights = await _repo.getDashboardInsights();
+    } catch (_) {} finally {
+      _isLoadingInsights = false;
       notifyListeners();
     }
   }

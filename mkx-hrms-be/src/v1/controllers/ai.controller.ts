@@ -214,3 +214,87 @@ export const clearChatHistory = async (req: Request, res: Response): Promise<voi
   }
 };
 
+/**
+ * Controller to fetch AI-generated dashboard insights (reminders, warnings, summary).
+ *
+ * @param req - Express request with `req.user`
+ * @param res - Express response
+ */
+export const getDashboardInsights = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const user = req.user;
+    if (!user?.employee_db_id) {
+      res.status(200).json({ success: true, insights: { summary: "No data available.", suggestions: [] } });
+      return;
+    }
+
+    const employee = await prisma.employee.findUnique({
+      where: { id: user.employee_db_id },
+      include: {
+        leave_balances: {
+          include: { leave_type_rel: { select: { name: true } } },
+          where: { year: new Date().getFullYear() },
+        },
+        attendance: { take: 30, orderBy: { date: "desc" } },
+      },
+    });
+
+    if (!employee) {
+      res.status(200).json({ success: true, insights: { summary: "No data available.", suggestions: [] } });
+      return;
+    }
+
+    const leaveInfo = employee.leave_balances
+      .map((lb) => `${lb.leave_type_rel.name}: ${lb.remaining} remaining`)
+      .join(", ");
+    
+    const lateDays = employee.attendance.filter(a => a.status === 'LATE').length;
+    const absentDays = employee.attendance.filter(a => a.status === 'ABSENT').length;
+    const presentDays = employee.attendance.filter(a => a.status === 'PRESENT').length;
+
+    const contextBlock = `
+Leave Balances: ${leaveInfo || "None"}
+Last 30 Days Attendance: ${presentDays} Present, ${lateDays} Late, ${absentDays} Absent.
+`;
+
+    const systemInstruction = `
+You are an AI Assistant for an HR app.
+Analyze the employee's data and provide a short personalized summary and 1-3 suggestions (reminders, warnings, or tips).
+Output strictly in JSON format matching this schema:
+{
+  "summary": "Short 1-2 sentence friendly summary of their current status (e.g. attendance performance, leaves available).",
+  "suggestions": [
+    { "type": "reminder" | "warning" | "info" | "success", "message": "The suggestion text" }
+  ]
+}
+No markdown formatting, just pure JSON.
+`.trim();
+
+    const response = await ai.models.generateContent({
+      model: "gemini-flash-lite-latest",
+      contents: `Employee Data:\n${contextBlock}`,
+      config: {
+        systemInstruction,
+        responseMimeType: "application/json",
+      },
+    });
+
+    const text = response.text ?? "{}";
+    let insights = { summary: "Have a great day at work!", suggestions: [] };
+    try {
+      insights = JSON.parse(text);
+    } catch (e) {
+      // fallback if JSON parse fails
+    }
+
+    res.status(200).json({ success: true, insights });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error occurred";
+    res.status(500).json({
+      success: false,
+      error: "Failed to generate AI insights",
+      details: message,
+    });
+  }
+};
+

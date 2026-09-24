@@ -11,6 +11,7 @@ import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
 import 'package:provider/provider.dart';
 
+import '../../ai_assistant/state/ai_provider.dart';
 import '../../leaves/state/leaves_provider.dart';
 import '../../leaves/widgets/apply_leave_bottom_sheet.dart';
 import '../state/attendance_provider.dart';
@@ -46,6 +47,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         employeeId: auth.currentUser?.employeeDbId,
         employeeCode: auth.currentUser?.employeeId,
       ),
+      context.read<AiProvider>().loadDashboardInsights(),
     ]);
   }
 
@@ -120,6 +122,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final auth = context.watch<AuthProvider>();
     final attendance = context.watch<AttendanceProvider>();
     final leaves = context.watch<LeavesProvider>();
+    final ai = context.watch<AiProvider>();
     final user = auth.currentUser;
 
     final totalRemainingLeaves = leaves.balances?.list.isNotEmpty == true
@@ -248,7 +251,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 16),
+              if (ai.isLoadingInsights)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24),
+                  child: Center(
+                    child: SizedBox(width: 30, height: 30, child: M3EProgressIndicator.circular()),
+                  ),
+                )
+              else if (ai.dashboardInsights != null)
+                _buildAiInsightsSection(ai.dashboardInsights!, colorScheme: M3ETheme.of(context).colorScheme),
+              const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
                 child: Padding(
@@ -399,4 +412,112 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
+
+  Widget _buildAiInsightsSection(Map<String, dynamic> insights, {required M3EColorScheme colorScheme}) {
+    final summary = insights['summary'] as String?;
+    final suggestions = insights['suggestions'] as List<dynamic>? ?? [];
+
+    if (summary == null && suggestions.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Row(
+            children: [
+              Icon(Icons.auto_awesome_rounded, size: 14, color: colorScheme.primary),
+              const SizedBox(width: 6),
+              Text(
+                'SMART INSIGHTS',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.3,
+                  color: colorScheme.primary,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                colorScheme.primaryContainer.withValues(alpha: 0.6),
+                colorScheme.surfaceContainerHigh,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.5)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (summary != null)
+                Text(
+                  summary,
+                  style: TextStyle(
+                    fontSize: 13,
+                    height: 1.4,
+                    fontWeight: FontWeight.w500,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+              if (summary != null && suggestions.isNotEmpty)
+                const SizedBox(height: 12),
+              ...suggestions.map((s) {
+                final type = s['type']?.toString() ?? 'info';
+                final msg = s['message']?.toString() ?? '';
+                
+                IconData icon;
+                Color iconColor;
+                
+                if (type == 'warning') {
+                  icon = Icons.warning_amber_rounded;
+                  iconColor = AppColors.warning;
+                } else if (type == 'reminder') {
+                  icon = Icons.access_alarms_rounded;
+                  iconColor = AppColors.info;
+                } else if (type == 'success') {
+                  icon = Icons.check_circle_outline_rounded;
+                  iconColor = AppColors.success;
+                } else {
+                  icon = Icons.info_outline_rounded;
+                  iconColor = colorScheme.primary;
+                }
+
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(icon, size: 16, color: iconColor),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          msg,
+                          style: TextStyle(
+                            fontSize: 12,
+                            height: 1.4,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 }
+
