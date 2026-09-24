@@ -1,23 +1,20 @@
 import { Request, Response } from "express";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import { prisma } from "../../libraries/prisma";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 /**
  * Controller to handle Smart Assistant chat powered by Gemini.
- * It reads the authenticated user from `req.user`, fetches their live employee
- * context (name, department, leave balances, last payroll) from the database,
+ * Reads the authenticated user from `req.user`, fetches their live employee
+ * context (name, department, leave balances, latest payroll) from the database,
  * and injects that context into the Gemini system instruction so the AI can
  * answer personal HR questions accurately.
  *
  * @param req - Express request with `req.user` populated by `requireAuth`
  * @param res - Express response
  */
-export const chatWithAssistant = async (
-  req: Request,
-  res: Response,
-): Promise<void> => {
+export const chatWithAssistant = async (req: Request, res: Response): Promise<void> => {
   try {
     const { prompt } = req.body as { prompt?: string };
 
@@ -29,48 +26,45 @@ export const chatWithAssistant = async (
     const user = req.user;
     let contextBlock = "The employee's account details are not available.";
 
-    if (user) {
-      const employeeId = user.employee_db_id;
-
-      if (employeeId) {
-        const employee = await prisma.employee.findUnique({
-          where: { id: employeeId },
-          include: {
-            department_rel: { select: { name: true } },
-            role_rel: { select: { name: true } },
-            shift_rel: { select: { name: true } },
-            leave_balances: {
-              include: { leave_type_rel: { select: { name: true } } },
-              where: { year: new Date().getFullYear() },
-            },
-            payrolls: {
-              orderBy: [{ year: "desc" }, { month: "desc" }],
-              take: 1,
-              select: {
-                month: true,
-                year: true,
-                net_pay: true,
-                gross_pay: true,
-                total_deductions: true,
-              },
+    if (user?.employee_db_id) {
+      const employee = await prisma.employee.findUnique({
+        where: { id: user.employee_db_id },
+        include: {
+          department_rel: { select: { name: true } },
+          role_rel: { select: { name: true } },
+          shift_rel: { select: { name: true } },
+          leave_balances: {
+            include: { leave_type_rel: { select: { name: true } } },
+            where: { year: new Date().getFullYear() },
+          },
+          payrolls: {
+            orderBy: [{ year: "desc" }, { month: "desc" }],
+            take: 1,
+            select: {
+              month: true,
+              year: true,
+              net_pay: true,
+              gross_pay: true,
+              total_deductions: true,
             },
           },
-        });
+        },
+      });
 
-        if (employee) {
-          const leaveInfo = employee.leave_balances
-            .map(
-              (lb) =>
-                `- ${lb.leave_type_rel.name}: ${lb.remaining} remaining (${lb.used} used / ${lb.allocated} allocated)`,
-            )
-            .join("\n");
+      if (employee) {
+        const leaveInfo = employee.leave_balances
+          .map(
+            (lb) =>
+              `- ${lb.leave_type_rel.name}: ${lb.remaining} remaining (${lb.used} used / ${lb.allocated} allocated)`,
+          )
+          .join("\n");
 
-          const lastPayroll = employee.payrolls[0];
-          const payrollInfo = lastPayroll
-            ? `Gross: ₹${lastPayroll.gross_pay}, Deductions: ₹${lastPayroll.total_deductions}, Net: ₹${lastPayroll.net_pay} (Month: ${lastPayroll.month}/${lastPayroll.year})`
-            : "No payroll record available.";
+        const lastPayroll = employee.payrolls[0];
+        const payrollInfo = lastPayroll
+          ? `Gross: ₹${lastPayroll.gross_pay}, Deductions: ₹${lastPayroll.total_deductions}, Net: ₹${lastPayroll.net_pay} (Month: ${lastPayroll.month}/${lastPayroll.year})`
+          : "No payroll record available.";
 
-          contextBlock = `
+        contextBlock = `
 Employee Name: ${employee.name}
 Employee ID: ${employee.employee_id}
 Email: ${user.email}
@@ -85,14 +79,13 @@ ${leaveInfo || "No leave balances found."}
 
 Latest Payroll:
 ${payrollInfo}
-          `.trim();
-        }
+        `.trim();
       }
     }
 
     const systemInstruction = `
 You are "Smart Assistant", an intelligent HR concierge embedded in the MKX HRMS Employee App.
-Your job is to help the employee with HR-related queries and actions in a helpful, friendly, and concise manner.
+Your job is to help the employee with HR-related queries in a helpful, friendly, and concise manner.
 Keep responses brief since they are shown on a mobile app. Use markdown formatting (bold, bullet points) where it helps readability.
 Do NOT make up data. Only answer based on the context provided below.
 
@@ -101,18 +94,19 @@ ${contextBlock}
 --- END CONTEXT ---
     `.trim();
 
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash-lite",
-      systemInstruction,
+    const response = await ai.models.generateContent({
+      model: "gemini-flash-lite-latest",
+      contents: prompt,
+      config: {
+        systemInstruction,
+      },
     });
 
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
+    const text = response.text ?? "";
 
     res.status(200).json({ success: true, message: text });
   } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : "Unknown error occurred";
+    const message = error instanceof Error ? error.message : "Unknown error occurred";
     res.status(500).json({
       success: false,
       error: "Failed to generate AI response",
