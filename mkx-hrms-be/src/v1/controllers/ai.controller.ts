@@ -32,7 +32,7 @@ export const chatWithAssistant = async (req: Request, res: Response): Promise<vo
         include: {
           department_rel: { select: { name: true } },
           role_rel: { select: { name: true } },
-          shift_rel: { select: { name: true } },
+          shift_rel: { select: { name: true, start_time: true, end_time: true } },
           leave_balances: {
             include: { leave_type_rel: { select: { name: true } } },
             where: { year: new Date().getFullYear() },
@@ -40,14 +40,16 @@ export const chatWithAssistant = async (req: Request, res: Response): Promise<vo
           payrolls: {
             orderBy: [{ year: "desc" }, { month: "desc" }],
             take: 1,
-            select: {
-              month: true,
-              year: true,
-              net_pay: true,
-              gross_pay: true,
-              total_deductions: true,
-            },
           },
+          attendance: { take: 31, orderBy: { date: "desc" } }, // Last 14 days of attendance
+          leaves: { take: 10, orderBy: { created_at: "desc" } }, // Last 10 leave requests
+          salary_structures: true,
+          manager: { select: { name: true, email: true } },
+          subordinates: {
+            select: { name: true, email: true, department_rel: { select: { name: true } } },
+          },
+          user: { select: { email: true, status: true, timezone: true } },
+          notification_preferences: true,
         },
       });
 
@@ -65,14 +67,8 @@ export const chatWithAssistant = async (req: Request, res: Response): Promise<vo
           : "No payroll record available.";
 
         contextBlock = `
-Employee Name: ${employee.name}
-Employee ID: ${employee.employee_id}
-Email: ${user.email}
-Department: ${employee.department_rel?.name ?? "N/A"}
-Role: ${employee.role_rel?.name ?? user.role}
-Shift: ${employee.shift_rel?.name ?? "N/A"}
-Join Date: ${employee.join_date.toISOString().split("T")[0]}
-Status: ${employee.status}
+Employee Full Record (JSON):
+${JSON.stringify(employee, null, 2)}
 
 Leave Balances (${new Date().getFullYear()}):
 ${leaveInfo || "No leave balances found."}
