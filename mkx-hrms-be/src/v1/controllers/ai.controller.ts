@@ -248,9 +248,9 @@ export const getDashboardInsights = async (req: Request, res: Response): Promise
       .map((lb) => `${lb.leave_type_rel.name}: ${lb.remaining} remaining`)
       .join(", ");
     
-    const lateDays = employee.attendance.filter(a => a.status === 'LATE').length;
-    const absentDays = employee.attendance.filter(a => a.status === 'ABSENT').length;
-    const presentDays = employee.attendance.filter(a => a.status === 'PRESENT').length;
+    const lateDays = employee.attendance.filter(a => a.status.toUpperCase() === 'LATE').length;
+    const absentDays = employee.attendance.filter(a => a.status.toUpperCase() === 'ABSENT').length;
+    const presentDays = employee.attendance.filter(a => a.status.toUpperCase() === 'PRESENT').length;
 
     const contextBlock = `
 Leave Balances: ${leaveInfo || "None"}

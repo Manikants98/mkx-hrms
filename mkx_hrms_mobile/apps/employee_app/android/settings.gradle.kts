@@ -30,10 +30,26 @@ gradle.beforeProject {
         val buildFile = buildFile
         if (buildFile != null && buildFile.exists()) {
             var content = buildFile.readText()
-            if (content.contains("apply plugin: 'kotlin-android'") || content.contains("apply plugin: \"kotlin-android\"")) {
+            var modified = false
+            
+            if (content.contains("apply plugin: 'kotlin-android'") && !content.contains("// apply plugin: 'kotlin-android'")) {
                 content = content.replace("apply plugin: 'kotlin-android'", "// apply plugin: 'kotlin-android'")
+                modified = true
+            }
+            if (content.contains("apply plugin: \"kotlin-android\"") && !content.contains("// apply plugin: \"kotlin-android\"")) {
                 content = content.replace("apply plugin: \"kotlin-android\"", "// apply plugin: \"kotlin-android\"")
+                modified = true
+            }
+            if (content.contains("kotlinOptions")) {
+                content = content.replace(Regex("kotlinOptions\\s*\\{[\\s\\S]*?\\}"), "")
+                modified = true
+            }
+            if (!content.contains("compileSdkVersion 34")) {
                 content = content + "\n\nandroid { compileSdkVersion 34 }\n"
+                modified = true
+            }
+            
+            if (modified) {
                 buildFile.writeText(content)
             }
         }
