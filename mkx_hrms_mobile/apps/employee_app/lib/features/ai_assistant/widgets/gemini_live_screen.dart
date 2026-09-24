@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:mkx_core/network/dio_client.dart';
+import 'package:speech_to_text/speech_recognition_result.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 
 import '../models/ai_chat_model.dart';
 
@@ -30,7 +33,12 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
     with TickerProviderStateMixin {
   late final AnimationController _pulseController;
   late final AnimationController _soundWaveController;
+  final SpeechToText _speechToText = SpeechToText();
+  final FlutterTts _flutterTts = FlutterTts();
+
   LiveAssistantState _state = LiveAssistantState.listening;
+  bool _speechEnabled = false;
+  bool _ttsInitialized = false;
 
   String _currentTranscript = "";
   String _userSpokenText = "";
@@ -59,12 +67,70 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
     )..repeat(reverse: true);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initVoiceEngines();
+    });
+  }
+
+  /// Initializes Text-To-Speech and Speech-To-Text engines.
+  Future<void> _initVoiceEngines() async {
+    await _initTts();
+    await _initSpeech();
+    if (mounted) {
       if (widget.initialPrompt != null && widget.initialPrompt!.isNotEmpty) {
         _handleVoiceQuery(widget.initialPrompt!);
       } else {
         _startListeningCycle();
       }
-    });
+    }
+  }
+
+  /// Sets up the Text-To-Speech engine.
+  Future<void> _initTts() async {
+    try {
+      await _flutterTts.setLanguage("en-US");
+      await _flutterTts.setSpeechRate(0.48);
+      await _flutterTts.setVolume(1.0);
+      await _flutterTts.setPitch(1.0);
+
+      _flutterTts.setCompletionHandler(() {
+        if (mounted && _state == LiveAssistantState.speaking) {
+          _startListeningCycle();
+        }
+      });
+
+      _flutterTts.setErrorHandler((dynamic msg) {
+        if (mounted && _state == LiveAssistantState.speaking) {
+          _startListeningCycle();
+        }
+      });
+
+      _ttsInitialized = true;
+    } catch (_) {
+      _ttsInitialized = false;
+    }
+  }
+
+  /// Sets up Speech-To-Text microphone engine and requests permissions.
+  Future<void> _initSpeech() async {
+    try {
+      _speechEnabled = await _speechToText.initialize(
+        onError: (val) {
+          if (mounted && _state == LiveAssistantState.listening) {
+            setState(() {});
+          }
+        },
+        onStatus: (status) {
+          if (status == 'notListening' || status == 'done') {
+            if (mounted && _state == LiveAssistantState.listening) {
+              setState(() {});
+            }
+          }
+        },
+      );
+    } catch (_) {
+      _speechEnabled = false;
+    }
+    if (mounted) setState(() {});
   }
 
   @override
@@ -72,25 +138,71 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
     _pulseController.dispose();
     _soundWaveController.dispose();
     _speechStreamTimer?.cancel();
+    _speechToText.stop();
+    _flutterTts.stop();
     super.dispose();
   }
 
-  /// Starts an ambient listening cycle waiting for voice input.
-  void _startListeningCycle() {
+  /// Starts listening for real user speech via microphone.
+  Future<void> _startListeningCycle() async {
     _speechStreamTimer?.cancel();
+    try {
+      await _flutterTts.stop();
+    } catch (_) {}
 
     if (!mounted) return;
     setState(() {
       _state = LiveAssistantState.listening;
-      _currentTranscript =
-          "I'm listening. Tap a suggestion below or tap the mic to query...";
       _userSpokenText = "";
+      _currentTranscript = _speechEnabled
+          ? "I'm listening. Speak your query..."
+          : "Tap the mic to grant permission or tap a suggestion below...";
     });
+
+    if (!_speechEnabled) {
+      _speechEnabled = await _speechToText.initialize();
+      if (!_speechEnabled) return;
+    }
+
+    try {
+      await _speechToText.listen(
+        onResult: _onSpeechResult,
+        listenOptions: SpeechListenOptions(
+          listenMode: ListenMode.confirmation,
+          cancelOnError: false,
+          partialResults: true,
+          listenFor: const Duration(seconds: 30),
+          pauseFor: const Duration(seconds: 3),
+          localeId: 'en_US',
+        ),
+      );
+      if (mounted) setState(() {});
+    } catch (_) {}
+  }
+
+  /// Receives speech recognition results and automatically submits queries.
+  void _onSpeechResult(SpeechRecognitionResult result) {
+    if (!mounted) return;
+    setState(() {
+      _userSpokenText = result.recognizedWords;
+      if (result.recognizedWords.isNotEmpty) {
+        _currentTranscript = result.recognizedWords;
+      }
+    });
+
+    if (result.finalResult && result.recognizedWords.trim().isNotEmpty) {
+      _speechToText.stop();
+      _handleVoiceQuery(result.recognizedWords.trim());
+    }
   }
 
   /// Processes a voice query by contacting the Gemini HRMS assistant backend.
   Future<void> _handleVoiceQuery(String query) async {
     _speechStreamTimer?.cancel();
+    try {
+      await _speechToText.stop();
+      await _flutterTts.stop();
+    } catch (_) {}
 
     setState(() {
       _userSpokenText = query;
@@ -205,14 +317,21 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
   }
 
   /// Streams the AI assistant's spoken reply word-by-word onto the live screen
-  /// mimicking Gemini Live voice streaming.
-  void _streamAssistantSpeech(String fullText) {
+  /// mimicking Gemini Live voice streaming while speaking via Text-To-Speech.
+  Future<void> _streamAssistantSpeech(String fullText) async {
     final speakable = _toSpeakableText(fullText);
     _lastFullResponse = fullText;
     setState(() {
       _state = LiveAssistantState.speaking;
       _currentTranscript = "";
     });
+
+    if (_ttsInitialized) {
+      try {
+        await _flutterTts.stop();
+        await _flutterTts.speak(speakable);
+      } catch (_) {}
+    }
 
     final words = speakable.split(' ');
     int wordIndex = 0;
@@ -233,13 +352,13 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
           wordIndex++;
         } else {
           timer.cancel();
-          Future.delayed(const Duration(milliseconds: 1200), () {
-            if (mounted && _state == LiveAssistantState.speaking) {
-              setState(() {
-                _state = LiveAssistantState.listening;
-              });
-            }
-          });
+          if (!_ttsInitialized) {
+            Future.delayed(const Duration(milliseconds: 1200), () {
+              if (mounted && _state == LiveAssistantState.speaking) {
+                _startListeningCycle();
+              }
+            });
+          }
         }
       },
     );
@@ -250,23 +369,43 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
     setState(() {
       if (_state == LiveAssistantState.paused) {
         _state = LiveAssistantState.listening;
+        _pulseController.repeat();
+        _startListeningCycle();
       } else {
         _state = LiveAssistantState.paused;
         _speechStreamTimer?.cancel();
+        _pulseController.stop();
+        try {
+          _speechToText.stop();
+          _flutterTts.stop();
+        } catch (_) {}
       }
     });
   }
 
   /// Handles tap on the primary yellow microphone button.
   /// In speaking state interrupts the current output.
-  /// In listening/paused state it acts as a visual cue (real mic input
-  /// requires a native plugin — tapping a chip is the current input path).
-  void _onMicButtonTapped() {
+  /// In listening/paused state toggles listening on/off or submits captured speech.
+  Future<void> _onMicButtonTapped() async {
     if (_state == LiveAssistantState.speaking) {
       _speechStreamTimer?.cancel();
+      try {
+        await _flutterTts.stop();
+      } catch (_) {}
       _startListeningCycle();
     } else if (_state == LiveAssistantState.paused) {
       _startListeningCycle();
+    } else if (_state == LiveAssistantState.listening) {
+      if (_speechToText.isListening) {
+        try {
+          await _speechToText.stop();
+        } catch (_) {}
+        if (_userSpokenText.trim().isNotEmpty) {
+          _handleVoiceQuery(_userSpokenText.trim());
+        }
+      } else {
+        _startListeningCycle();
+      }
     }
   }
 
@@ -436,31 +575,36 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
         mainAxisSize: MainAxisSize.min,
         children: [
           if (isSpeaking) ...[
-            AnimatedBuilder(
-              animation: _soundWaveController,
-              builder: (context, child) {
-                return Row(
-                  children: List.generate(3, (index) {
-                    final height = 4.0 +
-                        math
-                                .sin(
-                                  _soundWaveController.value * math.pi +
-                                      (index * 0.8),
-                                )
-                                .abs() *
-                            9.0;
-                    return Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 1.5),
-                      width: 2.5,
-                      height: height,
-                      decoration: BoxDecoration(
-                        color: colorScheme.onPrimary,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    );
-                  }),
-                );
-              },
+            SizedBox(
+              height: 14,
+              child: AnimatedBuilder(
+                animation: _soundWaveController,
+                builder: (context, child) {
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: List.generate(3, (index) {
+                      final height = 4.0 +
+                          math
+                                  .sin(
+                                    _soundWaveController.value * math.pi +
+                                        (index * 0.8),
+                                  )
+                                  .abs() *
+                              8.0;
+                      return Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                        width: 2.5,
+                        height: height,
+                        decoration: BoxDecoration(
+                          color: colorScheme.onPrimary,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      );
+                    }),
+                  );
+                },
+              ),
             ),
             const SizedBox(width: 7),
             Text(
@@ -514,12 +658,16 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
     );
   }
 
-  /// Real-time breathing status pill badge (e.g. "Keep talking...").
+  /// Real-time breathing status pill badge (e.g. "Listening to your voice...").
   Widget _buildStatusIndicator(M3EColorScheme colorScheme) {
     String text;
     switch (_state) {
       case LiveAssistantState.listening:
-        text = "Keep talking...";
+        text = _speechToText.isListening
+            ? "Listening to your voice..."
+            : _speechEnabled
+                ? "Tap mic to speak or select a chip"
+                : "Microphone permission needed";
         break;
       case LiveAssistantState.thinking:
         text = "Processing your query...";
@@ -610,32 +758,37 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
   Widget _buildBottomControlDock(M3EColorScheme colorScheme) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildCircleButton(
-            colorScheme: colorScheme,
-            icon: _state == LiveAssistantState.paused
-                ? Icons.play_arrow_rounded
-                : Icons.pause_rounded,
-            onPressed: _togglePause,
-          ),
-          _buildGeminiLiveMicButton(colorScheme),
-          _buildCircleButton(
-            colorScheme: colorScheme,
-            icon: Icons.close_rounded,
-            onPressed: () {
-              Navigator.of(context).pop(
-                _userSpokenText.isNotEmpty && _lastFullResponse.isNotEmpty
-                    ? LiveSessionResult(
-                        prompt: _userSpokenText,
-                        response: _lastFullResponse,
-                      )
-                    : null,
-              );
-            },
-          ),
-        ],
+      child: SizedBox(
+        height: 84,
+        child: Row(
+          spacing: 40,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            _buildCircleButton(
+              colorScheme: colorScheme,
+              icon: _state == LiveAssistantState.paused
+                  ? Icons.play_arrow_rounded
+                  : Icons.pause_rounded,
+              onPressed: _togglePause,
+            ),
+            _buildGeminiLiveMicButton(colorScheme),
+            _buildCircleButton(
+              colorScheme: colorScheme,
+              icon: Icons.close_rounded,
+              onPressed: () {
+                Navigator.of(context).pop(
+                  _userSpokenText.isNotEmpty && _lastFullResponse.isNotEmpty
+                      ? LiveSessionResult(
+                          prompt: _userSpokenText,
+                          response: _lastFullResponse,
+                        )
+                      : null,
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -673,35 +826,46 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
     final isActive = _state == LiveAssistantState.listening ||
         _state == LiveAssistantState.speaking;
 
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        if (isActive) ...[
-          Container(
-            width: 110 + (_pulseController.value * 22),
-            height: 110 + (_pulseController.value * 22),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: colorScheme.primary.withValues(
-                  alpha: (1.0 - _pulseController.value) * 0.35,
+    return SizedBox(
+      width: 84,
+      height: 84,
+      child: AnimatedBuilder(
+        animation: _pulseController,
+        builder: (context, child) {
+          return Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.center,
+            children: [
+              if (isActive) ...[
+                Container(
+                  width: 108 + (_pulseController.value * 20),
+                  height: 108 + (_pulseController.value * 20),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: colorScheme.primary.withValues(
+                        alpha: (1.0 - _pulseController.value) * 0.35,
+                      ),
+                      width: 2,
+                    ),
+                  ),
                 ),
-                width: 2,
-              ),
-            ),
-          ),
-          Container(
-            width: 90 + (_pulseController.value * 14),
-            height: 90 + (_pulseController.value * 14),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: colorScheme.primary.withValues(
-                alpha: (1.0 - _pulseController.value) * 0.18,
-              ),
-            ),
-          ),
-        ],
-        GestureDetector(
+                Container(
+                  width: 88 + (_pulseController.value * 14),
+                  height: 88 + (_pulseController.value * 14),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: colorScheme.primary.withValues(
+                      alpha: (1.0 - _pulseController.value) * 0.18,
+                    ),
+                  ),
+                ),
+              ],
+              child!,
+            ],
+          );
+        },
+        child: GestureDetector(
           onTap: _onMicButtonTapped,
           child: Container(
             width: 74,
@@ -726,7 +890,7 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
             ),
           ),
         ),
-      ],
+      ),
     );
   }
 }

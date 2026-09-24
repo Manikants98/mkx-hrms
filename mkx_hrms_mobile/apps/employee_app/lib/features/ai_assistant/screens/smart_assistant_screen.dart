@@ -694,12 +694,17 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
             Expanded(
               child: Theme(
                 data: Theme.of(context).copyWith(
-                  inputDecorationTheme: InputDecorationTheme(
-                    filled: true,
-                    fillColor: colorScheme.surfaceContainer,
+                  inputDecorationTheme: const InputDecorationTheme(
+                    filled: false,
+                    fillColor: Colors.transparent,
+                    hoverColor: Colors.transparent,
+                    focusColor: Colors.transparent,
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
                     focusedBorder: InputBorder.none,
+                    errorBorder: InputBorder.none,
+                    focusedErrorBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
                   ),
                 ),
                 child: TextField(
@@ -715,13 +720,16 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
                       color: colorScheme.onSurfaceVariant,
                       fontSize: 13,
                     ),
-                    filled: true,
-                    fillColor: colorScheme.surfaceContainer,
+                    filled: false,
+                    fillColor: Colors.transparent,
+                    hoverColor: Colors.transparent,
+                    focusColor: Colors.transparent,
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
                     focusedBorder: InputBorder.none,
                     errorBorder: InputBorder.none,
                     focusedErrorBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 6,
                       vertical: 10,
@@ -824,7 +832,7 @@ class _AudioWaveformBubbleState extends State<AudioWaveformBubble>
     final scheme = widget.colorScheme;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: scheme.primary,
         borderRadius: BorderRadius.circular(24),
@@ -856,33 +864,38 @@ class _AudioWaveformBubbleState extends State<AudioWaveformBubble>
             ),
           ),
           const SizedBox(width: 10),
-          AnimatedBuilder(
-            animation: _waveController,
-            builder: (context, child) {
-              return Row(
-                children: List.generate(_barCount, (index) {
-                  final base = _waveformHeights[index];
-                  final dynH = _isPlaying
-                      ? (base +
-                              math.sin(
-                                    (_waveController.value * math.pi * 2) +
-                                        (index * 0.4),
-                                  ) *
-                                  6.0)
-                          .clamp(3.0, 24.0)
-                      : base;
-                  return Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 1.2),
-                    width: 2.5,
-                    height: dynH,
-                    decoration: BoxDecoration(
-                      color: scheme.onPrimary,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  );
-                }),
-              );
-            },
+          SizedBox(
+            height: 24,
+            child: AnimatedBuilder(
+              animation: _waveController,
+              builder: (context, child) {
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: List.generate(_barCount, (index) {
+                    final base = _waveformHeights[index];
+                    final dynH = _isPlaying
+                        ? (base +
+                                math.sin(
+                                      (_waveController.value * math.pi * 2) +
+                                          (index * 0.4),
+                                    ) *
+                                    6.0)
+                            .clamp(3.0, 24.0)
+                        : base;
+                    return Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 1.2),
+                      width: 2.5,
+                      height: dynH,
+                      decoration: BoxDecoration(
+                        color: scheme.onPrimary,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    );
+                  }),
+                );
+              },
+            ),
           ),
           const SizedBox(width: 10),
           Text(
