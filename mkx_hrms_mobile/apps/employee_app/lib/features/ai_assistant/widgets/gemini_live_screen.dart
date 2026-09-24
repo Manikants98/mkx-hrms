@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:mkx_core/network/dio_client.dart';
 
 import '../models/ai_chat_model.dart';
@@ -100,7 +101,10 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
     try {
       final response = await DioClient.instance.post(
         '/ai/chat',
-        data: {'prompt': query},
+        data: {
+          'prompt': query,
+          'mode': 'live',
+        },
       );
 
       final reply = (response['message'] as String?) ??
@@ -116,16 +120,101 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
     }
   }
 
+  /// Converts an AI response into clean, natural spoken paragraph text
+  /// for live voice mode.
+  ///
+  /// Strips markdown formatting and ensures any bullet points, numbered lists,
+  /// or key-value list lines are transformed into flowing, comma-separated
+  /// sentences within continuous paragraphs.
+  String _toSpeakableText(String raw) {
+    var text = raw
+        .replaceAllMapped(
+          RegExp(r'\*\*(.+?)\*\*', dotAll: true),
+          (m) => m[1] ?? '',
+        )
+        .replaceAllMapped(
+          RegExp(r'\*(.+?)\*'),
+          (m) => m[1] ?? '',
+        )
+        .replaceAllMapped(
+          RegExp(r'`(.+?)`'),
+          (m) => m[1] ?? '',
+        )
+        .replaceAll(RegExp(r'^#{1,6}\s+', multiLine: true), '');
+
+    final rawLines = text.split('\n');
+    final processedParagraphs = <String>[];
+    final currentListItems = <String>[];
+
+    void flushList() {
+      if (currentListItems.isEmpty) return;
+      var joined = currentListItems.join(', ');
+      if (!joined.endsWith('.')) {
+        joined = '$joined.';
+      }
+      if (processedParagraphs.isNotEmpty &&
+          processedParagraphs.last.trim().endsWith(':')) {
+        final lastIntro = processedParagraphs.removeLast().trim();
+        processedParagraphs.add('$lastIntro $joined');
+      } else {
+        processedParagraphs.add(joined);
+      }
+      currentListItems.clear();
+    }
+
+    for (final rawLine in rawLines) {
+      final line = rawLine.trim();
+      if (line.isEmpty) {
+        flushList();
+        continue;
+      }
+
+      final bulletMatch =
+          RegExp(r'^(\*|-|•|\+|>\s*|\d+[.)])\s+(.*)$').firstMatch(line);
+      final isKeyValueLine = !line.endsWith(':') &&
+          RegExp(r'^[A-Za-z0-9\s/()_-]+:\s*.+$').hasMatch(line);
+
+      if (bulletMatch != null) {
+        var item = bulletMatch.group(2)?.trim() ?? '';
+        if (item.endsWith('.') || item.endsWith(';') || item.endsWith(',')) {
+          item = item.substring(0, item.length - 1).trim();
+        }
+        if (item.isNotEmpty) {
+          currentListItems.add(item);
+        }
+      } else if (isKeyValueLine &&
+          (currentListItems.isNotEmpty ||
+              (processedParagraphs.isNotEmpty &&
+                  processedParagraphs.last.trim().endsWith(':')))) {
+        var item = line;
+        if (item.endsWith('.') || item.endsWith(';') || item.endsWith(',')) {
+          item = item.substring(0, item.length - 1).trim();
+        }
+        currentListItems.add(item);
+      } else {
+        flushList();
+        processedParagraphs.add(line);
+      }
+    }
+    flushList();
+
+    return processedParagraphs
+        .join('\n\n')
+        .replaceAll(RegExp(r'[ \t]+'), ' ')
+        .trim();
+  }
+
   /// Streams the AI assistant's spoken reply word-by-word onto the live screen
   /// mimicking Gemini Live voice streaming.
   void _streamAssistantSpeech(String fullText) {
+    final speakable = _toSpeakableText(fullText);
     _lastFullResponse = fullText;
     setState(() {
       _state = LiveAssistantState.speaking;
       _currentTranscript = "";
     });
 
-    final words = fullText.split(' ');
+    final words = speakable.split(' ');
     int wordIndex = 0;
 
     _speechStreamTimer?.cancel();
@@ -179,28 +268,29 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
     } else if (_state == LiveAssistantState.paused) {
       _startListeningCycle();
     }
-    // In listening state the mic button has no auto-trigger;
-    // the user selects a chip to send a query.
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = M3ETheme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF111210),
+      backgroundColor: colorScheme.surface,
       body: Stack(
         children: [
           Positioned.fill(
             child: Container(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: RadialGradient(
-                  center: Alignment(0, 0.1),
+                  center: const Alignment(0, 0.1),
                   radius: 0.95,
                   colors: [
-                    Color(0xFF2B2712),
-                    Color(0xFF171815),
-                    Color(0xFF0F100E),
+                    colorScheme.primary.withValues(alpha: isDark ? 0.20 : 0.12),
+                    colorScheme.surfaceContainerLow,
+                    colorScheme.surface,
                   ],
                 ),
               ),
@@ -209,7 +299,7 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
           SafeArea(
             child: Column(
               children: [
-                _buildTopBar(),
+                _buildTopBar(colorScheme),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -224,23 +314,23 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
                               vertical: 8,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF242621),
+                              color: colorScheme.surfaceContainerHigh,
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.account_circle,
                                   size: 16,
-                                  color: Color(0xFFE5B034),
+                                  color: colorScheme.primary,
                                 ),
                                 const SizedBox(width: 8),
                                 Flexible(
                                   child: Text(
                                     _userSpokenText,
-                                    style: const TextStyle(
-                                      color: Color(0xFFE5E7EB),
+                                    style: TextStyle(
+                                      color: colorScheme.onSurface,
                                       fontSize: 13,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -257,26 +347,25 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
                           _currentTranscript,
                           style: TextStyle(
                             color: _state == LiveAssistantState.speaking
-                                ? Colors.white
-                                : const Color(0xFFD1D5DB),
-                            fontSize: size.height < 700 ? 20 : 24,
-                            height: 1.45,
-                            fontWeight: FontWeight.w500,
-                            letterSpacing: -0.2,
+                                ? colorScheme.onSurface
+                                : colorScheme.onSurfaceVariant,
+                            fontSize: size.height < 700 ? 15 : 17,
+                            height: 1.5,
+                            fontWeight: FontWeight.w400,
                           ),
-                          maxLines: 8,
+                          maxLines: 12,
                           overflow: TextOverflow.fade,
                         ),
                         const SizedBox(height: 20),
-                        _buildStatusIndicator(),
+                        _buildStatusIndicator(colorScheme),
                         const SizedBox(height: 24),
                         if (_state == LiveAssistantState.listening)
-                          _buildQuickPromptChips(),
+                          _buildQuickPromptChips(colorScheme),
                       ],
                     ),
                   ),
                 ),
-                _buildBottomControlDock(),
+                _buildBottomControlDock(colorScheme),
                 const SizedBox(height: 16),
               ],
             ),
@@ -287,7 +376,7 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
   }
 
   /// Top navigation bar with close button, active status badge, and transcript icon.
-  Widget _buildTopBar() {
+  Widget _buildTopBar(M3EColorScheme colorScheme) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
@@ -295,12 +384,12 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
         children: [
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back_rounded, color: Colors.white70),
+            icon: Icon(Icons.arrow_back_rounded, color: colorScheme.onSurface),
             style: IconButton.styleFrom(
-              backgroundColor: const Color(0xFF1E201B),
+              backgroundColor: colorScheme.surfaceContainer,
             ),
           ),
-          _buildLiveStatusBadge(),
+          _buildLiveStatusBadge(colorScheme),
           IconButton(
             onPressed: () {
               Navigator.of(context).pop(
@@ -312,12 +401,12 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
                     : null,
               );
             },
-            icon: const Icon(
+            icon: Icon(
               Icons.chat_bubble_outline_rounded,
-              color: Colors.white70,
+              color: colorScheme.onSurface,
             ),
             style: IconButton.styleFrom(
-              backgroundColor: const Color(0xFF1E201B),
+              backgroundColor: colorScheme.surfaceContainer,
             ),
           ),
         ],
@@ -326,18 +415,18 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
   }
 
   /// Centered pill status indicator (Speaking UX / Listening Live).
-  Widget _buildLiveStatusBadge() {
+  Widget _buildLiveStatusBadge(M3EColorScheme colorScheme) {
     final isSpeaking = _state == LiveAssistantState.speaking;
     final isThinking = _state == LiveAssistantState.thinking;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFFF5C242),
+        color: colorScheme.primary,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFF5C242).withValues(alpha: 0.35),
+            color: colorScheme.primary.withValues(alpha: 0.35),
             blurRadius: 12,
             offset: const Offset(0, 2),
           ),
@@ -365,7 +454,7 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
                       width: 2.5,
                       height: height,
                       decoration: BoxDecoration(
-                        color: Colors.black87,
+                        color: colorScheme.onPrimary,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     );
@@ -374,29 +463,29 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
               },
             ),
             const SizedBox(width: 7),
-            const Text(
+            Text(
               'Speaking',
               style: TextStyle(
-                color: Colors.black,
+                color: colorScheme.onPrimary,
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.2,
               ),
             ),
           ] else if (isThinking) ...[
-            const SizedBox(
+            SizedBox(
               width: 10,
               height: 10,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                color: Colors.black87,
+                color: colorScheme.onPrimary,
               ),
             ),
             const SizedBox(width: 7),
-            const Text(
+            Text(
               'Thinking',
               style: TextStyle(
-                color: Colors.black,
+                color: colorScheme.onPrimary,
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
               ),
@@ -405,16 +494,16 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
             Container(
               width: 7,
               height: 7,
-              decoration: const BoxDecoration(
-                color: Colors.black,
+              decoration: BoxDecoration(
+                color: colorScheme.onPrimary,
                 shape: BoxShape.circle,
               ),
             ),
             const SizedBox(width: 7),
-            const Text(
+            Text(
               'Listening Live',
               style: TextStyle(
-                color: Colors.black,
+                color: colorScheme.onPrimary,
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
               ),
@@ -425,8 +514,8 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
     );
   }
 
-  /// Real-time breathing status text (e.g. "Keep talking...").
-  Widget _buildStatusIndicator() {
+  /// Real-time breathing status pill badge (e.g. "Keep talking...").
+  Widget _buildStatusIndicator(M3EColorScheme colorScheme) {
     String text;
     switch (_state) {
       case LiveAssistantState.listening:
@@ -443,37 +532,46 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
         break;
     }
 
-    return Row(
-      children: [
-        Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(
-            color: const Color(0xFFF5C242),
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFF5C242).withValues(alpha: 0.6),
-                blurRadius: 6,
-              ),
-            ],
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainer,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colorScheme.outlineVariant),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 7,
+            height: 7,
+            decoration: BoxDecoration(
+              color: colorScheme.primary,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: colorScheme.primary.withValues(alpha: 0.6),
+                  blurRadius: 6,
+                ),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          text,
-          style: const TextStyle(
-            color: Color(0xFF9CA3AF),
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
+          const SizedBox(width: 8),
+          Text(
+            text,
+            style: TextStyle(
+              color: colorScheme.onSurfaceVariant,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
   /// Quick voice prompt pills shown on the live voice screen.
-  Widget _buildQuickPromptChips() {
+  Widget _buildQuickPromptChips(M3EColorScheme colorScheme) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -482,20 +580,20 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
             padding: const EdgeInsets.only(right: 8),
             child: ActionChip(
               onPressed: () => _handleVoiceQuery(prompt),
-              backgroundColor: const Color(0xFF1E201B),
-              side: const BorderSide(color: Color(0xFF32342D)),
+              backgroundColor: colorScheme.surfaceContainer,
+              side: BorderSide(color: colorScheme.outlineVariant),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
-              avatar: const Icon(
+              avatar: Icon(
                 Icons.mic,
                 size: 14,
-                color: Color(0xFFF5C242),
+                color: colorScheme.primary,
               ),
               label: Text(
                 prompt,
-                style: const TextStyle(
-                  color: Color(0xFFE5E7EB),
+                style: TextStyle(
+                  color: colorScheme.onSurface,
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
@@ -508,21 +606,23 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
   }
 
   /// Bottom control dock containing the Pause button,
-  /// the signature pulsating Gemini Live yellow microphone, and the Close button.
-  Widget _buildBottomControlDock() {
+  /// the signature pulsating Gemini Live microphone, and the Close button.
+  Widget _buildBottomControlDock(M3EColorScheme colorScheme) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _buildCircleButton(
+            colorScheme: colorScheme,
             icon: _state == LiveAssistantState.paused
                 ? Icons.play_arrow_rounded
                 : Icons.pause_rounded,
             onPressed: _togglePause,
           ),
-          _buildGeminiLiveMicButton(),
+          _buildGeminiLiveMicButton(colorScheme),
           _buildCircleButton(
+            colorScheme: colorScheme,
             icon: Icons.close_rounded,
             onPressed: () {
               Navigator.of(context).pop(
@@ -542,6 +642,7 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
 
   /// Helper to build secondary round control buttons (pause, close).
   Widget _buildCircleButton({
+    required M3EColorScheme colorScheme,
     required IconData icon,
     required VoidCallback onPressed,
   }) {
@@ -554,83 +655,78 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
           width: 54,
           height: 54,
           decoration: BoxDecoration(
-            color: const Color(0xFF1E201B),
+            color: colorScheme.surfaceContainer,
             shape: BoxShape.circle,
             border: Border.all(
-              color: const Color(0xFF33352E),
+              color: colorScheme.outlineVariant,
               width: 1,
             ),
           ),
-          child: Icon(icon, color: Colors.white, size: 22),
+          child: Icon(icon, color: colorScheme.onSurface, size: 22),
         ),
       ),
     );
   }
 
-  /// Signature large glowing yellow Gemini Live microphone button with multi-ring ripple pulse.
-  Widget _buildGeminiLiveMicButton() {
+  /// Signature large glowing Gemini Live microphone button with multi-ring ripple pulse.
+  Widget _buildGeminiLiveMicButton(M3EColorScheme colorScheme) {
     final isActive = _state == LiveAssistantState.listening ||
         _state == LiveAssistantState.speaking;
 
-    return AnimatedBuilder(
-      animation: _pulseController,
-      builder: (context, child) {
-        return Stack(
-          alignment: Alignment.center,
-          children: [
-            if (isActive) ...[
-              Container(
-                width: 110 + (_pulseController.value * 22),
-                height: 110 + (_pulseController.value * 22),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: const Color(0xFFF5C242).withValues(
-                      alpha: (1.0 - _pulseController.value) * 0.35,
-                    ),
-                    width: 2,
-                  ),
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        if (isActive) ...[
+          Container(
+            width: 110 + (_pulseController.value * 22),
+            height: 110 + (_pulseController.value * 22),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: colorScheme.primary.withValues(
+                  alpha: (1.0 - _pulseController.value) * 0.35,
                 ),
-              ),
-              Container(
-                width: 90 + (_pulseController.value * 14),
-                height: 90 + (_pulseController.value * 14),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: const Color(0xFFF5C242).withValues(
-                    alpha: (1.0 - _pulseController.value) * 0.18,
-                  ),
-                ),
-              ),
-            ],
-            GestureDetector(
-              onTap: _onMicButtonTapped,
-              child: Container(
-                width: 74,
-                height: 74,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF5C242),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFF5C242).withValues(alpha: 0.5),
-                      blurRadius: 20,
-                      spreadRadius: 2,
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  _state == LiveAssistantState.speaking
-                      ? Icons.graphic_eq_rounded
-                      : Icons.mic_rounded,
-                  color: const Color(0xFF131411),
-                  size: 34,
-                ),
+                width: 2,
               ),
             ),
-          ],
-        );
-      },
+          ),
+          Container(
+            width: 90 + (_pulseController.value * 14),
+            height: 90 + (_pulseController.value * 14),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: colorScheme.primary.withValues(
+                alpha: (1.0 - _pulseController.value) * 0.18,
+              ),
+            ),
+          ),
+        ],
+        GestureDetector(
+          onTap: _onMicButtonTapped,
+          child: Container(
+            width: 74,
+            height: 74,
+            decoration: BoxDecoration(
+              color: colorScheme.primary,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: colorScheme.primary.withValues(alpha: 0.5),
+                  blurRadius: 20,
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
+            child: Icon(
+              _state == LiveAssistantState.speaking
+                  ? Icons.graphic_eq_rounded
+                  : Icons.mic_rounded,
+              color: colorScheme.onPrimary,
+              size: 34,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

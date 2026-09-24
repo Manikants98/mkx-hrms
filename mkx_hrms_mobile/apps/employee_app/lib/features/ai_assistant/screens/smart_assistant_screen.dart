@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:mkx_core/features/auth/state/auth_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -89,29 +90,31 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
     final auth = context.watch<AuthProvider>();
     final firstName = (auth.currentUser?.name ?? 'Employee').split(' ').first;
     final ai = context.watch<AiProvider>();
+    final theme = M3ETheme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF111210),
+      backgroundColor: colorScheme.surface,
       resizeToAvoidBottomInset: true,
-      appBar: _buildAppBar(ai),
+      appBar: _buildAppBar(ai, colorScheme),
       body: SafeArea(
         bottom: false,
         child: Column(
           children: [
             Expanded(
               child: ai.isFetchingHistory
-                  ? const Center(
+                  ? Center(
                       child: CircularProgressIndicator(
                         strokeWidth: 2.5,
-                        color: Color(0xFFF5C242),
+                        color: colorScheme.primary,
                       ),
                     )
                   : ai.hasMessages
-                      ? _buildMessageList(ai)
-                      : _buildPromptStarterHome(firstName),
+                      ? _buildMessageList(ai, colorScheme)
+                      : _buildPromptStarterHome(firstName, colorScheme),
             ),
-            if (ai.isLoading) _buildTypingIndicator(),
-            _buildInputBar(),
+            if (ai.isLoading) _buildTypingIndicator(colorScheme),
+            _buildInputBar(colorScheme),
           ],
         ),
       ),
@@ -119,13 +122,13 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
   }
 
   /// App bar with back button, Gemini Live pill, and clear history action.
-  PreferredSizeWidget _buildAppBar(AiProvider ai) {
+  PreferredSizeWidget _buildAppBar(AiProvider ai, M3EColorScheme colorScheme) {
     return AppBar(
-      backgroundColor: const Color(0xFF111210),
+      backgroundColor: colorScheme.surface,
       elevation: 0,
       scrolledUnderElevation: 0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_rounded, color: Colors.white70),
+        icon: Icon(Icons.arrow_back_rounded, color: colorScheme.onSurface),
         onPressed: () => Navigator.of(context).pop(),
       ),
       title: InkWell(
@@ -134,21 +137,21 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           decoration: BoxDecoration(
-            color: const Color(0xFF1E201B),
+            color: colorScheme.surfaceContainer,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: const Color(0xFFF5C242).withValues(alpha: 0.35),
+              color: colorScheme.primary.withValues(alpha: 0.35),
             ),
           ),
-          child: const Row(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.mic, size: 14, color: Color(0xFFF5C242)),
-              SizedBox(width: 6),
+              Icon(Icons.mic, size: 14, color: colorScheme.primary),
+              const SizedBox(width: 6),
               Text(
                 'Gemini Live',
                 style: TextStyle(
-                  color: Color(0xFFF5C242),
+                  color: colorScheme.primary,
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0.2,
@@ -163,19 +166,19 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
         if (ai.hasMessages)
           IconButton(
             tooltip: 'Clear Conversation',
-            icon: const Icon(
+            icon: Icon(
               Icons.delete_outline_rounded,
-              color: Colors.white54,
+              color: colorScheme.onSurfaceVariant,
               size: 20,
             ),
             onPressed: () async {
               await context.read<AiProvider>().clearHistory();
               if (mounted && context.read<AiProvider>().errorMessage == null) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Chat history cleared'),
-                    backgroundColor: Color(0xFF242621),
-                    duration: Duration(seconds: 2),
+                  SnackBar(
+                    content: const Text('Chat history cleared'),
+                    backgroundColor: colorScheme.surfaceContainerHigh,
+                    duration: const Duration(seconds: 2),
                   ),
                 );
               }
@@ -187,7 +190,7 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
   }
 
   /// Screen 1 — Home with personalised greeting and 2×2 suggestion cards.
-  Widget _buildPromptStarterHome(String firstName) {
+  Widget _buildPromptStarterHome(String firstName, M3EColorScheme colorScheme) {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Column(
@@ -197,18 +200,19 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1E201B),
+                  color: colorScheme.surfaceContainer,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: const Color(0xFFF5C242).withValues(alpha: 0.5),
+                    color: colorScheme.primary.withValues(alpha: 0.5),
                   ),
                 ),
-                child: const Text(
+                child: Text(
                   'GO PREMIUM',
                   style: TextStyle(
-                    color: Color(0xFFF5C242),
+                    color: colorScheme.primary,
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.6,
@@ -217,11 +221,11 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
               ),
               CircleAvatar(
                 radius: 18,
-                backgroundColor: const Color(0xFF242621),
+                backgroundColor: colorScheme.surfaceContainerHigh,
                 child: Text(
                   firstName.isNotEmpty ? firstName[0].toUpperCase() : 'E',
-                  style: const TextStyle(
-                    color: Color(0xFFF5C242),
+                  style: TextStyle(
+                    color: colorScheme.primary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -231,48 +235,49 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
           const SizedBox(height: 28),
           Text(
             'Hi, $firstName',
-            style: const TextStyle(
-              color: Color(0xFFF5C242),
+            style: TextStyle(
+              color: colorScheme.primary,
               fontSize: 22,
               fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
+          Text(
             'How can I help today?',
             style: TextStyle(
-              color: Colors.white,
+              color: colorScheme.onSurface,
               fontSize: 28,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.5,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             "I'm here to help — from quick answers to smart recommendations.",
             style: TextStyle(
-              color: Color(0xFF9CA3AF),
+              color: colorScheme.onSurfaceVariant,
               fontSize: 13,
               height: 1.4,
             ),
           ),
           const SizedBox(height: 28),
-          _buildSuggestionGrid(),
+          _buildSuggestionGrid(colorScheme),
           const SizedBox(height: 20),
-          _buildProBanner(),
+          _buildProBanner(colorScheme),
         ],
       ),
     );
   }
 
   /// 2×2 grid of HRMS-specific prompt suggestions.
-  Widget _buildSuggestionGrid() {
+  Widget _buildSuggestionGrid(M3EColorScheme colorScheme) {
     return Column(
       children: [
         Row(
           children: [
             Expanded(
               child: _buildSuggestionCard(
+                colorScheme: colorScheme,
                 icon: Icons.beach_access_rounded,
                 title: 'Leave Balance',
                 subtitle: 'Check remaining casual & sick leaves in seconds.',
@@ -282,6 +287,7 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: _buildSuggestionCard(
+                colorScheme: colorScheme,
                 icon: Icons.schedule_rounded,
                 title: 'Shift & Timing',
                 subtitle: 'View your scheduled shift hours and timing details.',
@@ -295,15 +301,19 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
           children: [
             Expanded(
               child: _buildSuggestionCard(
+                colorScheme: colorScheme,
                 icon: Icons.receipt_long_rounded,
                 title: 'Payslip & Salary',
-                subtitle: 'Breakdown of your latest salary slip and deductions.',
-                prompt: 'Can you break down my latest salary slip and net payout?',
+                subtitle:
+                    'Breakdown of your latest salary slip and deductions.',
+                prompt:
+                    'Can you break down my latest salary slip and net payout?',
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: _buildSuggestionCard(
+                colorScheme: colorScheme,
                 icon: Icons.fingerprint_rounded,
                 title: 'Attendance Log',
                 subtitle: 'Review monthly attendance logs and punch history.',
@@ -318,6 +328,7 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
 
   /// Individual tappable suggestion card.
   Widget _buildSuggestionCard({
+    required M3EColorScheme colorScheme,
     required IconData icon,
     required String title,
     required String subtitle,
@@ -332,22 +343,22 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
           height: 140,
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: const Color(0xFF1B1C1A),
+            color: colorScheme.surfaceContainerLow,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF2E302A)),
+            border: Border.all(color: colorScheme.outlineVariant),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  Icon(icon, size: 18, color: const Color(0xFFF5C242)),
+                  Icon(icon, size: 18, color: colorScheme.primary),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       title,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: colorScheme.onSurface,
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
@@ -360,8 +371,8 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
               const Spacer(),
               Text(
                 subtitle,
-                style: const TextStyle(
-                  color: Color(0xFF888B84),
+                style: TextStyle(
+                  color: colorScheme.onSurfaceVariant,
                   fontSize: 11,
                   height: 1.35,
                 ),
@@ -376,23 +387,23 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
   }
 
   /// Pro upgrade promotional banner.
-  Widget _buildProBanner() {
+  Widget _buildProBanner(M3EColorScheme colorScheme) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF1B1C1A),
+        color: colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFF2C2D27)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
-      child: const Row(
+      child: Row(
         children: [
-          Icon(Icons.auto_awesome, size: 16, color: Color(0xFFF5C242)),
-          SizedBox(width: 10),
+          Icon(Icons.auto_awesome, size: 16, color: colorScheme.primary),
+          const SizedBox(width: 10),
           Text(
             'Unlock more features with Pro',
             style: TextStyle(
-              color: Color(0xFFE5E7EB),
+              color: colorScheme.onSurface,
               fontSize: 12,
               fontWeight: FontWeight.w500,
             ),
@@ -403,19 +414,18 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
   }
 
   /// Screen 3 — Scrollable conversation message list.
-  Widget _buildMessageList(AiProvider ai) {
-    _scrollToBottom();
+  Widget _buildMessageList(AiProvider ai, M3EColorScheme colorScheme) {
     return ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       itemCount: ai.messages.length,
       itemBuilder: (context, index) =>
-          _buildMessageItem(ai.messages[index]),
+          _buildMessageItem(ai.messages[index], colorScheme),
     );
   }
 
   /// Renders a user bubble or AI markdown card (with optional waveform for voice).
-  Widget _buildMessageItem(ChatMessage msg) {
+  Widget _buildMessageItem(ChatMessage msg, M3EColorScheme colorScheme) {
     if (msg.isUser) {
       return Align(
         alignment: Alignment.centerRight,
@@ -426,30 +436,30 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: const Color(0xFF242621),
+            color: colorScheme.surfaceContainerHigh,
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(18),
               topRight: Radius.circular(18),
               bottomLeft: Radius.circular(18),
               bottomRight: Radius.circular(4),
             ),
-            border: Border.all(color: const Color(0xFF353830)),
+            border: Border.all(color: colorScheme.outlineVariant),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               if (msg.isVoice)
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 4),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.mic, size: 12, color: Color(0xFFF5C242)),
-                      SizedBox(width: 4),
+                      Icon(Icons.mic, size: 12, color: colorScheme.primary),
+                      const SizedBox(width: 4),
                       Text(
                         'Voice Query',
                         style: TextStyle(
-                          color: Color(0xFFF5C242),
+                          color: colorScheme.primary,
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
                         ),
@@ -459,9 +469,9 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
                 ),
               Text(
                 msg.text,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
-                  color: Colors.white,
+                  color: colorScheme.onSurface,
                   height: 1.4,
                 ),
               ),
@@ -482,41 +492,47 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (msg.isVoice) ...[
-              AudioWaveformBubble(transcript: msg.text),
+              AudioWaveformBubble(
+                transcript: msg.text,
+                colorScheme: colorScheme,
+              ),
               const SizedBox(height: 8),
             ],
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
-                color: const Color(0xFF1B1C1A),
+                color: colorScheme.surfaceContainerLow,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(18),
                   topRight: Radius.circular(18),
                   bottomRight: Radius.circular(18),
                   bottomLeft: Radius.circular(4),
                 ),
-                border: Border.all(color: const Color(0xFF2D2F28)),
+                border: Border.all(color: colorScheme.outlineVariant),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   MarkdownBody(
-                    data: msg.text,
+                    data: _cleanMarkdownText(msg.text),
+                    bulletBuilder: (_) => const SizedBox.shrink(),
                     styleSheet: MarkdownStyleSheet(
-                      p: const TextStyle(
+                      p: TextStyle(
                         fontSize: 14,
-                        color: Color(0xFFE5E7EB),
+                        color: colorScheme.onSurface,
                         height: 1.45,
                       ),
-                      strong: const TextStyle(
+                      strong: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFFF5C242),
+                        color: colorScheme.primary,
                       ),
                       listBullet: const TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFFF5C242),
+                        fontSize: 0,
+                        height: 0,
                       ),
+                      listBulletPadding: EdgeInsets.zero,
+                      listIndent: 0,
                       blockSpacing: 8,
                     ),
                   ),
@@ -529,11 +545,10 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
                             ? Icons.thumb_up_rounded
                             : Icons.thumb_up_alt_outlined,
                         color: msg.isLiked == true
-                            ? const Color(0xFFF5C242)
-                            : Colors.white38,
+                            ? colorScheme.primary
+                            : colorScheme.onSurfaceVariant,
                         onTap: () => setState(
-                          () => msg.isLiked =
-                              msg.isLiked == true ? null : true,
+                          () => msg.isLiked = msg.isLiked == true ? null : true,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -543,23 +558,23 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
                             : Icons.thumb_down_alt_outlined,
                         color: msg.isLiked == false
                             ? Colors.redAccent
-                            : Colors.white38,
+                            : colorScheme.onSurfaceVariant,
                         onTap: () => setState(
-                          () => msg.isLiked =
-                              msg.isLiked == false ? null : false,
+                          () =>
+                              msg.isLiked = msg.isLiked == false ? null : false,
                         ),
                       ),
                       const SizedBox(width: 8),
                       _buildReactionIcon(
                         icon: Icons.copy_rounded,
-                        color: Colors.white38,
+                        color: colorScheme.onSurfaceVariant,
                         onTap: () {
                           Clipboard.setData(ClipboardData(text: msg.text));
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Copied to clipboard'),
-                              duration: Duration(seconds: 1),
-                              backgroundColor: Color(0xFF242621),
+                            SnackBar(
+                              content: const Text('Copied to clipboard'),
+                              duration: const Duration(seconds: 1),
+                              backgroundColor: colorScheme.surfaceContainerHigh,
                             ),
                           );
                         },
@@ -573,6 +588,11 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
         ),
       ),
     );
+  }
+
+  /// Cleans markdown message text to ensure no raw bullet symbols appear.
+  String _cleanMarkdownText(String text) {
+    return text.replaceAll(RegExp(r'^\s*•\s*', multiLine: true), '');
   }
 
   /// Helper for message reaction buttons (like / dislike / copy).
@@ -592,7 +612,7 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
   }
 
   /// Animated "Gemini is thinking…" indicator shown while awaiting a reply.
-  Widget _buildTypingIndicator() {
+  Widget _buildTypingIndicator(M3EColorScheme colorScheme) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 16, 12),
       child: Align(
@@ -600,11 +620,11 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
-            color: const Color(0xFF1B1C1A),
+            color: colorScheme.surfaceContainerLow,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF2E3029)),
+            border: Border.all(color: colorScheme.outlineVariant),
           ),
-          child: const Row(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(
@@ -612,15 +632,15 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
                 height: 14,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: Color(0xFFF5C242),
+                  color: colorScheme.primary,
                 ),
               ),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Text(
                 'Gemini is thinking...',
                 style: TextStyle(
                   fontSize: 12,
-                  color: Color(0xFF9CA3AF),
+                  color: colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -632,74 +652,88 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
   }
 
   /// Bottom input dock with text field, voice mic, and send button.
-  Widget _buildInputBar() {
+  Widget _buildInputBar(M3EColorScheme colorScheme) {
     return Container(
-      padding: EdgeInsets.only(
+      padding: const EdgeInsets.only(
         left: 12,
         right: 12,
         top: 8,
         bottom: 12,
       ),
-      decoration: const BoxDecoration(
-        color: Color(0xFF111210),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
         border: Border(
-          top: BorderSide(color: Color(0xFF242621), width: 1),
+          top: BorderSide(color: colorScheme.outlineVariant, width: 1),
         ),
       ),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: const Color(0xFF1B1C1A),
+          color: colorScheme.surfaceContainer,
           borderRadius: BorderRadius.circular(28),
-          border: Border.all(color: const Color(0xFF2E3029)),
+          border: Border.all(color: colorScheme.outlineVariant),
         ),
         child: Row(
           children: [
             IconButton(
-              icon: const Icon(
+              icon: Icon(
                 Icons.attach_file_rounded,
-                color: Colors.white54,
+                color: colorScheme.onSurfaceVariant,
                 size: 20,
               ),
               onPressed: () {},
             ),
             IconButton(
-              icon: const Icon(
+              icon: Icon(
                 Icons.tune_rounded,
-                color: Colors.white54,
+                color: colorScheme.onSurfaceVariant,
                 size: 20,
               ),
               onPressed: () {},
             ),
             Expanded(
-              child: TextField(
-                controller: _inputController,
-                maxLines: null,
-                textInputAction: TextInputAction.send,
-                onSubmitted: (_) => _sendMessage(),
-                style: const TextStyle(fontSize: 14, color: Colors.white),
-                decoration: const InputDecoration(
-                  hintText: 'Describe your query...',
-                  hintStyle: TextStyle(
-                    color: Color(0xFF6B7280),
-                    fontSize: 13,
+              child: Theme(
+                data: Theme.of(context).copyWith(
+                  inputDecorationTheme: InputDecorationTheme(
+                    filled: true,
+                    fillColor: colorScheme.surfaceContainer,
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
                   ),
-                  border: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  errorBorder: InputBorder.none,
-                  focusedErrorBorder: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 10,
+                ),
+                child: TextField(
+                  controller: _inputController,
+                  maxLines: null,
+                  textInputAction: TextInputAction.send,
+                  onSubmitted: (_) => _sendMessage(),
+                  cursorColor: colorScheme.primary,
+                  style: TextStyle(fontSize: 14, color: colorScheme.onSurface),
+                  decoration: InputDecoration(
+                    hintText: 'Describe your query...',
+                    hintStyle: TextStyle(
+                      color: colorScheme.onSurfaceVariant,
+                      fontSize: 13,
+                    ),
+                    filled: true,
+                    fillColor: colorScheme.surfaceContainer,
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    errorBorder: InputBorder.none,
+                    focusedErrorBorder: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 10,
+                    ),
                   ),
                 ),
               ),
             ),
             IconButton(
-              icon: const Icon(
+              icon: Icon(
                 Icons.mic_rounded,
-                color: Color(0xFFF5C242),
+                color: colorScheme.primary,
                 size: 22,
               ),
               tooltip: 'Gemini Live Voice Mode',
@@ -710,13 +744,13 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
               child: Container(
                 width: 36,
                 height: 36,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFF5C242),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.arrow_upward_rounded,
-                  color: Color(0xFF111210),
+                  color: colorScheme.onPrimary,
                   size: 20,
                 ),
               ),
@@ -728,13 +762,18 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
   }
 }
 
-/// Golden audio waveform player bubble for voice messages.
+/// Dynamic audio waveform player bubble for voice messages.
 ///
 /// Extracted to its own class to keep the screen widget tree focused.
 class AudioWaveformBubble extends StatefulWidget {
   final String transcript;
+  final M3EColorScheme colorScheme;
 
-  const AudioWaveformBubble({super.key, required this.transcript});
+  const AudioWaveformBubble({
+    super.key,
+    required this.transcript,
+    required this.colorScheme,
+  });
 
   @override
   State<AudioWaveformBubble> createState() => _AudioWaveformBubbleState();
@@ -782,14 +821,16 @@ class _AudioWaveformBubbleState extends State<AudioWaveformBubble>
 
   @override
   Widget build(BuildContext context) {
+    final scheme = widget.colorScheme;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFFF5C242),
+        color: scheme.primary,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFF5C242).withValues(alpha: 0.3),
+            color: scheme.primary.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -803,13 +844,13 @@ class _AudioWaveformBubbleState extends State<AudioWaveformBubble>
             child: Container(
               width: 32,
               height: 32,
-              decoration: const BoxDecoration(
-                color: Color(0xFF131411),
+              decoration: BoxDecoration(
+                color: scheme.onPrimary,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                color: const Color(0xFFF5C242),
+                color: scheme.primary,
                 size: 20,
               ),
             ),
@@ -835,7 +876,7 @@ class _AudioWaveformBubbleState extends State<AudioWaveformBubble>
                     width: 2.5,
                     height: dynH,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF131411),
+                      color: scheme.onPrimary,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   );
@@ -844,10 +885,10 @@ class _AudioWaveformBubbleState extends State<AudioWaveformBubble>
             },
           ),
           const SizedBox(width: 10),
-          const Text(
+          Text(
             '0:14',
             style: TextStyle(
-              color: Color(0xFF131411),
+              color: scheme.onPrimary,
               fontSize: 11,
               fontWeight: FontWeight.w700,
             ),

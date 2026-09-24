@@ -16,7 +16,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
  */
 export const chatWithAssistant = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { prompt } = req.body as { prompt?: string };
+    const { prompt, mode } = req.body as { prompt?: string; mode?: "live" | "chat" };
 
     if (!prompt) {
       res.status(400).json({ success: false, error: "Prompt is required" });
@@ -41,8 +41,8 @@ export const chatWithAssistant = async (req: Request, res: Response): Promise<vo
             orderBy: [{ year: "desc" }, { month: "desc" }],
             take: 1,
           },
-          attendance: { take: 31, orderBy: { date: "desc" } }, // Last 14 days of attendance
-          leaves: { take: 10, orderBy: { created_at: "desc" } }, // Last 10 leave requests
+          attendance: { take: 31, orderBy: { date: "desc" } },
+          leaves: { take: 10, orderBy: { created_at: "desc" } },
           salary_structures: true,
           manager: { select: { name: true, email: true } },
           subordinates: {
@@ -57,7 +57,7 @@ export const chatWithAssistant = async (req: Request, res: Response): Promise<vo
         const leaveInfo = employee.leave_balances
           .map(
             (lb) =>
-              `- ${lb.leave_type_rel.name}: ${lb.remaining} remaining (${lb.used} used / ${lb.allocated} allocated)`,
+              `${lb.leave_type_rel.name}: ${lb.remaining} remaining (${lb.used} used / ${lb.allocated} allocated)`,
           )
           .join("\n");
 
@@ -79,10 +79,28 @@ ${payrollInfo}
       }
     }
 
+    const isLiveMode = mode === "live";
+
+    const liveModeFormatting = `
+You are speaking aloud in real-time voice mode (Gemini Live).
+CRITICAL VOICE FORMATTING REQUIREMENTS:
+- Deliver responses strictly in natural, conversational spoken paragraph format.
+- STRICTLY DO NOT use bullet points, numbered lists, markdown symbols (like **, *, or #), or line-by-line item lists.
+- Whenever presenting breakdowns, figures, or metrics (such as salary slip amounts, deductions, net pay, shift timings, or leave balances), format them as a continuous, flowing paragraph with comma-separated details (for example: "Here is your latest salary slip breakdown for September 2026: Gross Pay is ₹21,200, Total Deductions are ₹2,400, Net Take-Home Pay is ₹18,800, and you completed 30 working days with zero loss-of-pay days.").
+- Keep the response concise, friendly, and easy to understand when spoken aloud.`.trim();
+
+    const chatModeFormatting = `
+Keep responses concise, clear, and easy to read on a mobile screen.
+CRITICAL FORMATTING INSTRUCTIONS:
+- NEVER use bullet symbols (do NOT use *, -, •, or any bullet marker).
+- NEVER use numbered lists (do NOT use 1., 2., 3., etc.).
+- When listing items (such as leave balances, shift timings, payslip breakdown, or policies), format each item on its own clean line with bold labels (for example: "**Casual Leave:** 6 remaining (6 used / 12 allocated)") with no bullet symbol or number prefix.
+- Use bold text (**) for item titles and key figures to maintain high readability.`.trim();
+
     const systemInstruction = `
 You are "Smart Assistant", an intelligent HR concierge embedded in the MKX HRMS Employee App.
 Your job is to help the employee with HR-related queries in a helpful, friendly, and concise manner.
-Keep responses brief since they are shown on a mobile app. Use markdown formatting (bold, bullet points) where it helps readability.
+${isLiveMode ? liveModeFormatting : chatModeFormatting}
 Do NOT make up data. Only answer based on the context provided below.
 
 --- EMPLOYEE CONTEXT ---
