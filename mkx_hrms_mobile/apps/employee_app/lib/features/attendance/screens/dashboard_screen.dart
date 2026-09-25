@@ -3,9 +3,9 @@ import 'package:intl/intl.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/features/auth/state/auth_provider.dart';
+import 'package:mkx_core/network/dio_client.dart';
 import 'package:mkx_core/utils/date_utils.dart';
 import 'package:mkx_core/utils/ui_helpers.dart';
-import 'package:mkx_core/network/dio_client.dart';
 import 'package:mkx_core/widgets/empty_state.dart';
 import 'package:mkx_core/widgets/metric_card.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
@@ -13,7 +13,6 @@ import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
 import 'package:provider/provider.dart';
 
-import '../../ai_assistant/state/ai_provider.dart';
 import '../../leaves/state/leaves_provider.dart';
 import '../../leaves/widgets/apply_leave_bottom_sheet.dart';
 import '../state/attendance_provider.dart';
@@ -242,7 +241,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     : '${celeb['years']} Years Anniversary! 🎉',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: M3ETheme.of(context).colorScheme.onSurfaceVariant,
+                                  color: M3ETheme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
                                 ),
                               ),
                             ],
