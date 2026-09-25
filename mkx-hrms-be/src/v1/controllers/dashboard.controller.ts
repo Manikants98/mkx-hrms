@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { prisma } from "../../libraries/prisma";
+import { GoogleGenAI } from "@google/genai";
 
 /**
  * Computes human-friendly dynamic relative time string
@@ -142,9 +143,7 @@ export const getDashboardOverview = async (
     });
 
     const activeCandidates =
-      isManager && !isAdminOrHR
-        ? 0
-        : await prisma.candidate.count({ where: { status: "Active" } });
+      isManager && !isAdminOrHR ? 0 : await prisma.candidate.count({ where: { status: "Active" } });
 
     const attendanceWhere: Record<string, unknown> = {
       record_id: { contains: todayStr },
@@ -303,8 +302,12 @@ export const getDashboardOverview = async (
     });
 
     const celebrations: any[] = [];
-    activeEmpsData.forEach(e => {
-      if (e.birth_date && e.birth_date.getDate() === todayDate.getDate() && e.birth_date.getMonth() === todayDate.getMonth()) {
+    activeEmpsData.forEach((e) => {
+      if (
+        e.birth_date &&
+        e.birth_date.getDate() === todayDate.getDate() &&
+        e.birth_date.getMonth() === todayDate.getMonth()
+      ) {
         celebrations.push({
           type: "Birthday",
           employee_id: e.id,
@@ -313,8 +316,13 @@ export const getDashboardOverview = async (
           avatar: e.avatar,
         });
       }
-      
-      if (e.join_date && e.join_date.getDate() === todayDate.getDate() && e.join_date.getMonth() === todayDate.getMonth() && e.join_date.getFullYear() < todayDate.getFullYear()) {
+
+      if (
+        e.join_date &&
+        e.join_date.getDate() === todayDate.getDate() &&
+        e.join_date.getMonth() === todayDate.getMonth() &&
+        e.join_date.getFullYear() < todayDate.getFullYear()
+      ) {
         const years = todayDate.getFullYear() - e.join_date.getFullYear();
         celebrations.push({
           type: "Work Anniversary",
@@ -326,6 +334,71 @@ export const getDashboardOverview = async (
         });
       }
     });
+
+    let smartInsights: any = null;
+    if (req.user?.employee_db_id) {
+      try {
+        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+        const employee = await prisma.employee.findUnique({
+          where: { id: req.user.employee_db_id },
+          include: {
+            leave_balances: {
+              include: { leave_type_rel: { select: { name: true } } },
+              where: { year: new Date().getFullYear() },
+            },
+            attendance: { take: 30, orderBy: { date: "desc" } },
+          },
+        });
+        if (employee) {
+          const leaveInfo = employee.leave_balances
+            .map((lb) => `${lb.leave_type_rel?.name ?? "Leave"}: ${lb.remaining} remaining`)
+            .join(", ");
+
+          const lateDays = employee.attendance.filter(
+            (a) => a.status?.toUpperCase() === "LATE",
+          ).length;
+          const absentDays = employee.attendance.filter(
+            (a) => a.status?.toUpperCase() === "ABSENT",
+          ).length;
+          const presentDays = employee.attendance.filter(
+            (a) => a.status?.toUpperCase() === "PRESENT",
+          ).length;
+
+          const contextBlock = `
+Leave Balances: ${leaveInfo || "None"}
+Last 30 Days Attendance: ${presentDays} Present, ${lateDays} Late, ${absentDays} Absent.
+`;
+          const systemInstruction = `
+You are an AI Assistant for an HR app.
+Analyze the employee's data and provide a short personalized summary and 1-3 suggestions (reminders, warnings, or tips).
+If there is no significant HR data to report on, or just as a friendly touch, provide general workplace wellness tips.
+Output strictly in JSON format matching this schema:
+{
+  "summary": "Short 1-2 sentence friendly summary of their current status",
+  "suggestions": [
+    { "type": "reminder" | "warning" | "info" | "success", "message": "The suggestion text" }
+  ]
+}
+No markdown formatting, just pure JSON.
+`.trim();
+
+          const response = await ai.models.generateContent({
+            model: "gemini-flash-lite-latest",
+            contents: `Employee Data:\n${contextBlock}`,
+            config: { systemInstruction, responseMimeType: "application/json" },
+          });
+
+          const text = response.text ?? "{}";
+          const cleanJson = text
+            .replace(/```json/gi, "")
+            .replace(/```/g, "")
+            .trim();
+          smartInsights = JSON.parse(cleanJson);
+        }
+      } catch (e) {
+        console.error("Failed to fetch smart insights inside dashboard API:", e);
+      }
+    }
 
     const overview = {
       kpi_metrics: {
@@ -349,6 +422,7 @@ export const getDashboardOverview = async (
       recent_activities: formattedActivities,
       top_performers: formattedPerformers,
       celebrations: celebrations,
+      smart_insights: smartInsights,
     };
 
     res.sendSuccess({
@@ -401,7 +475,7 @@ export const getAllActivities = async (
 
     if (isManager && !isAdminOrHR && managerEmployeeId) {
       andConditions.push({
-        employee: { manager_id: managerEmployeeId }
+        employee: { manager_id: managerEmployeeId },
       });
     }
 

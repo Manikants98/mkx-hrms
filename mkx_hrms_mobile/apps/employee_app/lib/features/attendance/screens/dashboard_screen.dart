@@ -29,6 +29,7 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   List<dynamic> _celebrations = [];
+  Map<String, dynamic>? _smartInsights;
 
   @override
   void initState() {
@@ -42,6 +43,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final auth = context.read<AuthProvider>();
     final attendance = context.read<AttendanceProvider>();
     final leaves = context.read<LeavesProvider>();
+    final client = DioClient.instance;
+
     await Future.wait([
       attendance.loadAttendance(
         employeeId: auth.currentUser?.employeeDbId,
@@ -51,24 +54,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
         employeeId: auth.currentUser?.employeeDbId,
         employeeCode: auth.currentUser?.employeeId,
       ),
-    ]);
-
-    if (!mounted) return;
-    context.read<AiProvider>().loadDashboardInsights();
-
-    try {
-      final client = DioClient.instance;
-      final res = await client.get('/dashboard/overview');
-      if (res is Map<String, dynamic> && res['celebrations'] != null) {
-        if (mounted) {
+      client.get('/dashboard/overview').then((res) {
+        if (res is Map<String, dynamic> && mounted) {
           setState(() {
-            _celebrations = res['celebrations'];
+            _celebrations = res['celebrations'] ?? [];
+            _smartInsights = res['smart_insights'];
           });
         }
-      }
-    } catch (e) {
-      debugPrint('Failed to load celebrations: $e');
-    }
+      }).catchError((e) {
+        debugPrint('Failed to load dashboard overview: $e');
+      }),
+    ]);
   }
 
   Future<void> _handlePunchIn() async {
@@ -142,7 +138,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final auth = context.watch<AuthProvider>();
     final attendance = context.watch<AttendanceProvider>();
     final leaves = context.watch<LeavesProvider>();
-    final ai = context.watch<AiProvider>();
     final user = auth.currentUser;
 
     final totalRemainingLeaves = leaves.balances?.list.isNotEmpty == true
@@ -191,49 +186,71 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                SizedBox(
-                  height: 70,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _celebrations.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 10),
-                    itemBuilder: (context, index) {
-                      final celeb = _celebrations[index];
-                      final isBirthday = celeb['type'] == 'Birthday';
-                      return M3ECard(
-                        variant: M3ECardVariant.filled,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            CircleAvatar(
-                              radius: 18,
-                              backgroundColor: isBirthday ? AppColors.warning : AppColors.info,
-                              backgroundImage: celeb['avatar'] != null ? NetworkImage(celeb['avatar']) : null,
-                              child: celeb['avatar'] == null
-                                  ? Icon(isBirthday ? Icons.cake : Icons.work, color: Colors.white, size: 18)
-                                  : null,
-                            ),
-                            const SizedBox(width: 12),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  celeb['name'] ?? '',
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                SectionCard(
+                  isDark: isDark,
+                  children: _celebrations.map((celeb) {
+                    final isBirthday = celeb['type'] == 'Birthday';
+                    final hasAvatar = celeb['avatar'] != null &&
+                        celeb['avatar'].toString().trim().isNotEmpty;
+
+                    return Row(
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: isBirthday
+                                ? AppColors.warning.withValues(alpha: 0.15)
+                                : AppColors.info.withValues(alpha: 0.15),
+                            image: hasAvatar
+                                ? DecorationImage(
+                                    image: NetworkImage(celeb['avatar']),
+                                    fit: BoxFit.cover,
+                                  )
+                                : null,
+                          ),
+                          child: hasAvatar
+                              ? null
+                              : Icon(
+                                  isBirthday
+                                      ? Icons.cake_rounded
+                                      : Icons.work_history_rounded,
+                                  color: isBirthday
+                                      ? AppColors.warning
+                                      : AppColors.info,
+                                  size: 24,
                                 ),
-                                Text(
-                                  isBirthday ? 'Happy Birthday!' : '${celeb['years']} Years Anniversary!',
-                                  style: TextStyle(fontSize: 11, color: M3ETheme.of(context).colorScheme.onSurfaceVariant),
-                                ),
-                              ],
-                            ),
-                          ],
                         ),
-                      );
-                    },
-                  ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                celeb['name'] ?? '',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                isBirthday
+                                    ? 'Happy Birthday! 🎂'
+                                    : '${celeb['years']} Years Anniversary! 🎉',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: M3ETheme.of(context).colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  }).toList(),
                 ),
                 const SizedBox(height: 16),
               ],
@@ -332,18 +349,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ],
               ),
               const SizedBox(height: 10),
-              if (ai.isLoadingInsights)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 24),
-                  child: Center(
-                    child: SizedBox(
-                        width: 30,
-                        height: 30,
-                        child: M3EProgressIndicator.circular()),
-                  ),
-                )
-              else if (ai.dashboardInsights != null)
-                _buildAiInsightsSection(ai.dashboardInsights!,
+              if (_smartInsights != null)
+                _buildAiInsightsSection(_smartInsights!,
                     colorScheme: M3ETheme.of(context).colorScheme,
                     isDark: isDark),
               const SizedBox(height: 10),
@@ -425,11 +432,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         if (item.hasCheckedIn && !item.hasCheckedOut) {
                           try {
                             final now = attendance.currentTime;
-                            final recordDate = DateTime.parse(item.date).toLocal();
-                            if (recordDate.year == now.year && recordDate.month == now.month && recordDate.day == now.day) {
+                            final recordDate =
+                                DateTime.parse(item.date).toLocal();
+                            if (recordDate.year == now.year &&
+                                recordDate.month == now.month &&
+                                recordDate.day == now.day) {
                               final format = DateFormat('hh:mm a');
                               final checkInTime = format.parse(item.checkIn);
-                              final checkInDateTime = DateTime(now.year, now.month, now.day, checkInTime.hour, checkInTime.minute);
+                              final checkInDateTime = DateTime(
+                                  now.year,
+                                  now.month,
+                                  now.day,
+                                  checkInTime.hour,
+                                  checkInTime.minute);
                               final diff = now.difference(checkInDateTime);
                               if (!diff.isNegative) {
                                 final h = diff.inHours;
