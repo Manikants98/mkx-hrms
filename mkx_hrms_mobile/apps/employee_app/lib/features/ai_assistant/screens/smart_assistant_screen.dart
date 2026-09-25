@@ -402,7 +402,7 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
     return ListView.builder(
       controller: _scrollController,
       reverse: true,
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+      padding: const EdgeInsets.fromLTRB(10, 16, 10, 12),
       itemCount: ai.messages.length,
       itemBuilder: (context, index) {
         final message = ai.messages[ai.messages.length - 1 - index];
