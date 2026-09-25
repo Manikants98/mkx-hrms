@@ -59,4 +59,15 @@ class ApiEndpoints {
   // ── HR Admin — Dashboard ──────────────────────────────────────────────────
   /// `GET /dashboard/overview` — aggregate KPI stats for HR overview
   static const String hrDashboard = '/dashboard/overview';
+
+  // ── Notifications ──────────────────────────────────────────────────────────
+  /// `GET /notifications` — get user notifications
+  static const String notifications = '/notifications';
+
+  /// `PATCH /notifications/:id/read` — mark a single notification as read
+  static String markNotificationRead(int id) => '/notifications/$id/read';
+
+  /// `PATCH /notifications/mark-all-read` — mark all notifications as read
+  static const String markAllNotificationsRead = '/notifications/mark-all-read';
 }
+

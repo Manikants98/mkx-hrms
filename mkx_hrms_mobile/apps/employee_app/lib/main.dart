@@ -1,4 +1,6 @@
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:mkx_core/constants/app_colors.dart';
@@ -14,10 +16,8 @@ import 'features/ai_assistant/state/ai_provider.dart';
 import 'features/attendance/state/attendance_provider.dart';
 import 'features/leaves/state/leaves_provider.dart';
 import 'features/navigation/screens/main_shell_screen.dart';
+import 'features/notifications/state/notifications_provider.dart';
 import 'features/payroll/state/payroll_provider.dart';
-
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -106,6 +106,7 @@ class _MkxHrmsAppState extends State<MkxHrmsApp> {
           ChangeNotifierProvider(create: (_) => LeavesProvider()),
           ChangeNotifierProvider(create: (_) => PayrollProvider()),
           ChangeNotifierProvider(create: (_) => AiProvider()),
+          ChangeNotifierProvider(create: (_) => NotificationsProvider()),
         ],
         child: AppThemeScope(
           settings: _themeSettings,

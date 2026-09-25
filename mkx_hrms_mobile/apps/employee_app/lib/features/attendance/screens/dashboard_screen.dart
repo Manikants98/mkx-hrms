@@ -15,6 +15,8 @@ import 'package:provider/provider.dart';
 
 import '../../leaves/state/leaves_provider.dart';
 import '../../leaves/widgets/apply_leave_bottom_sheet.dart';
+import '../../notifications/screens/notifications_screen.dart';
+import '../../notifications/state/notifications_provider.dart';
 import '../state/attendance_provider.dart';
 import '../widgets/punch_card.dart';
 
@@ -42,6 +44,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final auth = context.read<AuthProvider>();
     final attendance = context.read<AttendanceProvider>();
     final leaves = context.read<LeavesProvider>();
+    final notifications = context.read<NotificationsProvider>();
     final client = DioClient.instance;
 
     await Future.wait([
@@ -53,6 +56,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         employeeId: auth.currentUser?.employeeDbId,
         employeeCode: auth.currentUser?.employeeId,
       ),
+      notifications.fetchNotifications(),
       client.get('/dashboard/overview').then((res) {
         if (res is Map<String, dynamic> && mounted) {
           setState(() {
@@ -195,6 +199,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final auth = context.watch<AuthProvider>();
     final attendance = context.watch<AttendanceProvider>();
     final leaves = context.watch<LeavesProvider>();
+    final notifications = context.watch<NotificationsProvider>();
     final user = auth.currentUser;
 
     final totalRemainingLeaves = leaves.balances?.list.isNotEmpty == true
@@ -212,6 +217,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: MkxAppBar(
         title: 'Dashboard',
         subtitle: 'Good ${_greeting()}, ${user?.name ?? "Employee"}',
+        actions: [
+          Badge(
+            isLabelVisible: notifications.unreadCount > 0,
+            label: Text(notifications.unreadCount.toString()),
+            backgroundColor: M3ETheme.of(context).colorScheme.error,
+            offset: const Offset(-8, 8),
+            child: IconButton(
+              icon: const Icon(Icons.notifications_none_rounded),
+              color: M3ETheme.of(context).colorScheme.onSurface,
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const NotificationsScreen(),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
       body: M3ERefreshIndicator.contained(
         onRefresh: _loadData,
