@@ -1,6 +1,6 @@
 name: material_3_expressive_example
 description: "Demonstrates how to use the material_3_expressive plugin."
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 environment:
   sdk: ^3.12.0
