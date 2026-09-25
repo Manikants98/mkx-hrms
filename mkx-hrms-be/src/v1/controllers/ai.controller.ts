@@ -46,7 +46,11 @@ export const chatWithAssistant = async (req: Request, res: Response): Promise<vo
           },
           attendance: { take: 31, orderBy: { date: "desc" } },
           leaves: { take: 10, orderBy: { created_at: "desc" } },
-          salary_structures: true,
+          salary_structures: {
+            include: {
+              salary_structure: true,
+            },
+          },
           manager: { select: { name: true, email: true } },
           subordinates: {
             select: { name: true, email: true, department_rel: { select: { name: true } } },
