@@ -46,3 +46,4 @@ app.*.map.json
 
 # Custom APK output
 release_apks/
+google-services.json

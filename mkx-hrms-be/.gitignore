@@ -20,3 +20,4 @@ npm-debug.log*
 .idea/
 
 /src/generated/prisma
+firebase-service-account.json
