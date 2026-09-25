@@ -432,7 +432,6 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
               bottomLeft: Radius.circular(18),
               bottomRight: Radius.circular(4),
             ),
-            // border: Border.all(color: colorScheme.outlineVariant),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -497,7 +496,6 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
                   bottomRight: Radius.circular(18),
                   bottomLeft: Radius.circular(4),
                 ),
-                // border: Border.all(color: colorScheme.outlineVariant),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -609,9 +607,8 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerLow,
+            color: colorScheme.surfaceContainerLowest,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: colorScheme.outlineVariant),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -651,16 +648,12 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
       ),
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        // border: Border(
-        //   top: BorderSide(color: colorScheme.outlineVariant, width: 1),
-        // ),
       ),
       child: Container(
         padding: const EdgeInsets.only(left: 12, right: 8, top: 2, bottom: 2),
         decoration: BoxDecoration(
           color: colorScheme.surfaceContainer,
           borderRadius: BorderRadius.circular(16),
-          // border: Border.all(color: colorScheme.outlineVariant),
         ),
         child: Row(
           children: [

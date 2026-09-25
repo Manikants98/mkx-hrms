@@ -43,7 +43,6 @@ export const chatWithAssistant = async (req: Request, res: Response): Promise<vo
           },
           payrolls: {
             orderBy: [{ year: "desc" }, { month: "desc" }],
-            take: 1,
           },
           attendance: { take: 31, orderBy: { date: "desc" } },
           leaves: { take: 10, orderBy: { created_at: "desc" } },
