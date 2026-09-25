@@ -1,18 +1,17 @@
 import {
   DoneAll,
-  EventAvailable,
   Logout,
   NotificationsNone,
-  Payment,
   Person,
+  CardGiftcard,
   Settings as SettingsIcon,
-  WorkOutlined,
 } from "@mui/icons-material";
 import {
   Avatar,
   Badge,
   Button,
   Chip,
+  CircularProgress,
   Divider,
   IconButton,
   ListItemIcon,
@@ -21,60 +20,31 @@ import {
 import { useTheme } from "context/ThemeContext/useTheme";
 import { useAuth } from "contexts/AuthContext";
 import { Moon, Sun } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState, type MouseEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowMenu } from "../ArrowMenu";
 import { FontSwitcherModal } from "../FontSwitcherModal";
+import {
+  useGetNotifications,
+  useMarkNotificationRead,
+  useMarkAllNotificationsRead,
+  type AppNotification,
+} from "services/dashboard";
 
 /**
- * Interface definition for in-app HRMS notifications
+ * Formats an ISO date string into a relative time label
+ *
+ * @param dateStr - ISO date string to format
+ * @returns Human-readable relative time string
  */
-interface AppNotification {
-  id: string;
-  title: string;
-  message: string;
-  time: string;
-  unread: boolean;
-  type: "leave" | "recruitment" | "payroll" | "attendance";
-}
-
-/**
- * Initial sample notification entries
- */
-const initialNotifications: AppNotification[] = [
-  {
-    id: "notif-1",
-    title: "New Leave Application",
-    message: "Sarah Jenkins requested 3 days of Annual PTO for next week.",
-    time: "10 mins ago",
-    unread: true,
-    type: "leave",
-  },
-  {
-    id: "notif-2",
-    title: "Candidate Shortlisted",
-    message: "Alex Rivera moved to Final Interview for Senior React Developer.",
-    time: "45 mins ago",
-    unread: true,
-    type: "recruitment",
-  },
-  {
-    id: "notif-3",
-    title: "Payroll Cycle Ready",
-    message: "September mid-cycle salary payroll draft generated for 48 employees.",
-    time: "2 hours ago",
-    unread: true,
-    type: "payroll",
-  },
-  {
-    id: "notif-4",
-    title: "Attendance Alert",
-    message: "3 employees flagged with remote check-ins after 09:30 AM.",
-    time: "5 hours ago",
-    unread: false,
-    type: "attendance",
-  },
-];
+const formatRelativeTime = (dateStr: string): string => {
+  const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  if (diff < 60) return "Just now";
+  if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} hr ago`;
+  return `${Math.floor(diff / 86400)}d ago`;
+};
 
 /**
  * Standard Header component with interactive Date Filter, Theme Toggle, Notification Popover, and Profile Menu.
@@ -84,12 +54,18 @@ export function Header() {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const [notifications, setNotifications] = useState<AppNotification[]>(initialNotifications);
+  const queryClient = useQueryClient();
+
   const [notificationAnchorEl, setNotificationAnchorEl] = useState<HTMLElement | null>(null);
-
   const [fontModalOpen, setFontModalOpen] = useState(false);
-
   const [profileAnchorEl, setProfileAnchorEl] = useState<HTMLElement | null>(null);
+
+  const { data: notifData, isLoading: notifLoading } = useGetNotifications();
+  const { mutate: markRead } = useMarkNotificationRead();
+  const { mutate: markAllRead } = useMarkAllNotificationsRead();
+
+  const notifications = notifData?.data?.notifications ?? [];
+  const unreadCount = notifData?.data?.unread_count ?? 0;
 
   const isDark =
     theme === "dark" || (theme === "system" && document.documentElement.classList.contains("dark"));
@@ -98,38 +74,21 @@ export function Header() {
     setTheme(isDark ? "light" : "dark");
   };
 
-  const unreadCount = notifications.filter((n) => n.unread).length;
-
   /**
-   * Toggle a notification's unread status
+   * Mark a notification as read and refresh the list
    */
-  const handleToggleNotificationRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, unread: !item.unread } : item)),
-    );
+  const handleMarkRead = (n: AppNotification) => {
+    if (n.is_read) return;
+    markRead(n.id);
+    queryClient.invalidateQueries({ queryKey: ["notifications"] });
   };
 
   /**
-   * Mark all notifications as read
+   * Mark all notifications as read and refresh the list
    */
   const handleMarkAllRead = () => {
-    setNotifications((prev) => prev.map((item) => ({ ...item, unread: false })));
-  };
-
-  /**
-   * Render semantic icon badge based on notification category
-   */
-  const getNotificationIcon = (type: AppNotification["type"]) => {
-    switch (type) {
-      case "leave":
-        return <EventAvailable className="!w-4 !h-4 !text-emerald-500" />;
-      case "recruitment":
-        return <WorkOutlined className="!w-4 !h-4 !text-sky-500" />;
-      case "payroll":
-        return <Payment className="!w-4 !h-4 !text-amber-500" />;
-      case "attendance":
-        return <NotificationsNone className="!w-4 !h-4 !text-purple-500" />;
-    }
+    markAllRead();
+    queryClient.invalidateQueries({ queryKey: ["notifications"] });
   };
 
   /**
@@ -199,7 +158,11 @@ export function Header() {
           </div>
 
           <div className="max-h-[340px] overflow-y-auto custom-scrollbar divide-y divide-border/40 p-1">
-            {notifications.length === 0 ? (
+            {notifLoading ? (
+              <div className="py-8 flex justify-center">
+                <CircularProgress size={24} />
+              </div>
+            ) : notifications.length === 0 ? (
               <div className="py-8 text-center text-xs text-muted-foreground">
                 No notifications at this time
               </div>
@@ -207,19 +170,21 @@ export function Header() {
               notifications.map((n) => (
                 <div
                   key={n.id}
-                  onClick={() => handleToggleNotificationRead(n.id)}
+                  onClick={() => handleMarkRead(n)}
                   className={`p-3 rounded-[5px] transition-colors cursor-pointer flex gap-3 ${
-                    n.unread
+                    !n.is_read
                       ? "bg-secondary/40 hover:bg-secondary/70"
                       : "hover:bg-secondary/30 opacity-75 hover:opacity-100"
                   }`}
                 >
-                  <div className="mt-0.5">{getNotificationIcon(n.type)}</div>
+                  <div className="mt-0.5">
+                    <CardGiftcard className="!w-4 !h-4 !text-amber-500" />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-1">
                       <p
                         className={`text-xs ${
-                          n.unread
+                          !n.is_read
                             ? "font-semibold text-foreground"
                             : "font-medium text-muted-foreground"
                         }`}
@@ -227,14 +192,19 @@ export function Header() {
                         {n.title}
                       </p>
                       <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-                        {n.time}
+                        {formatRelativeTime(n.created_at)}
                       </span>
                     </div>
+                    {n.sender_name && (
+                      <p className="text-[10px] text-primary/70 font-medium mt-0.5">
+                        From: {n.sender_name}
+                      </p>
+                    )}
                     <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
                       {n.message}
                     </p>
                   </div>
-                  {n.unread && (
+                  {!n.is_read && (
                     <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
                   )}
                 </div>

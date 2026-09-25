@@ -131,6 +131,64 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return 'Evening';
   }
 
+  Future<void> _sendWish(Map<String, dynamic> celeb) async {
+    final isBirthday = celeb['type'] == 'Birthday';
+    final auth = context.read<AuthProvider>();
+    final userName = auth.currentUser?.name ?? "Your Colleague";
+
+    final defaultMessage = isBirthday
+        ? 'Happy Birthday! Wishing you a great day from $userName!'
+        : 'Happy Work Anniversary! Wishing you continued success from $userName!';
+
+    final TextEditingController messageController =
+        TextEditingController(text: defaultMessage);
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title:
+              Text(isBirthday ? 'Send Birthday Wish' : 'Send Anniversary Wish'),
+          content: TextField(
+            controller: messageController,
+            maxLines: 3,
+            decoration: const InputDecoration(
+              hintText: 'Enter your custom message here...',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, messageController.text),
+              child: const Text('Send'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result == null || result.trim().isEmpty) return;
+
+    try {
+      await DioClient.instance.post('/dashboard/send-wish', data: {
+        'employee_id': celeb['employee_id'],
+        'message': result.trim(),
+      });
+      if (mounted) {
+        UiHelpers.showSnackBar(context, 'Wish sent successfully!',
+            isSuccess: true);
+      }
+    } catch (e) {
+      if (mounted) {
+        UiHelpers.showSnackBar(context, 'Failed to send wish', isError: true);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = M3ETheme.of(context).brightness == Brightness.dark;
@@ -154,27 +212,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: MkxAppBar(
         title: 'Dashboard',
         subtitle: 'Good ${_greeting()}, ${user?.name ?? "Employee"}',
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_active_outlined),
-            onPressed: () async {
-              try {
-                await DioClient.instance.get('/auth/test-push');
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                          'Test Push Triggered! DO NOT MINIMIZE. Wait 3 sec...'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                }
-              } catch (e) {
-                debugPrint('Failed to trigger test push: $e');
-              }
-            },
-          ),
-        ],
       ),
       body: M3ERefreshIndicator.contained(
         onRefresh: _loadData,
@@ -258,8 +295,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               const SizedBox(height: 4),
                               Text(
                                 isBirthday
-                                    ? 'Happy Birthday! 🎂'
-                                    : '${celeb['years']} Years Anniversary! 🎉',
+                                    ? 'Happy Birthday!'
+                                    : '${celeb['years']} Years Anniversary!',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: M3ETheme.of(context)
@@ -269,6 +306,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               ),
                             ],
                           ),
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.send_rounded,
+                            color: isBirthday
+                                ? AppColors.warning
+                                : M3ETheme.of(context).colorScheme.primary,
+                            size: 20,
+                          ),
+                          onPressed: () => _sendWish(celeb),
+                          tooltip: 'Send Wish',
                         ),
                       ],
                     );

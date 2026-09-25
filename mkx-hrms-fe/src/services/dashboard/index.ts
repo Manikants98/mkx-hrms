@@ -125,7 +125,7 @@ export const useSendWish = () => {
   const mutation = useCustomMutation<ApiResponse<{}>, unknown, SendWishPayload>({
     toastMessages: {
       loading: "Sending wish...",
-      success: "Wish sent successfully! 🚀",
+      success: "Wish sent successfully!",
       error: "Failed to send wish",
     },
   });
@@ -146,3 +146,66 @@ export const useSendWish = () => {
       }),
   };
 };
+
+/**
+ * In-app notification record from the database
+ */
+export interface AppNotification {
+  id: number;
+  user_id: number;
+  title: string;
+  message: string;
+  type: string;
+  sender_name: string | null;
+  is_read: boolean;
+  data: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Notifications API response shape
+ */
+export interface NotificationsResponse {
+  notifications: AppNotification[];
+  unread_count: number;
+}
+
+/**
+ * Hook to fetch notifications for the authenticated user
+ *
+ * @returns React Query result with notifications and unread count
+ */
+export const useGetNotifications = () => {
+  return useCustomQuery<ApiResponse<NotificationsResponse>>(
+    ["notifications"],
+    "/v1/notifications",
+  );
+};
+
+/**
+ * Hook to mark a single notification as read
+ */
+export const useMarkNotificationRead = () => {
+  const mutation = useCustomMutation<ApiResponse<{}>, unknown, { id: number }>({});
+
+  return {
+    ...mutation,
+    mutate: (id: number) =>
+      mutation.mutate({ url: `/v1/notifications/${id}/read`, method: "PATCH" }),
+  };
+};
+
+/**
+ * Hook to mark all notifications as read
+ */
+export const useMarkAllNotificationsRead = () => {
+  const mutation = useCustomMutation<ApiResponse<{}>, unknown, void>({});
+
+  return {
+    ...mutation,
+    mutate: () =>
+      mutation.mutate({ url: "/v1/notifications/mark-all-read", method: "PATCH" }),
+  };
+};
+

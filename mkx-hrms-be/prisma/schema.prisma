@@ -83,6 +83,7 @@ model User {
   notification_preferences NotificationPreference[]
   activity_logs            ActivityLog[]
   blogs                    BlogPost[]
+  notifications            Notification[]
 
   @@map("users")
 }
@@ -489,4 +490,21 @@ model AiChatHistory {
   employee    Employee @relation(fields: [employee_id], references: [id], onDelete: Cascade)
 
   @@map("ai_chat_history")
+}
+
+model Notification {
+  id          Int      @id @default(autoincrement())
+  user_id     Int
+  title       String   @db.VarChar(255)
+  message     String   @db.Text
+  type        String   @default("general") @db.VarChar(50)
+  sender_name String?  @db.VarChar(200)
+  is_read     Boolean  @default(false)
+  data        Json?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
 }

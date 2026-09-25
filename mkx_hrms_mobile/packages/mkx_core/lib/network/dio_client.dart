@@ -17,7 +17,7 @@ class DioClient {
     );
 
     _dio.interceptors.add(ApiInterceptor());
-    _initCustomBaseUrl();
+    // _initCustomBaseUrl(); // Temporarily disabled to force live URL
   }
 
   static final DioClient instance = DioClient._();
@@ -25,12 +25,12 @@ class DioClient {
 
   Dio get dio => _dio;
 
-  Future<void> _initCustomBaseUrl() async {
-    final customUrl = await TokenStorage.instance.getBaseUrl();
-    if (customUrl != null && customUrl.isNotEmpty) {
-      _dio.options.baseUrl = customUrl;
-    }
-  }
+  // Future<void> _initCustomBaseUrl() async {
+  //   final customUrl = await TokenStorage.instance.getBaseUrl();
+  //   if (customUrl != null && customUrl.isNotEmpty) {
+  //     _dio.options.baseUrl = customUrl;
+  //   }
+  // }
 
   void updateBaseUrl(String newUrl) {
     _dio.options.baseUrl = newUrl;

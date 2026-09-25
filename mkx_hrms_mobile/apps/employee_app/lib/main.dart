@@ -23,34 +23,44 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-  debugPrint("Handling a background message: ${message.messageId}");
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   try {
     await Firebase.initializeApp();
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-    
+
     // Enable foreground heads-up notifications
-    await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+    await FirebaseMessaging.instance
+        .setForegroundNotificationPresentationOptions(
       alert: true,
       badge: true,
       sound: true,
     );
-    
-    // FOREGROUND MESSAGES:
+
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      debugPrint('🔔 FOREGROUND NOTIFICATION RECEIVED: ${message.notification?.title}');
-      
       final context = navigatorKey.currentContext;
-      if (context != null) {
+      if (context != null && context.mounted) {
+        final title = message.notification?.title ??
+            message.data['title'] ??
+            'Notification';
+        final body = message.notification?.body ??
+            message.data['body'] ??
+            message.data['message'] ??
+            '';
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('🔔 ${message.notification?.title}: ${message.notification?.body}'),
+            content: Text(body.isNotEmpty ? '$title: $body' : title),
             backgroundColor: Colors.blue,
             behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.only(
+              bottom: MediaQuery.of(context).size.height - 150,
+              left: 20,
+              right: 20,
+            ),
             duration: const Duration(seconds: 4),
           ),
         );
@@ -59,7 +69,7 @@ void main() async {
   } catch (e) {
     debugPrint('Firebase init error: $e');
   }
-  
+
   runApp(const MkxHrmsApp());
 }
 

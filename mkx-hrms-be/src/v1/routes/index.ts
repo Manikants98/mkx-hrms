@@ -14,6 +14,7 @@ import mastersRoutes from "./masters.routes";
 import jobPostingsRoutes from "./job-postings.routes";
 import contactRoutes from "./contact.routes";
 import aiRoutes from "./ai.routes";
+import notificationsRoutes from "./notifications.routes";
 
 const router = Router();
 
@@ -34,5 +35,7 @@ router.use("/masters", mastersRoutes);
 router.use("/job-postings", jobPostingsRoutes);
 router.use("/contact", contactRoutes);
 router.use("/ai", aiRoutes);
+router.use("/notifications", notificationsRoutes);
 
 export default router;
+

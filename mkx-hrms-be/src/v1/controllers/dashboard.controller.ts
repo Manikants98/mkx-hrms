@@ -615,7 +615,7 @@ export const getWorkforceTrend = async (
 };
 
 /**
- * Send a push notification wish to an employee
+ * Send a push notification wish to an employee and persist it as an in-app notification
  */
 export const sendWish = async (req: Request, res: Response) => {
   try {
@@ -624,39 +624,56 @@ export const sendWish = async (req: Request, res: Response) => {
       return res.status(400).json({ status: "error", message: "Missing employee_id or message" });
     }
 
+    const authHeader = req.headers.authorization;
+    let senderName = "A Colleague";
+    if (authHeader?.startsWith("Bearer ")) {
+      const { verifyToken } = require("../services/auth.service");
+      const decoded = verifyToken(authHeader.split(" ")[1]);
+      if (decoded?.id) {
+        const senderUser = await prisma.user.findUnique({
+          where: { id: decoded.id },
+          select: { first_name: true, last_name: true },
+        });
+        if (senderUser) {
+          senderName = `${senderUser.first_name} ${senderUser.last_name}`.trim();
+        }
+      }
+    }
+
     const employee = await prisma.employee.findUnique({
       where: { id: employee_id },
     });
 
     if (!employee || !employee.user_id) {
-      return res
-        .status(404)
-        .json({ status: "error", message: "Employee or associated user not found" });
+      return res.status(404).json({ status: "error", message: "Employee or associated user not found" });
     }
 
     const targetUser = await prisma.user.findUnique({
       where: { id: employee.user_id },
     });
 
-    if (!targetUser || !targetUser.fcm_token) {
-      return res
-        .status(404)
-        .json({
-          status: "error",
-          message: "Target user does not have a registered device for notifications.",
-        });
+    if (!targetUser) {
+      return res.status(404).json({ status: "error", message: "Target user not found" });
     }
 
-    const { sendPushNotification } = require("../../libraries/firebase");
-    const success = await sendPushNotification(targetUser.fcm_token, "New Wish! 🎉", message, {
-      route: "/celebrations",
+    await prisma.notification.create({
+      data: {
+        user_id: targetUser.id,
+        title: "New Wish!",
+        message,
+        type: "wish",
+        sender_name: senderName,
+      },
     });
 
-    if (success) {
-      return res.json({ status: "success", message: "Wish sent successfully!" });
-    } else {
-      return res.status(500).json({ status: "error", message: "Failed to send push notification" });
+    if (targetUser.fcm_token) {
+      const { sendPushNotification } = require("../../libraries/firebase");
+      await sendPushNotification(targetUser.fcm_token, "New Wish!", message, {
+        route: "/celebrations",
+      });
     }
+
+    return res.json({ status: "success", message: "Wish sent successfully!" });
   } catch (error) {
     console.error("Error sending wish:", error);
     return res.status(500).json({ status: "error", message: "Internal server error" });
