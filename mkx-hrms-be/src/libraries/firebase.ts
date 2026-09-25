@@ -1,21 +1,21 @@
-import { initializeApp, cert } from 'firebase-admin/app';
-import { getMessaging } from 'firebase-admin/messaging';
-import * as path from 'path';
+import { initializeApp, cert } from "firebase-admin/app";
+import { getMessaging } from "firebase-admin/messaging";
+import * as path from "path";
 
 try {
   let credentialParams;
 
   if (process.env.FIREBASE_CREDENTIALS) {
-    // If running in production (Render), read from Environment Variable
+    /** If running in production (Render), read from Environment Variable */
     credentialParams = cert(JSON.parse(process.env.FIREBASE_CREDENTIALS));
   } else {
-    // If running locally, read from the JSON file
-    const serviceAccountPath = path.join(__dirname, '../../firebase-service-account.json');
+    /** If running locally, read from the JSON file */
+    const serviceAccountPath = path.join(__dirname, "../../firebase-service-account.json");
     credentialParams = cert(require(serviceAccountPath));
   }
 
   initializeApp({
-    credential: credentialParams
+    credential: credentialParams,
   });
   console.log("Firebase Admin initialized successfully.");
 } catch (error) {
@@ -25,7 +25,12 @@ try {
 /**
  * Sends a push notification to a specific FCM token
  */
-export const sendPushNotification = async (fcmToken: string, title: string, body: string, data: any = {}) => {
+export const sendPushNotification = async (
+  fcmToken: string,
+  title: string,
+  body: string,
+  data: any = {},
+) => {
   if (!fcmToken) {
     console.error("No FCM token provided for notification");
     return false;
@@ -49,4 +54,3 @@ export const sendPushNotification = async (fcmToken: string, title: string, body
     return false;
   }
 };
-

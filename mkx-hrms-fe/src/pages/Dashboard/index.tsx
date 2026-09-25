@@ -1,4 +1,12 @@
-import { AccessTime, Cancel, CheckCircle, Info } from "@mui/icons-material";
+import {
+  AccessTime,
+  Cancel,
+  CheckCircle,
+  Info,
+  Celebration,
+  Cake,
+  WorkHistory,
+} from "@mui/icons-material";
 import { Avatar, Badge, Chip } from "@mui/material";
 import { Activity, ArrowUpRight, Briefcase, Trophy, UserCheck, Users } from "lucide-react";
 import React, { useState } from "react";
@@ -10,8 +18,36 @@ import { MetricCard } from "shared/MetricCard";
 import {
   useGetDashboardOverview,
   useGetWorkforceTrend,
+  useSendWish,
   type RecentActivity,
 } from "services/dashboard";
+import { Send } from "lucide-react";
+import { useAuth } from "contexts/AuthContext";
+
+function SendWishButton({ employeeId, type }: { employeeId: number; type: string }) {
+  const { mutate: sendWish, isPending } = useSendWish();
+  const { user } = useAuth();
+
+  const senderName = user ? `${user.first_name} ${user.last_name}`.trim() : "the team";
+
+  const handleSendWish = () => {
+    sendWish({
+      employee_id: employeeId,
+      message: `Happy ${type}! 🎉 Wishing you a great day from ${senderName}!`,
+    });
+  };
+
+  return (
+    <button
+      onClick={handleSendWish}
+      disabled={isPending}
+      className="p-2 rounded-full hover:bg-primary/20 text-primary transition-colors disabled:opacity-50"
+      title={`Send ${type} Wish`}
+    >
+      <Send className="w-4 h-4" />
+    </button>
+  );
+}
 
 const statusIconMap: Record<string, React.ElementType> = {
   success: CheckCircle,
@@ -80,7 +116,9 @@ export default function Dashboard(): React.ReactElement {
         />
         <MetricCard
           title="Present Today"
-          value={String(metrics?.present_today ?? dashboardResponse?.data?.attendance?.present ?? 0)}
+          value={String(
+            metrics?.present_today ?? dashboardResponse?.data?.attendance?.present ?? 0,
+          )}
           icon={<UserCheck className="w-4 h-4" />}
         />
         <MetricCard
@@ -177,60 +215,119 @@ export default function Dashboard(): React.ReactElement {
           </StaggerContainer>
         </div>
 
-        <div className="bg-card border border-border rounded-xl p-5">
-          <div className="flex items-center justify-between mb-5">
-            <div>
-              <h3 className="text-base font-semibold text-foreground">Top Performers</h3>
-              <p className="text-sm text-muted-foreground mt-0.5">This month's leaders</p>
+        <div className="flex flex-col gap-4">
+          <div className="bg-card border border-border rounded-xl p-5">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h3 className="text-base font-semibold text-foreground">Top Performers</h3>
+                <p className="text-sm text-muted-foreground mt-0.5">This month's leaders</p>
+              </div>
+              <div className="flex items-center gap-1 text-warning">
+                <Trophy className="w-5 h-5" />
+              </div>
             </div>
-            <div className="flex items-center gap-1 text-warning">
-              <Trophy className="w-5 h-5" />
-            </div>
+
+            <StaggerContainer className="space-y-1">
+              {topPerformersList.map((performer) => (
+                <FadeUpItem
+                  key={performer.id}
+                  className="group flex items-center justify-between p-2 rounded-lg hover:bg-secondary/50 transition-all duration-200 cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <Badge
+                      badgeContent={performer.rank}
+                      invisible={!performer.rank}
+                      color="warning"
+                      className="[&_.MuiBadge-badge]:!rounded-[5px]"
+                    >
+                      <Avatar className="!w-10 !h-10 !bg-secondary !text-muted-foreground !text-[0.875rem] !font-semibold">
+                        {performer.initials}
+                      </Avatar>
+                    </Badge>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{performer.name}</p>
+                      <p className="text-xs text-muted-foreground">{performer.role}</p>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0 min-w-[80px]">
+                    <p className="text-sm font-semibold text-foreground">{performer.weeklyHours}</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">this week</p>
+                    <div className="mt-1.5 h-1.5 w-full rounded-full bg-secondary overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-700"
+                        style={{
+                          width: `${performer.performancePct}%`,
+                          backgroundColor:
+                            performer.performancePct >= 80
+                              ? "#10b981"
+                              : performer.performancePct >= 50
+                                ? "#f59e0b"
+                                : "#ef4444",
+                        }}
+                      />
+                    </div>
+                  </div>
+                </FadeUpItem>
+              ))}
+            </StaggerContainer>
           </div>
 
-          <StaggerContainer className="space-y-1">
-            {topPerformersList.map((performer) => (
-              <FadeUpItem
-                key={performer.id}
-                className="group flex items-center justify-between p-2 rounded-lg hover:bg-secondary/50 transition-all duration-200 cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  <Badge
-                    badgeContent={performer.rank}
-                    invisible={!performer.rank}
-                    color="warning"
-                    className="[&_.MuiBadge-badge]:!rounded-[5px]"
-                  >
-                    <Avatar className="!w-10 !h-10 !bg-secondary !text-muted-foreground !text-[0.875rem] !font-semibold">
-                      {performer.initials}
-                    </Avatar>
-                  </Badge>
+          {dashboardResponse?.data?.celebrations &&
+            dashboardResponse.data.celebrations.length > 0 && (
+              <div className="bg-card border border-border rounded-xl p-5">
+                <div className="flex items-center justify-between mb-5">
                   <div>
-                    <p className="text-sm font-medium text-foreground">{performer.name}</p>
-                    <p className="text-xs text-muted-foreground">{performer.role}</p>
+                    <h3 className="text-base font-semibold text-foreground">Celebrations Today</h3>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      Birthdays & Anniversaries
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1 text-primary">
+                    <Celebration className="w-5 h-5" />
                   </div>
                 </div>
-                <div className="text-right shrink-0 min-w-[80px]">
-                  <p className="text-sm font-semibold text-foreground">{performer.weeklyHours}</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">this week</p>
-                  <div className="mt-1.5 h-1.5 w-full rounded-full bg-secondary overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all duration-700"
-                      style={{
-                        width: `${performer.performancePct}%`,
-                        backgroundColor:
-                          performer.performancePct >= 80
-                            ? "#10b981"
-                            : performer.performancePct >= 50
-                              ? "#f59e0b"
-                              : "#ef4444",
-                      }}
-                    />
-                  </div>
-                </div>
-              </FadeUpItem>
-            ))}
-          </StaggerContainer>
+                <StaggerContainer className="space-y-2">
+                  {dashboardResponse.data.celebrations.map((celeb) => {
+                    const isBday = celeb.type === "Birthday";
+                    return (
+                      <FadeUpItem
+                        key={`${celeb.employee_id}-${celeb.type}`}
+                        className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Avatar
+                            src={celeb.avatar}
+                            className="!w-10 !h-10"
+                            sx={{
+                              bgcolor: isBday ? "#f59e0b22" : "#3b82f622",
+                              color: isBday ? "#f59e0b" : "#3b82f6",
+                            }}
+                          >
+                            {isBday ? <Cake fontSize="small" /> : <WorkHistory fontSize="small" />}
+                          </Avatar>
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{celeb.name}</p>
+                            <p className="text-xs text-muted-foreground flex items-center gap-1">
+                              {isBday ? (
+                                <>
+                                  Happy Birthday! <Cake className="!w-3 !h-3 text-warning" />
+                                </>
+                              ) : (
+                                <>
+                                  {celeb.years} Years Anniversary!{" "}
+                                  <Celebration className="!w-3 !h-3 text-primary" />
+                                </>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                        <SendWishButton employeeId={celeb.employee_id} type={celeb.type} />
+                      </FadeUpItem>
+                    );
+                  })}
+                </StaggerContainer>
+              </div>
+            )}
         </div>
       </FadeUpItem>
 

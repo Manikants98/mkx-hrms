@@ -1,4 +1,5 @@
 import { useCustomQuery } from "hooks/useCustomQuery";
+import { useCustomMutation } from "hooks/useCustomMutation";
 import { type ApiResponse } from "../api.types";
 
 /**
@@ -39,6 +40,18 @@ export interface WorkforceTrendPoint {
 }
 
 /**
+ * Dashboard celebration item (Birthday / Work Anniversary)
+ */
+export interface Celebration {
+  type: "Birthday" | "Work Anniversary";
+  employee_id: number;
+  name: string;
+  role: string;
+  avatar?: string;
+  years?: number;
+}
+
+/**
  * Dashboard overview dataset
  */
 export interface DashboardOverview {
@@ -62,6 +75,7 @@ export interface DashboardOverview {
   pending_leaves?: number;
   recent_activities: RecentActivity[];
   top_performers: TopPerformer[];
+  celebrations?: Celebration[];
 }
 
 /**
@@ -100,4 +114,35 @@ export const useGetWorkforceTrend = () => {
     ["dashboard", "workforce-trend"],
     "/v1/dashboard/workforce-trend",
   );
+};
+
+export interface SendWishPayload {
+  employee_id: number;
+  message: string;
+}
+
+export const useSendWish = () => {
+  const mutation = useCustomMutation<ApiResponse<{}>, unknown, SendWishPayload>({
+    toastMessages: {
+      loading: "Sending wish...",
+      success: "Wish sent successfully! 🚀",
+      error: "Failed to send wish",
+    },
+  });
+
+  return {
+    ...mutation,
+    mutate: (payload: SendWishPayload) =>
+      mutation.mutate({
+        url: "/v1/dashboard/send-wish",
+        method: "POST",
+        data: payload,
+      }),
+    mutateAsync: (payload: SendWishPayload) =>
+      mutation.mutateAsync({
+        url: "/v1/dashboard/send-wish",
+        method: "POST",
+        data: payload,
+      }),
+  };
 };

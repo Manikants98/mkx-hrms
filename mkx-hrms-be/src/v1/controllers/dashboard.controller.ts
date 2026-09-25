@@ -613,3 +613,52 @@ export const getWorkforceTrend = async (
     next(err);
   }
 };
+
+/**
+ * Send a push notification wish to an employee
+ */
+export const sendWish = async (req: Request, res: Response) => {
+  try {
+    const { employee_id, message } = req.body;
+    if (!employee_id || !message) {
+      return res.status(400).json({ status: "error", message: "Missing employee_id or message" });
+    }
+
+    const employee = await prisma.employee.findUnique({
+      where: { id: employee_id },
+    });
+
+    if (!employee || !employee.user_id) {
+      return res
+        .status(404)
+        .json({ status: "error", message: "Employee or associated user not found" });
+    }
+
+    const targetUser = await prisma.user.findUnique({
+      where: { id: employee.user_id },
+    });
+
+    if (!targetUser || !targetUser.fcm_token) {
+      return res
+        .status(404)
+        .json({
+          status: "error",
+          message: "Target user does not have a registered device for notifications.",
+        });
+    }
+
+    const { sendPushNotification } = require("../../libraries/firebase");
+    const success = await sendPushNotification(targetUser.fcm_token, "New Wish! 🎉", message, {
+      route: "/celebrations",
+    });
+
+    if (success) {
+      return res.json({ status: "success", message: "Wish sent successfully!" });
+    } else {
+      return res.status(500).json({ status: "error", message: "Failed to send push notification" });
+    }
+  } catch (error) {
+    console.error("Error sending wish:", error);
+    return res.status(500).json({ status: "error", message: "Internal server error" });
+  }
+};
