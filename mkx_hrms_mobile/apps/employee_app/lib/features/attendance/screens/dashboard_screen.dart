@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/features/auth/state/auth_provider.dart';
 import 'package:mkx_core/utils/date_utils.dart';
 import 'package:mkx_core/utils/ui_helpers.dart';
+import 'package:mkx_core/network/dio_client.dart';
 import 'package:mkx_core/widgets/empty_state.dart';
 import 'package:mkx_core/widgets/metric_card.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
@@ -26,6 +28,8 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  List<dynamic> _celebrations = [];
+
   @override
   void initState() {
     super.initState();
@@ -51,6 +55,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     if (!mounted) return;
     context.read<AiProvider>().loadDashboardInsights();
+
+    try {
+      final client = DioClient.instance;
+      final res = await client.get('/dashboard/overview');
+      if (res is Map<String, dynamic> && res['celebrations'] != null) {
+        if (mounted) {
+          setState(() {
+            _celebrations = res['celebrations'];
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Failed to load celebrations: $e');
+    }
   }
 
   Future<void> _handlePunchIn() async {
@@ -158,7 +176,67 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 onPunchIn: _handlePunchIn,
                 onPunchOut: _handlePunchOut,
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 16),
+              if (_celebrations.isNotEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Text(
+                    'CELEBRATIONS TODAY',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.3,
+                      color: M3ETheme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  height: 70,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _celebrations.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 10),
+                    itemBuilder: (context, index) {
+                      final celeb = _celebrations[index];
+                      final isBirthday = celeb['type'] == 'Birthday';
+                      return M3ECard(
+                        variant: M3ECardVariant.filled,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CircleAvatar(
+                              radius: 18,
+                              backgroundColor: isBirthday ? AppColors.warning : AppColors.info,
+                              backgroundImage: celeb['avatar'] != null ? NetworkImage(celeb['avatar']) : null,
+                              child: celeb['avatar'] == null
+                                  ? Icon(isBirthday ? Icons.cake : Icons.work, color: Colors.white, size: 18)
+                                  : null,
+                            ),
+                            const SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  celeb['name'] ?? '',
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                ),
+                                Text(
+                                  isBirthday ? 'Happy Birthday!' : '${celeb['years']} Years Anniversary!',
+                                  style: TextStyle(fontSize: 11, color: M3ETheme.of(context).colorScheme.onSurfaceVariant),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4),
                 child: Text(
@@ -343,6 +421,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       })
                       .take(7)
                       .map((item) {
+                        String displayWorkHours = item.workHours;
+                        if (item.hasCheckedIn && !item.hasCheckedOut) {
+                          try {
+                            final now = attendance.currentTime;
+                            final recordDate = DateTime.parse(item.date).toLocal();
+                            if (recordDate.year == now.year && recordDate.month == now.month && recordDate.day == now.day) {
+                              final format = DateFormat('hh:mm a');
+                              final checkInTime = format.parse(item.checkIn);
+                              final checkInDateTime = DateTime(now.year, now.month, now.day, checkInTime.hour, checkInTime.minute);
+                              final diff = now.difference(checkInDateTime);
+                              if (!diff.isNegative) {
+                                final h = diff.inHours;
+                                final m = diff.inMinutes % 60;
+                                displayWorkHours = '${h}h ${m}m';
+                              }
+                            }
+                          } catch (_) {}
+                        }
+
                         return Row(
                           children: [
                             Container(
@@ -396,7 +493,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    '${item.workHours} • ${item.location}',
+                                    '$displayWorkHours • ${item.location}',
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: isDark

@@ -614,7 +614,12 @@ export const punchAttendance = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    let { employee_id, action, location } = req.body;
+    let { employee_id, action, location, device_info, ip_address } = req.body;
+
+    if (!ip_address) {
+      ip_address = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "";
+      if (Array.isArray(ip_address)) ip_address = ip_address[0];
+    }
 
     if (!employee_id && req.user?.employee_db_id) {
       employee_id = req.user.employee_db_id;
@@ -695,6 +700,8 @@ export const punchAttendance = async (
           date: recordDate,
           status: "Absent",
           location: location || "Office",
+          ip_address: ip_address || null,
+          device_info: device_info || null,
           check_in: null,
           check_out: null,
           work_hours: null,
@@ -711,7 +718,7 @@ export const punchAttendance = async (
         hour12: true,
       });
 
-    const updatedData: PunchUpdatePayload = {};
+    const updatedData: Record<string, string | null | undefined> = {};
 
     if (action === "check-in") {
       const matchTime = timeString.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
@@ -724,8 +731,13 @@ export const punchAttendance = async (
       updatedData.check_in = timeString;
       updatedData.status = isLate ? "Late" : "Present";
       if (location) updatedData.location = location;
+      if (ip_address) updatedData.ip_address = ip_address;
+      if (device_info) updatedData.device_info = device_info;
     } else if (action === "check-out") {
       updatedData.check_out = timeString;
+      if (location) updatedData.location = location;
+      if (ip_address) updatedData.ip_address = ip_address;
+      if (device_info) updatedData.device_info = device_info;
       if (existing.check_in) {
         updatedData.work_hours = calculateElapsedWorkHours(
           existing.check_in,

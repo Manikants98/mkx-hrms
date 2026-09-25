@@ -70,5 +70,9 @@
 	<string>This app requires access to microphone for voice assistant queries.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>This app requires speech recognition to transcribe your voice queries.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app requires access to your location to mark your attendance accurately.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>This app requires access to your location to mark your attendance accurately.</string>
 </dict>
 </plist>

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/features/auth/state/auth_provider.dart';
@@ -116,7 +117,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.chevron_left),
+                        icon: const Icon(M3EIcons.chevron_left),
                         onPressed:
                             (joinDate != null && pickerYear <= joinDate.year)
                                 ? null
@@ -131,7 +132,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.chevron_right),
+                        icon: const Icon(M3EIcons.chevron_right),
                         onPressed: pickerYear >= now.year
                             ? null
                             : () => setSheetState(() => pickerYear++),
@@ -246,7 +247,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    Icons.calendar_month_rounded,
+                    M3EIcons.calendar_month_rounded,
                     size: 14,
                     color: _selectedMonth != null
                         ? colorScheme.onPrimary
@@ -321,7 +322,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                 )
               else if (filtered.isEmpty)
                 const EmptyState(
-                  icon: Icons.history_outlined,
+                  icon: M3EIcons.history_outlined,
                   title: 'No records found',
                   description:
                       'No attendance records match the selected filter.',
@@ -330,6 +331,28 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                 SectionCard(
                   isDark: isDark,
                   children: filtered.map((item) {
+                    String displayWorkHours = item.workHours;
+                    if (item.hasCheckedIn && !item.hasCheckedOut) {
+                      try {
+                        final now = attendance.currentTime;
+                        final recordDate = DateTime.parse(item.date).toLocal();
+                        if (recordDate.year == now.year &&
+                            recordDate.month == now.month &&
+                            recordDate.day == now.day) {
+                          final format = DateFormat('hh:mm a');
+                          final checkInTime = format.parse(item.checkIn);
+                          final checkInDateTime = DateTime(now.year, now.month,
+                              now.day, checkInTime.hour, checkInTime.minute);
+                          final diff = now.difference(checkInDateTime);
+                          if (!diff.isNegative) {
+                            final h = diff.inHours;
+                            final m = diff.inMinutes % 60;
+                            displayWorkHours = '${h}h ${m}m';
+                          }
+                        }
+                      } catch (_) {}
+                    }
+
                     return Row(
                       children: [
                         Container(
@@ -382,7 +405,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                '${item.workHours} • ${item.location}',
+                                '$displayWorkHours • ${item.location}',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: isDark

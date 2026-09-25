@@ -138,6 +138,8 @@ model Attendance {
   work_hours  String?  @db.VarChar(50)
   status      String   @db.VarChar(50)
   location    String   @db.VarChar(100)
+  ip_address  String?  @db.VarChar(50)
+  device_info String?  @db.VarChar(255)
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 

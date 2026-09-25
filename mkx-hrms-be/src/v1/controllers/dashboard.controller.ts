@@ -290,6 +290,43 @@ export const getDashboardOverview = async (
       .slice(0, 4)
       .map(({ actualMins, ...rest }) => rest);
 
+    const activeEmpsData = await prisma.employee.findMany({
+      where: { status: "Active" },
+      select: {
+        id: true,
+        name: true,
+        avatar: true,
+        birth_date: true,
+        join_date: true,
+        role_rel: { select: { name: true } },
+      },
+    });
+
+    const celebrations: any[] = [];
+    activeEmpsData.forEach(e => {
+      if (e.birth_date && e.birth_date.getDate() === todayDate.getDate() && e.birth_date.getMonth() === todayDate.getMonth()) {
+        celebrations.push({
+          type: "Birthday",
+          employee_id: e.id,
+          name: e.name,
+          role: e.role_rel?.name || "Staff",
+          avatar: e.avatar,
+        });
+      }
+      
+      if (e.join_date && e.join_date.getDate() === todayDate.getDate() && e.join_date.getMonth() === todayDate.getMonth() && e.join_date.getFullYear() < todayDate.getFullYear()) {
+        const years = todayDate.getFullYear() - e.join_date.getFullYear();
+        celebrations.push({
+          type: "Work Anniversary",
+          years: years,
+          employee_id: e.id,
+          name: e.name,
+          role: e.role_rel?.name || "Staff",
+          avatar: e.avatar,
+        });
+      }
+    });
+
     const overview = {
       kpi_metrics: {
         total_employees: totalEmployees,
@@ -311,6 +348,7 @@ export const getDashboardOverview = async (
       pending_leaves: pendingLeaves,
       recent_activities: formattedActivities,
       top_performers: formattedPerformers,
+      celebrations: celebrations,
     };
 
     res.sendSuccess({

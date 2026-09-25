@@ -55,6 +55,7 @@ class AttendanceRepository {
     required String action,
     int? employeeId,
     String location = 'Office',
+    String? deviceInfo,
   }) async {
     final now = DateTime.now();
     final formattedTime = DateFormat('hh:mm a').format(now);
@@ -66,6 +67,7 @@ class AttendanceRepository {
         'action': action,
         'employee_id': employeeId,
         'location': location,
+        if (deviceInfo != null) 'device_info': deviceInfo,
         'time': formattedTime,
         'date': dateString,
         'timezone': 'Asia/Kolkata',
