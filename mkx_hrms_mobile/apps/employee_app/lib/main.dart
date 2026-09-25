@@ -19,6 +19,8 @@ import 'features/payroll/state/payroll_provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   debugPrint("Handling a background message: ${message.messageId}");
@@ -30,6 +32,30 @@ void main() async {
   try {
     await Firebase.initializeApp();
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    
+    // Enable foreground heads-up notifications
+    await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+    
+    // FOREGROUND MESSAGES:
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      debugPrint('🔔 FOREGROUND NOTIFICATION RECEIVED: ${message.notification?.title}');
+      
+      final context = navigatorKey.currentContext;
+      if (context != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('🔔 ${message.notification?.title}: ${message.notification?.body}'),
+            backgroundColor: Colors.blue,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    });
   } catch (e) {
     debugPrint('Firebase init error: $e');
   }
@@ -96,6 +122,7 @@ class _MkxHrmsAppState extends State<MkxHrmsApp> {
                           seedColor: seedColor, brightness: Brightness.dark);
 
                   return MaterialApp(
+                    navigatorKey: navigatorKey,
                     title: 'MKX HRMS',
                     debugShowCheckedModeBanner: false,
                     theme:

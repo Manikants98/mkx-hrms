@@ -154,6 +154,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: MkxAppBar(
         title: 'Dashboard',
         subtitle: 'Good ${_greeting()}, ${user?.name ?? "Employee"}',
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_active_outlined),
+            onPressed: () async {
+              try {
+                await DioClient.instance.get('/auth/test-push');
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                          'Test Push Triggered! Minimize App NOW! (3 sec delay)'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              } catch (e) {
+                debugPrint('Failed to trigger test push: $e');
+              }
+            },
+          ),
+        ],
       ),
       body: M3ERefreshIndicator.contained(
         onRefresh: _loadData,

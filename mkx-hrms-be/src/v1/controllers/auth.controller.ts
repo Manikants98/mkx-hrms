@@ -366,7 +366,54 @@ export const saveFcmToken = async (req: Request, res: Response, next: NextFuncti
       data: { fcm_token: fcmToken },
     });
 
+    // Send a Welcome Test Notification!
+    const { sendPushNotification } = require("../../libraries/firebase");
+    await sendPushNotification(
+      fcmToken,
+      "MKX HRMS Connected!",
+      "Aapka device successfully push notifications ke liye register ho gaya hai! 🎉"
+    );
+
     res.sendSuccess({ message: "FCM token saved successfully" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const testPushNotification = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      res.sendError({ statusCode: 401, message: "Authentication token missing" });
+      return;
+    }
+
+    const token = authHeader.split(" ")[1];
+    const decoded = verifyToken(token);
+
+    if (!decoded || !decoded.id) {
+      res.sendError({ statusCode: 401, message: "Invalid or expired token" });
+      return;
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: decoded.id } });
+    if (!user || !user.fcm_token) {
+      res.sendError({ statusCode: 400, message: "FCM token not found for user" });
+      return;
+    }
+
+    res.sendSuccess({ message: "Push notification will be sent in 3 seconds!" });
+
+    // Send push notification after 3 seconds so user can background the app
+    setTimeout(async () => {
+      const { sendPushNotification } = require("../../libraries/firebase");
+      await sendPushNotification(
+        user.fcm_token!,
+        "Test Notification",
+        "Yeh ek test notification hai jo aapne button click karke bheji hai! 🚀"
+      );
+    }, 3000);
+
   } catch (err) {
     next(err);
   }

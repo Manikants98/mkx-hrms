@@ -31,19 +31,21 @@ class _MainShellScreenState extends State<MainShellScreen> {
   }
 
   Future<void> _setupPushNotifications() async {
+    debugPrint('Starting push notification setup...');
     final messaging = FirebaseMessaging.instance;
     NotificationSettings settings = await messaging.requestPermission();
+    debugPrint('Push permission status: ${settings.authorizationStatus}');
     
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+    try {
       String? token = await messaging.getToken();
+      debugPrint('FCM Token fetched: $token');
+      
       if (token != null) {
-        try {
-          await DioClient.instance.post('/auth/fcm-token', data: {'fcmToken': token});
-          debugPrint('FCM Token synced successfully.');
-        } catch (e) {
-          debugPrint('Failed to sync FCM Token: $e');
-        }
+        await DioClient.instance.post('/auth/fcm-token', data: {'fcmToken': token});
+        debugPrint('FCM Token synced successfully.');
       }
+    } catch (e) {
+      debugPrint('Failed to sync FCM Token: $e');
     }
   }
 
