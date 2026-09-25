@@ -164,7 +164,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text(
-                          'Test Push Triggered! Minimize App NOW! (3 sec delay)'),
+                          'Test Push Triggered! DO NOT MINIMIZE. Wait 3 sec...'),
                       backgroundColor: Colors.green,
                     ),
                   );
