@@ -9,27 +9,28 @@ import 'package:speech_to_text/speech_to_text.dart';
 
 import '../models/ai_chat_model.dart';
 
-/// Full-screen Voice-to-Voice Gemini Live Assistant.
+/// Full-screen Voice-to-Voice Smart Assistant Live Assistant.
 ///
 /// Implements an immersive, dark-themed voice conversation interface
-/// inspired by Google Gemini Live. Features radial golden ambient glow,
+/// inspired by Google Smart Assistant Live. Features radial golden ambient glow,
 /// multi-ring pulsating ripples around a signature 76px yellow microphone,
 /// real-time streaming transcripts, and voice state management.
-class GeminiLiveScreen extends StatefulWidget {
+class SmartAssistantLiveScreen extends StatefulWidget {
   final String userName;
   final String? initialPrompt;
 
-  const GeminiLiveScreen({
+  const SmartAssistantLiveScreen({
     super.key,
     required this.userName,
     this.initialPrompt,
   });
 
   @override
-  State<GeminiLiveScreen> createState() => _GeminiLiveScreenState();
+  State<SmartAssistantLiveScreen> createState() =>
+      _SmartAssistantLiveScreenState();
 }
 
-class _GeminiLiveScreenState extends State<GeminiLiveScreen>
+class _SmartAssistantLiveScreenState extends State<SmartAssistantLiveScreen>
     with TickerProviderStateMixin {
   late final AnimationController _pulseController;
   late final AnimationController _soundWaveController;
@@ -196,7 +197,7 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
     }
   }
 
-  /// Processes a voice query by contacting the Gemini HRMS assistant backend.
+  /// Processes a voice query by contacting the Smart Assistant HRMS assistant backend.
   Future<void> _handleVoiceQuery(String query) async {
     _speechStreamTimer?.cancel();
     try {
@@ -317,7 +318,7 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
   }
 
   /// Streams the AI assistant's spoken reply word-by-word onto the live screen
-  /// mimicking Gemini Live voice streaming while speaking via Text-To-Speech.
+  /// mimicking Smart Assistant Live voice streaming while speaking via Text-To-Speech.
   Future<void> _streamAssistantSpeech(String fullText) async {
     final speakable = _toSpeakableText(fullText);
     _lastFullResponse = fullText;
@@ -441,7 +442,7 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
                 _buildTopBar(colorScheme),
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -484,6 +485,7 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
                         ],
                         Text(
                           _currentTranscript,
+                          textAlign: TextAlign.center,
                           style: TextStyle(
                             color: _state == LiveAssistantState.speaking
                                 ? colorScheme.onSurface
@@ -670,10 +672,10 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
                 : "Microphone permission needed";
         break;
       case LiveAssistantState.thinking:
-        text = "Processing your query...";
+        text = "Processing...";
         break;
       case LiveAssistantState.speaking:
-        text = "Gemini is speaking • Tap mic to interrupt";
+        text = "Assistant is speaking...";
         break;
       case LiveAssistantState.paused:
         text = "Session paused";
@@ -720,41 +722,45 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
 
   /// Quick voice prompt pills shown on the live voice screen.
   Widget _buildQuickPromptChips(M3EColorScheme colorScheme) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: _quickVoicePrompts.map((prompt) {
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: ActionChip(
-              onPressed: () => _handleVoiceQuery(prompt),
-              backgroundColor: colorScheme.surfaceContainer,
-              side: BorderSide(color: colorScheme.outlineVariant),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              avatar: Icon(
-                Icons.mic,
-                size: 14,
-                color: colorScheme.primary,
-              ),
-              label: Text(
-                prompt,
-                style: TextStyle(
-                  color: colorScheme.onSurface,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
+    final double chipWidth = (MediaQuery.of(context).size.width - 32 - 8) / 2;
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      alignment: WrapAlignment.center,
+      children: _quickVoicePrompts.map((prompt) {
+        return SizedBox(
+          width: chipWidth,
+          child: ActionChip(
+            onPressed: () => _handleVoiceQuery(prompt),
+            backgroundColor: colorScheme.surfaceContainer,
+            side: BorderSide(color: colorScheme.outlineVariant),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            avatar: Icon(
+              Icons.mic,
+              size: 14,
+              color: colorScheme.primary,
+            ),
+            label: Text(
+              prompt,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: colorScheme.onSurface,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
               ),
             ),
-          );
-        }).toList(),
-      ),
+          ),
+        );
+      }).toList(),
     );
   }
 
   /// Bottom control dock containing the Pause button,
-  /// the signature pulsating Gemini Live microphone, and the Close button.
+  /// the signature pulsating Smart Assistant Live microphone, and the Close button.
   Widget _buildBottomControlDock(M3EColorScheme colorScheme) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
@@ -772,7 +778,7 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
                   : Icons.pause_rounded,
               onPressed: _togglePause,
             ),
-            _buildGeminiLiveMicButton(colorScheme),
+            _buildSmartAssistantLiveMicButton(colorScheme),
             _buildCircleButton(
               colorScheme: colorScheme,
               icon: Icons.close_rounded,
@@ -821,8 +827,8 @@ class _GeminiLiveScreenState extends State<GeminiLiveScreen>
     );
   }
 
-  /// Signature large glowing Gemini Live microphone button with multi-ring ripple pulse.
-  Widget _buildGeminiLiveMicButton(M3EColorScheme colorScheme) {
+  /// Signature large glowing Smart Assistant Live microphone button with multi-ring ripple pulse.
+  Widget _buildSmartAssistantLiveMicButton(M3EColorScheme colorScheme) {
     final isActive = _state == LiveAssistantState.listening ||
         _state == LiveAssistantState.speaking;
 

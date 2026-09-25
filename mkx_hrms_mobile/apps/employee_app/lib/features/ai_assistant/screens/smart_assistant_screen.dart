@@ -76,7 +76,7 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
 
     final result = await Navigator.of(context).push<LiveSessionResult?>(
       MaterialPageRoute(
-        builder: (context) => GeminiLiveScreen(
+        builder: (context) => SmartAssistantLiveScreen(
           userName: userName,
           initialPrompt: initialPrompt,
         ),
@@ -105,33 +105,31 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
     }
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: colorScheme.surfaceContainer,
       resizeToAvoidBottomInset: true,
       appBar: _buildAppBar(ai, colorScheme),
-      body: SafeArea(
-        bottom: true,
-        child: Column(
-          children: [
-            Expanded(
-              child: ai.isFetchingHistory
-                  ? Center(
-                      child: SizedBox(
-                        width: 44,
-                        height: 44,
-                        child: M3EProgressIndicator.circularWavy(
-                          strokeWidth: 3,
-                          color: colorScheme.primary,
-                        ),
+      body: Column(
+        children: [
+          Expanded(
+            child: ai.isFetchingHistory
+                ? Center(
+                    child: SizedBox(
+                      width: 44,
+                      height: 44,
+                      child: M3EProgressIndicator.circularWavy(
+                        strokeWidth: 3,
+                        color: colorScheme.primary,
                       ),
-                    )
-                  : ai.hasMessages
-                      ? _buildMessageList(ai, colorScheme)
-                      : _buildPromptStarterHome(firstName, colorScheme),
-            ),
-            if (ai.isLoading) _buildTypingIndicator(colorScheme),
-            _buildInputBar(colorScheme),
-          ],
-        ),
+                    ),
+                  )
+                : ai.hasMessages
+                    ? _buildMessageList(ai, colorScheme)
+                    : _buildPromptStarterHome(firstName, colorScheme),
+          ),
+          if (ai.isLoading) _buildTypingIndicator(colorScheme),
+          _buildInputBar(colorScheme),
+          const SizedBox(height: 5)
+        ],
       ),
     );
   }
@@ -146,37 +144,8 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
         icon: Icon(Icons.arrow_back_rounded, color: colorScheme.onSurface),
         onPressed: () => Navigator.of(context).pop(),
       ),
-      title: InkWell(
-        onTap: () => _openGeminiLive(),
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-          decoration: BoxDecoration(
-            color: colorScheme.surfaceContainer,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: colorScheme.primary.withValues(alpha: 0.35),
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.mic, size: 14, color: colorScheme.primary),
-              const SizedBox(width: 6),
-              Text(
-                'Gemini Live',
-                style: TextStyle(
-                  color: colorScheme.primary,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.2,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      centerTitle: true,
+      titleSpacing: 0,
+      title: const Text("Smart Assistant"),
       actions: [
         if (ai.hasMessages)
           IconButton(
@@ -456,14 +425,14 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerHigh,
+            color: colorScheme.primaryContainer,
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(18),
               topRight: Radius.circular(18),
               bottomLeft: Radius.circular(18),
               bottomRight: Radius.circular(4),
             ),
-            border: Border.all(color: colorScheme.outlineVariant),
+            // border: Border.all(color: colorScheme.outlineVariant),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -474,12 +443,12 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.mic, size: 12, color: colorScheme.primary),
+                      Icon(Icons.mic, size: 12, color: colorScheme.onPrimary),
                       const SizedBox(width: 4),
                       Text(
                         'Voice Query',
                         style: TextStyle(
-                          color: colorScheme.primary,
+                          color: colorScheme.onPrimary,
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
                         ),
@@ -521,14 +490,14 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
-                color: colorScheme.surfaceContainerLow,
+                color: colorScheme.surfaceContainerLowest,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(18),
                   topRight: Radius.circular(18),
                   bottomRight: Radius.circular(18),
                   bottomLeft: Radius.circular(4),
                 ),
-                border: Border.all(color: colorScheme.outlineVariant),
+                // border: Border.all(color: colorScheme.outlineVariant),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -677,21 +646,21 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
       padding: const EdgeInsets.only(
         left: 12,
         right: 12,
-        top: 8,
-        bottom: 12,
+        top: 12,
+        bottom: 20,
       ),
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        border: Border(
-          top: BorderSide(color: colorScheme.outlineVariant, width: 1),
-        ),
+        // border: Border(
+        //   top: BorderSide(color: colorScheme.outlineVariant, width: 1),
+        // ),
       ),
       child: Container(
         padding: const EdgeInsets.only(left: 12, right: 8, top: 2, bottom: 2),
         decoration: BoxDecoration(
           color: colorScheme.surfaceContainer,
-          borderRadius: BorderRadius.circular(28),
-          border: Border.all(color: colorScheme.outlineVariant),
+          borderRadius: BorderRadius.circular(16),
+          // border: Border.all(color: colorScheme.outlineVariant),
         ),
         child: Row(
           children: [
@@ -748,7 +717,7 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
                 color: colorScheme.primary,
                 size: 22,
               ),
-              tooltip: 'Gemini Live Voice Mode',
+              tooltip: 'Live Voice Mode',
               onPressed: () => _openGeminiLive(),
             ),
             GestureDetector(
