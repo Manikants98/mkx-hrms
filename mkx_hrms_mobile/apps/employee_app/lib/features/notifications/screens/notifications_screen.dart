@@ -69,7 +69,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           if (unreadCount > 0)
             TextButton.icon(
               onPressed: () => provider.markAllAsRead(),
-              icon: const Icon(Icons.done_all, size: 18),
+              icon: const Icon(Icons.done_all, size: 14),
               label: const Text('Mark all read'),
               style: TextButton.styleFrom(
                 foregroundColor: colorScheme.primary,
@@ -92,11 +92,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         style: TextStyle(color: colorScheme.onSurfaceVariant),
                       ),
                     )
-                  : RefreshIndicator(
+                  : M3ERefreshIndicator.contained(
                       onRefresh: () => provider.fetchNotifications(),
                       child: SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.all(10),
                         child: SectionCard(
                           isDark: isDark,
                           children: notifications.map((n) {

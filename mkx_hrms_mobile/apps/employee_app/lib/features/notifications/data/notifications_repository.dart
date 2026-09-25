@@ -8,10 +8,10 @@ class NotificationsRepository {
   Future<({List<NotificationRecord> notifications, int unreadCount})> getNotifications() async {
     final response = await _client.get(ApiEndpoints.notifications);
     if (response is Map<String, dynamic>) {
-      final list = (response['data']?['notifications'] as List<dynamic>? ?? [])
+      final list = (response['notifications'] as List<dynamic>? ?? [])
           .map((item) => NotificationRecord.fromJson(item as Map<String, dynamic>))
           .toList();
-      final unreadCount = response['data']?['unread_count'] as int? ?? 0;
+      final unreadCount = response['unread_count'] as int? ?? 0;
       return (notifications: list, unreadCount: unreadCount);
     }
     throw Exception("Invalid response format");
