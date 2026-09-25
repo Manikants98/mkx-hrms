@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:mkx_core/network/dio_client.dart';
 
 import '../../attendance/screens/dashboard_screen.dart';
 import '../../attendance/screens/attendance_history_screen.dart';
@@ -21,6 +23,29 @@ class MainShellScreen extends StatefulWidget {
 
 class _MainShellScreenState extends State<MainShellScreen> {
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _setupPushNotifications();
+  }
+
+  Future<void> _setupPushNotifications() async {
+    final messaging = FirebaseMessaging.instance;
+    NotificationSettings settings = await messaging.requestPermission();
+    
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      String? token = await messaging.getToken();
+      if (token != null) {
+        try {
+          await DioClient.instance.post('/auth/fcm-token', data: {'fcmToken': token});
+          debugPrint('FCM Token synced successfully.');
+        } catch (e) {
+          debugPrint('Failed to sync FCM Token: $e');
+        }
+      }
+    }
+  }
 
   final List<Widget> _screens = const [
     DashboardScreen(key: ValueKey(0)),

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "923015801986",
+    "project_id": "hrms-automations",
+    "storage_bucket": "hrms-automations.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:923015801986:android:ba12926bfc622283ec989b",
+        "android_client_info": {
+          "package_name": "com.mkx.mkx_hrms_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCislgSllUMjNXUbx_h-Fj0yrHWBzvl7nA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

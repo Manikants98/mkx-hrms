@@ -16,8 +16,24 @@ import 'features/leaves/state/leaves_provider.dart';
 import 'features/navigation/screens/main_shell_screen.dart';
 import 'features/payroll/state/payroll_provider.dart';
 
-void main() {
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  debugPrint("Handling a background message: ${message.messageId}");
+}
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  try {
+    await Firebase.initializeApp();
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  } catch (e) {
+    debugPrint('Firebase init error: $e');
+  }
+  
   runApp(const MkxHrmsApp());
 }
 

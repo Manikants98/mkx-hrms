@@ -338,3 +338,36 @@ export const setPasswordWithToken = async (
     next(err);
   }
 };
+
+export const saveFcmToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      res.sendError({ statusCode: 401, message: "Authentication token missing" });
+      return;
+    }
+
+    const token = authHeader.split(" ")[1];
+    const decoded = verifyToken(token);
+
+    if (!decoded || !decoded.id) {
+      res.sendError({ statusCode: 401, message: "Invalid or expired token" });
+      return;
+    }
+
+    const { fcmToken } = req.body;
+    if (!fcmToken) {
+      res.sendError({ statusCode: 400, message: "FCM token is required" });
+      return;
+    }
+
+    await prisma.user.update({
+      where: { id: decoded.id },
+      data: { fcm_token: fcmToken },
+    });
+
+    res.sendSuccess({ message: "FCM token saved successfully" });
+  } catch (err) {
+    next(err);
+  }
+};
