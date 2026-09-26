@@ -43,7 +43,7 @@ export interface WorkforceTrendPoint {
  * Dashboard celebration item (Birthday / Work Anniversary)
  */
 export interface Celebration {
-  type: "Birthday" | "Work Anniversary";
+  type: "Birthday" | "Work Anniversary" | "New Joiner";
   employee_id: number;
   name: string;
   role: string;
