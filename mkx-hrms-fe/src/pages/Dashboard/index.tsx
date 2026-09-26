@@ -289,6 +289,7 @@ export default function Dashboard(): React.ReactElement {
                 <StaggerContainer className="space-y-2">
                   {dashboardResponse.data.celebrations.map((celeb) => {
                     const isBday = celeb.type === "Birthday";
+                    const isNewJoiner = celeb.type === "New Joiner";
                     return (
                       <FadeUpItem
                         key={`${celeb.employee_id}-${celeb.type}`}
@@ -299,11 +300,11 @@ export default function Dashboard(): React.ReactElement {
                             src={celeb.avatar}
                             className="!w-10 !h-10"
                             sx={{
-                              bgcolor: isBday ? "#f59e0b22" : "#3b82f622",
-                              color: isBday ? "#f59e0b" : "#3b82f6",
+                              bgcolor: isBday ? "#f59e0b22" : isNewJoiner ? "#10b98122" : "#3b82f622",
+                              color: isBday ? "#f59e0b" : isNewJoiner ? "#10b981" : "#3b82f6",
                             }}
                           >
-                            {isBday ? <Cake fontSize="small" /> : <WorkHistory fontSize="small" />}
+                            {isBday ? <Cake fontSize="small" /> : isNewJoiner ? <Celebration fontSize="small" /> : <WorkHistory fontSize="small" />}
                           </Avatar>
                           <div>
                             <p className="text-sm font-medium text-foreground">{celeb.name}</p>
@@ -311,6 +312,10 @@ export default function Dashboard(): React.ReactElement {
                               {isBday ? (
                                 <>
                                   Happy Birthday! <Cake className="!w-3 !h-3 text-warning" />
+                                </>
+                              ) : isNewJoiner ? (
+                                <>
+                                  Welcome to the Team! <Celebration className="!w-3 !h-3 text-success" />
                                 </>
                               ) : (
                                 <>

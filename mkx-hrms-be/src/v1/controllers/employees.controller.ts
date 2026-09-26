@@ -1183,8 +1183,14 @@ export const resetEmployeePassword = async (
       return;
     }
 
+    const empId = Number(id);
+    if (isNaN(empId) || empId <= 0) {
+      res.sendError({ statusCode: 400, message: "Invalid employee ID" });
+      return;
+    }
+
     const employee = await prisma.employee.findUnique({
-      where: { id: Number(id) },
+      where: { id: empId },
       include: { user: true },
     });
 

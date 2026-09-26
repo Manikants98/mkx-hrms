@@ -271,6 +271,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   isDark: isDark,
                   children: _celebrations.map((celeb) {
                     final isBirthday = celeb['type'] == 'Birthday';
+                    final isNewJoiner = celeb['type'] == 'New Joiner';
                     final hasAvatar = celeb['avatar'] != null &&
                         celeb['avatar'].toString().trim().isNotEmpty;
 
@@ -283,7 +284,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             shape: BoxShape.circle,
                             color: isBirthday
                                 ? AppColors.warning.withValues(alpha: 0.15)
-                                : AppColors.info.withValues(alpha: 0.15),
+                                : isNewJoiner
+                                    ? AppColors.success.withValues(alpha: 0.15)
+                                    : AppColors.info.withValues(alpha: 0.15),
                             image: hasAvatar
                                 ? DecorationImage(
                                     image: NetworkImage(celeb['avatar']),
@@ -296,10 +299,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               : Icon(
                                   isBirthday
                                       ? Icons.cake_rounded
-                                      : Icons.work_history_rounded,
+                                      : isNewJoiner
+                                          ? Icons.celebration_rounded
+                                          : Icons.work_history_rounded,
                                   color: isBirthday
                                       ? AppColors.warning
-                                      : AppColors.info,
+                                      : isNewJoiner
+                                          ? AppColors.success
+                                          : AppColors.info,
                                   size: 24,
                                 ),
                         ),
@@ -320,7 +327,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               Text(
                                 isBirthday
                                     ? 'Happy Birthday!'
-                                    : '${celeb['years']} Years Anniversary!',
+                                    : isNewJoiner
+                                        ? 'Welcome to the team! 🎉'
+                                        : '${celeb['years']} Years Anniversary!',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: M3ETheme.of(context)
@@ -336,7 +345,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             Icons.send_rounded,
                             color: isBirthday
                                 ? AppColors.warning
-                                : M3ETheme.of(context).colorScheme.primary,
+                                : isNewJoiner
+                                    ? AppColors.success
+                                    : M3ETheme.of(context).colorScheme.primary,
                             size: 20,
                           ),
                           onPressed: () => _sendWish(celeb),
