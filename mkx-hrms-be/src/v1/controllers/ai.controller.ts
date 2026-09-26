@@ -86,6 +86,21 @@ export const chatWithAssistant = async (req: Request, res: Response): Promise<vo
           }
         });
 
+        const shifts = await prisma.workShift.findMany({
+          where: { status: 'Active' },
+          select: { name: true, start_time: true, end_time: true, grace_mins: true }
+        });
+
+        const generalPolicies = `
+--- GENERAL COMPANY POLICIES ---
+1. Notice Period: The standard notice period for all employees is 45 days.
+2. Probation Period: The standard probation period is 3 months from the date of joining.
+3. Work from Home (WFH): Allowed up to 2 days a month with prior manager approval (unless specified otherwise).
+4. Shift Timings (Company Wide):
+${shifts.map((s) => `   - ${s.name}: ${s.start_time} to ${s.end_time} (Grace period: ${s.grace_mins} mins)`).join("\n")}
+--------------------------------
+`.trim();
+
         contextBlock = `
 Employee Full Record (JSON):
 ${JSON.stringify(employee, null, 2)}
@@ -98,6 +113,8 @@ ${payrollInfo}
 
 Company Colleagues (Basic Info for celebrations/team queries):
 ${JSON.stringify(otherEmployees, null, 2)}
+
+${generalPolicies}
         `.trim();
       }
     }
