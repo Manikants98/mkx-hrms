@@ -7,7 +7,7 @@ import {
   Cake,
   WorkHistory,
 } from "@mui/icons-material";
-import { Avatar, Badge, Chip } from "@mui/material";
+import { Avatar, Badge, Chip, IconButton } from "@mui/material";
 import { Activity, ArrowUpRight, Briefcase, Trophy, UserCheck, Users } from "lucide-react";
 import React, { useState } from "react";
 import { DepartmentDistribution } from "components/Dashboard/DepartmentDistribution";
@@ -33,19 +33,14 @@ function SendWishButton({ employeeId, type }: { employeeId: number; type: string
   const handleSendWish = () => {
     sendWish({
       employee_id: employeeId,
-      message: `Happy ${type}! 🎉 Wishing you a great day from ${senderName}!`,
+      message: `Happy ${type}! Wishing you a great day from ${senderName}!`,
     });
   };
 
   return (
-    <button
-      onClick={handleSendWish}
-      disabled={isPending}
-      className="p-2 rounded-full hover:bg-primary/20 text-primary transition-colors disabled:opacity-50"
-      title={`Send ${type} Wish`}
-    >
+    <IconButton onClick={handleSendWish} disabled={isPending} title={`Send ${type} Wish`}>
       <Send className="w-4 h-4" />
-    </button>
+    </IconButton>
   );
 }
 
@@ -300,11 +295,21 @@ export default function Dashboard(): React.ReactElement {
                             src={celeb.avatar}
                             className="!w-10 !h-10"
                             sx={{
-                              bgcolor: isBday ? "#f59e0b22" : isNewJoiner ? "#10b98122" : "#3b82f622",
+                              bgcolor: isBday
+                                ? "#f59e0b22"
+                                : isNewJoiner
+                                  ? "#10b98122"
+                                  : "#3b82f622",
                               color: isBday ? "#f59e0b" : isNewJoiner ? "#10b981" : "#3b82f6",
                             }}
                           >
-                            {isBday ? <Cake fontSize="small" /> : isNewJoiner ? <Celebration fontSize="small" /> : <WorkHistory fontSize="small" />}
+                            {isBday ? (
+                              <Cake fontSize="small" />
+                            ) : isNewJoiner ? (
+                              <Celebration fontSize="small" />
+                            ) : (
+                              <WorkHistory fontSize="small" />
+                            )}
                           </Avatar>
                           <div>
                             <p className="text-sm font-medium text-foreground">{celeb.name}</p>
@@ -315,7 +320,8 @@ export default function Dashboard(): React.ReactElement {
                                 </>
                               ) : isNewJoiner ? (
                                 <>
-                                  Welcome to the Team! <Celebration className="!w-3 !h-3 text-success" />
+                                  Welcome to the Team!{" "}
+                                  <Celebration className="!w-3 !h-3 text-success" />
                                 </>
                               ) : (
                                 <>

@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -137,7 +138,7 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
   /// App bar with back button, Gemini Live pill, and clear history action.
   PreferredSizeWidget _buildAppBar(AiProvider ai, M3EColorScheme colorScheme) {
     return AppBar(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: colorScheme.surfaceContainerLowest,
       elevation: 0,
       scrolledUnderElevation: 0,
       leading: IconButton(
@@ -176,47 +177,46 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
   /// Screen 1 — Home with personalised greeting and 2×2 suggestion cards.
   Widget _buildPromptStarterHome(String firstName, M3EColorScheme colorScheme) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainer,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: colorScheme.primary.withValues(alpha: 0.5),
-                  ),
-                ),
-                child: Text(
-                  'GO PREMIUM',
-                  style: TextStyle(
-                    color: colorScheme.primary,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.6,
-                  ),
-                ),
-              ),
-              CircleAvatar(
-                radius: 18,
-                backgroundColor: colorScheme.surfaceContainerHigh,
-                child: Text(
-                  firstName.isNotEmpty ? firstName[0].toUpperCase() : 'E',
-                  style: TextStyle(
-                    color: colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 28),
+          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //   children: [
+          //     Container(
+          //       padding:
+          //           const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          //       decoration: BoxDecoration(
+          //         color: colorScheme.surfaceContainer,
+          //         borderRadius: BorderRadius.circular(16),
+          //         border: Border.all(
+          //           color: colorScheme.primary.withValues(alpha: 0.5),
+          //         ),
+          //       ),
+          //       child: Text(
+          //         'GO PREMIUM',
+          //         style: TextStyle(
+          //           color: colorScheme.primary,
+          //           fontSize: 10,
+          //           fontWeight: FontWeight.w800,
+          //           letterSpacing: 0.6,
+          //         ),
+          //       ),
+          //     ),
+          //     CircleAvatar(
+          //       radius: 18,
+          //       backgroundColor: colorScheme.surfaceContainerHigh,
+          //       child: Text(
+          //         firstName.isNotEmpty ? firstName[0].toUpperCase() : 'E',
+          //         style: TextStyle(
+          //           color: colorScheme.primary,
+          //           fontWeight: FontWeight.bold,
+          //         ),
+          //       ),
+          //     ),
+          //   ],
+          // ),
+          // const SizedBox(height: 28),
           Text(
             'Hi, $firstName',
             style: TextStyle(
@@ -246,8 +246,8 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
           ),
           const SizedBox(height: 28),
           _buildSuggestionGrid(colorScheme),
-          const SizedBox(height: 20),
-          _buildProBanner(colorScheme),
+          // const SizedBox(height: 20),
+          // _buildProBanner(colorScheme),
         ],
       ),
     );
@@ -268,7 +268,7 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
                 prompt: 'What is my current leave balance for this year?',
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Expanded(
               child: _buildSuggestionCard(
                 colorScheme: colorScheme,
@@ -280,7 +280,7 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
         Row(
           children: [
             Expanded(
@@ -294,7 +294,7 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
                     'Can you break down my latest salary slip and net payout?',
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Expanded(
               child: _buildSuggestionCard(
                 colorScheme: colorScheme,
@@ -306,11 +306,36 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
             ),
           ],
         ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(
+              child: _buildSuggestionCard(
+                colorScheme: colorScheme,
+                icon: Icons.policy_rounded,
+                title: 'Company Policies',
+                subtitle: 'Ask about HR policies, benefits, and holidays.',
+                prompt:
+                    'What are the company policies regarding remote work and holidays?',
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _buildSuggestionCard(
+                colorScheme: colorScheme,
+                icon: Icons.cake_rounded,
+                title: 'Team Celebrations',
+                subtitle: 'View upcoming birthdays and anniversaries.',
+                prompt:
+                    'Are there any upcoming birthdays or work anniversaries in my team this month?',
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
 
-  /// Individual tappable suggestion card.
   Widget _buildSuggestionCard({
     required M3EColorScheme colorScheme,
     required IconData icon,
@@ -327,9 +352,8 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
           height: 140,
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerLow,
+            color: colorScheme.surfaceContainerLowest,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: colorScheme.outlineVariant),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -366,33 +390,6 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  /// Pro upgrade promotional banner.
-  Widget _buildProBanner(M3EColorScheme colorScheme) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: colorScheme.outlineVariant),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.auto_awesome, size: 16, color: colorScheme.primary),
-          const SizedBox(width: 10),
-          Text(
-            'Unlock more features with Pro',
-            style: TextStyle(
-              color: colorScheme.onSurface,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -647,7 +644,7 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
         bottom: 20,
       ),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
+        color: colorScheme.surfaceContainerLowest,
       ),
       child: Container(
         padding: const EdgeInsets.only(left: 12, right: 8, top: 2, bottom: 2),

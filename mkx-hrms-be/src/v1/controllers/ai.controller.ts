@@ -74,6 +74,18 @@ export const chatWithAssistant = async (req: Request, res: Response): Promise<vo
           ? `Gross: ₹${lastPayroll.gross_pay}, Deductions: ₹${lastPayroll.total_deductions}, Net: ₹${lastPayroll.net_pay} (Month: ${lastPayroll.month}/${lastPayroll.year})`
           : "No payroll record available.";
 
+        const otherEmployees = await prisma.employee.findMany({
+          where: { id: { not: user.employee_db_id }, status: 'Active' },
+          select: {
+            name: true,
+            email: true,
+            birth_date: true,
+            join_date: true,
+            avatar: true,
+            department_rel: { select: { name: true } }
+          }
+        });
+
         contextBlock = `
 Employee Full Record (JSON):
 ${JSON.stringify(employee, null, 2)}
@@ -83,6 +95,9 @@ ${leaveInfo || "No leave balances found."}
 
 Latest Payroll:
 ${payrollInfo}
+
+Company Colleagues (Basic Info for celebrations/team queries):
+${JSON.stringify(otherEmployees, null, 2)}
         `.trim();
       }
     }

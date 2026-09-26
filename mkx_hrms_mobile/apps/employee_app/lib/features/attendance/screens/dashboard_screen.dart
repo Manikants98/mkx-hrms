@@ -137,12 +137,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _sendWish(Map<String, dynamic> celeb) async {
     final isBirthday = celeb['type'] == 'Birthday';
+    final isNewJoiner = celeb['type'] == 'New Joiner';
     final auth = context.read<AuthProvider>();
     final userName = auth.currentUser?.name ?? "Your Colleague";
 
     final defaultMessage = isBirthday
         ? 'Happy Birthday! Wishing you a great day from $userName!'
-        : 'Happy Work Anniversary! Wishing you continued success from $userName!';
+        : isNewJoiner
+            ? 'Welcome to the team! Wishing you a great journey ahead from $userName!'
+            : 'Happy Work Anniversary! Wishing you continued success from $userName!';
 
     final TextEditingController messageController =
         TextEditingController(text: defaultMessage);
@@ -281,7 +284,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           width: 48,
                           height: 48,
                           decoration: BoxDecoration(
-                            shape: BoxShape.circle,
+                            borderRadius: BorderRadius.circular(10),
                             color: isBirthday
                                 ? AppColors.warning.withValues(alpha: 0.15)
                                 : isNewJoiner
@@ -328,7 +331,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 isBirthday
                                     ? 'Happy Birthday!'
                                     : isNewJoiner
-                                        ? 'Welcome to the team! 🎉'
+                                        ? 'Welcome to the team!'
                                         : '${celeb['years']} Years Anniversary!',
                                 style: TextStyle(
                                   fontSize: 12,
@@ -340,18 +343,50 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ],
                           ),
                         ),
-                        IconButton(
-                          icon: Icon(
-                            Icons.send_rounded,
-                            color: isBirthday
-                                ? AppColors.warning
-                                : isNewJoiner
-                                    ? AppColors.success
-                                    : M3ETheme.of(context).colorScheme.primary,
-                            size: 20,
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () => _sendWish(celeb),
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              width: 36,
+                              height: 36,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: (isBirthday
+                                        ? AppColors.warning
+                                        : isNewJoiner
+                                            ? AppColors.success
+                                            : M3ETheme.of(context)
+                                                .colorScheme
+                                                .primary)
+                                    .withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                    right: 2.0, bottom: 2.0),
+                                child: Transform.rotate(
+                                  angle: -0.785398,
+                                  child: Padding(
+                                    padding:
+                                        const EdgeInsets.only(left: 4, top: 3),
+                                    child: Icon(
+                                      M3EIcons.send_outlined,
+                                      color: isBirthday
+                                          ? AppColors.warning
+                                          : isNewJoiner
+                                              ? AppColors.success
+                                              : M3ETheme.of(context)
+                                                  .colorScheme
+                                                  .primary,
+                                      size: 18,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
-                          onPressed: () => _sendWish(celeb),
-                          tooltip: 'Send Wish',
                         ),
                       ],
                     );
