@@ -111,7 +111,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                     decoration: BoxDecoration(
                                       color:
                                           colorScheme.surfaceContainerHighest,
-                                      shape: BoxShape.circle,
+                                      borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: _getIconForType(n.type),
                                   ),

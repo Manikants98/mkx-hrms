@@ -301,37 +301,68 @@ export const getDashboardOverview = async (
       },
     });
 
+    const tDay = Number(
+      new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata", day: "numeric" }),
+    );
+    const tMonth = Number(
+      new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata", month: "numeric" }),
+    );
+    const tYear = Number(
+      new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata", year: "numeric" }),
+    );
+
     const celebrations: any[] = [];
     activeEmpsData.forEach((e) => {
-      if (
-        e.birth_date &&
-        e.birth_date.getDate() === todayDate.getDate() &&
-        e.birth_date.getMonth() === todayDate.getMonth()
-      ) {
-        celebrations.push({
-          type: "Birthday",
-          employee_id: e.id,
-          name: e.name,
-          role: e.role_rel?.name || "Staff",
-          avatar: e.avatar,
-        });
+      if (e.birth_date) {
+        const bDay = Number(
+          e.birth_date.toLocaleString("en-US", { timeZone: "Asia/Kolkata", day: "numeric" }),
+        );
+        const bMonth = Number(
+          e.birth_date.toLocaleString("en-US", { timeZone: "Asia/Kolkata", month: "numeric" }),
+        );
+        if (bDay === tDay && bMonth === tMonth) {
+          celebrations.push({
+            type: "Birthday",
+            employee_id: e.id,
+            name: e.name,
+            role: e.role_rel?.name || "Staff",
+            avatar: e.avatar,
+          });
+        }
       }
 
-      if (
-        e.join_date &&
-        e.join_date.getDate() === todayDate.getDate() &&
-        e.join_date.getMonth() === todayDate.getMonth() &&
-        e.join_date.getFullYear() < todayDate.getFullYear()
-      ) {
-        const years = todayDate.getFullYear() - e.join_date.getFullYear();
-        celebrations.push({
-          type: "Work Anniversary",
-          years: years,
-          employee_id: e.id,
-          name: e.name,
-          role: e.role_rel?.name || "Staff",
-          avatar: e.avatar,
-        });
+      if (e.join_date) {
+        const jDay = Number(
+          e.join_date.toLocaleString("en-US", { timeZone: "Asia/Kolkata", day: "numeric" }),
+        );
+        const jMonth = Number(
+          e.join_date.toLocaleString("en-US", { timeZone: "Asia/Kolkata", month: "numeric" }),
+        );
+        const jYear = Number(
+          e.join_date.toLocaleString("en-US", { timeZone: "Asia/Kolkata", year: "numeric" }),
+        );
+
+        if (jDay === tDay && jMonth === tMonth) {
+          if (jYear < tYear) {
+            const years = tYear - jYear;
+            celebrations.push({
+              type: "Work Anniversary",
+              years: years,
+              employee_id: e.id,
+              name: e.name,
+              role: e.role_rel?.name || "Staff",
+              avatar: e.avatar,
+            });
+          } else if (jYear === tYear) {
+            celebrations.push({
+              type: "New Joiner",
+              employee_id: e.id,
+              name: e.name,
+              role: e.role_rel?.name || "Staff",
+              avatar: e.avatar,
+            });
+          }
+        }
       }
     });
 
@@ -645,7 +676,9 @@ export const sendWish = async (req: Request, res: Response) => {
     });
 
     if (!employee || !employee.user_id) {
-      return res.status(404).json({ status: "error", message: "Employee or associated user not found" });
+      return res
+        .status(404)
+        .json({ status: "error", message: "Employee or associated user not found" });
     }
 
     const targetUser = await prisma.user.findUnique({
