@@ -39,13 +39,13 @@ class ThemeConfigPage extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
           children: <Widget>[
-            _themeModeSection(theme, settings, context),
-            const SizedBox(height: 24),
             _toggles(theme, settings, context),
             const SizedBox(height: 24),
             _seeds(theme, settings),
             const SizedBox(height: 24),
             _type(theme, settings),
+            const SizedBox(height: 24),
+            _themeModeSection(theme, settings, context),
           ],
         ),
       ),
@@ -74,7 +74,7 @@ class ThemeConfigPage extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        const ThemeModeSelector(),
+        ThemeModeSelector(color: theme.colorScheme.surfaceContainerHighest),
       ],
     );
   }

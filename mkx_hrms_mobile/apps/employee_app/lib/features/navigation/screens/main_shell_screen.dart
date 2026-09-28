@@ -35,13 +35,14 @@ class _MainShellScreenState extends State<MainShellScreen> {
     final messaging = FirebaseMessaging.instance;
     NotificationSettings settings = await messaging.requestPermission();
     debugPrint('Push permission status: ${settings.authorizationStatus}');
-    
+
     try {
       String? token = await messaging.getToken();
       debugPrint('FCM Token fetched: $token');
-      
+
       if (token != null) {
-        await DioClient.instance.post('/auth/fcm-token', data: {'fcmToken': token});
+        await DioClient.instance
+            .post('/auth/fcm-token', data: {'fcmToken': token});
         debugPrint('FCM Token synced successfully.');
       }
     } catch (e) {
@@ -90,9 +91,10 @@ class _MainShellScreenState extends State<MainShellScreen> {
     final isDark = M3ETheme.of(context).brightness == Brightness.dark;
 
     final colorScheme = M3ETheme.of(context).colorScheme;
-    final surfaceColor = colorScheme.surfaceContainerLow;
+    final surfaceColor = colorScheme.surfaceContainerHigh;
 
     return Scaffold(
+      backgroundColor: colorScheme.surface,
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 300),
         switchInCurve: Curves.easeOut,
@@ -132,7 +134,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
           ),
           child: M3ENavigationBar(
             selectedIndex: _currentIndex,
-            backgroundColor: colorScheme.surfaceContainerLowest,
+            backgroundColor: colorScheme.surfaceContainerHigh,
             onDestinationSelected: (index) =>
                 setState(() => _currentIndex = index),
             labelBehavior: M3ENavBarLabelBehavior.alwaysShow,

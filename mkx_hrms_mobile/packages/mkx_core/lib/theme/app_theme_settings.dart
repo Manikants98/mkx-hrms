@@ -14,6 +14,11 @@ class AppThemeSettings extends ChangeNotifier {
     Color(0xFF006D3D),
     Color(0xFF8F4C00),
     Color(0xFFA1003C),
+    Color(0xFF002F6C), // Midnight
+    Color(0xFF00695C), // Teal
+    Color(0xFFE65100), // Orange
+    Color(0xFF757575), // Gray
+    Color(0xFF000000), // Black
   ];
 
   /** Labels shown under each entry in [seedOptions]. */
@@ -23,6 +28,11 @@ class AppThemeSettings extends ChangeNotifier {
     'Forest',
     'Amber',
     'Rose',
+    'Midnight',
+    'Teal',
+    'Orange',
+    'Gray',
+    'Black',
   ];
 
   /** Family name registered for Google Sans Flex. */

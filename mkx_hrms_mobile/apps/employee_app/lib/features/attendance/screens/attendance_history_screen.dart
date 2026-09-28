@@ -226,7 +226,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
         : 'Month';
 
     return Scaffold(
-      backgroundColor: colorScheme.surfaceContainer,
+      backgroundColor: colorScheme.surface,
       appBar: MkxAppBar(
         title: 'Attendance',
         subtitle: 'All your past punch records',
@@ -293,7 +293,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                       if (states.contains(WidgetState.selected)) {
                         return colorScheme.primary;
                       }
-                      return colorScheme.surfaceContainerLowest;
+                      return colorScheme.surfaceContainerHighest;
                     }),
                   ),
                   selectedIndex: _selectedFilterIndex,
@@ -316,7 +316,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                     child: SizedBox(
                       width: 36,
                       height: 36,
-                      child: M3EProgressIndicator.circular(),
+                      child: M3EProgressIndicator.circularWavy(),
                     ),
                   ),
                 )
@@ -359,9 +359,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                           width: 48,
                           height: 48,
                           decoration: BoxDecoration(
-                            color: isDark
-                                ? AppColors.darkSecondary
-                                : AppColors.lightSecondary,
+                            color: M3ETheme.of(context).colorScheme.surface,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Column(
@@ -373,9 +371,9 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
-                                  color: isDark
-                                      ? AppColors.darkMuted
-                                      : AppColors.lightMuted,
+                                  color: M3ETheme.of(context)
+                                      .colorScheme
+                                      .onSurface,
                                 ),
                               ),
                               Text(

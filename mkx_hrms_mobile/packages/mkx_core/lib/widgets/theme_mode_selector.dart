@@ -11,7 +11,9 @@ import '../theme/app_theme_settings.dart';
  * Synchronizes with both [AuthProvider] and [AppThemeSettings].
  */
 class ThemeModeSelector extends StatelessWidget {
-  const ThemeModeSelector({super.key});
+  final Color? color;
+
+  const ThemeModeSelector({super.key, this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -25,8 +27,7 @@ class ThemeModeSelector extends StatelessWidget {
       (ThemeMode.dark, 'Dark', Icons.dark_mode_rounded),
     ];
 
-    final activeMode =
-        settings.autoTheming ? ThemeMode.system : auth.themeMode;
+    final activeMode = settings.autoTheming ? ThemeMode.system : auth.themeMode;
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -41,7 +42,7 @@ class ThemeModeSelector extends StatelessWidget {
             if (states.contains(WidgetState.selected)) {
               return colorScheme.primary;
             }
-            return colorScheme.surfaceContainer;
+            return color ?? colorScheme.surface;
           }),
         ),
         selectedIndex: modes.indexWhere((m) => m.$1 == activeMode),

@@ -18,7 +18,7 @@ class PayslipDetailScreen extends StatelessWidget {
     final theme = M3ETheme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: theme.surfaceContainer,
+      backgroundColor: theme.surface,
       appBar: MkxAppBar(
         title: 'Payslip Summary',
         subtitle: slip.monthLabel,

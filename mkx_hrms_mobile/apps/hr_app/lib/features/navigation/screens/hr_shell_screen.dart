@@ -45,13 +45,13 @@ class HrShellScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = M3ETheme.of(context).brightness == Brightness.dark;
     final colorScheme = M3ETheme.of(context).colorScheme;
-    final surfaceColor = colorScheme.surfaceContainerLow;
+    final surfaceColor = colorScheme.surfaceContainerHigh;
 
     final location = GoRouterState.of(context).matchedLocation;
     final currentIndex = _indexForLocation(location);
 
     return Scaffold(
-      backgroundColor: colorScheme.surfaceContainerLowest,
+      backgroundColor: colorScheme.surface,
       body: child,
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
@@ -75,7 +75,7 @@ class HrShellScreen extends StatelessWidget {
           ),
           child: M3ENavigationBar(
             selectedIndex: currentIndex,
-            backgroundColor: colorScheme.surfaceContainerLowest,
+            backgroundColor: colorScheme.surfaceContainerHigh,
             onDestinationSelected: (index) => _navigate(context, index),
             labelBehavior: M3ENavBarLabelBehavior.alwaysShow,
             destinations: _items

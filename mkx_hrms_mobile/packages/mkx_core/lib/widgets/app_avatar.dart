@@ -44,7 +44,7 @@ class AppAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = M3ETheme.of(context);
     final primary = theme.colorScheme.primary;
-    final effectiveBg = backgroundColor ?? primary.withValues(alpha: 0.12);
+    final effectiveBg = backgroundColor ?? theme.colorScheme.surfaceContainer;
     final effectiveFg = foregroundColor ?? primary;
     final effectiveFontSize = fontSize ?? (size * 0.38);
 

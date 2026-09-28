@@ -37,8 +37,9 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
     final M3EColorScheme scheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: scheme.surfaceContainer,
+      backgroundColor: scheme.surface,
       appBar: MkxAppBar(
+        automaticallyImplyLeading: false,
         title: 'Dashboard',
         subtitle: 'Good ${_greeting()}, ${user?.name ?? "HR Admin"}',
       ),
@@ -154,9 +155,9 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
 
     return M3ECard(
       variant: M3ECardVariant.filled,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(14),
       padding: const EdgeInsets.all(16),
-      color: colorScheme.surfaceContainerLowest,
+      color: colorScheme.surfaceContainerHighest,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

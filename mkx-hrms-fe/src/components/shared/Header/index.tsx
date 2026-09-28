@@ -195,11 +195,6 @@ export function Header() {
                         {formatRelativeTime(n.created_at)}
                       </span>
                     </div>
-                    {n.sender_name && (
-                      <p className="text-[10px] text-primary/70 font-medium mt-0.5">
-                        From: {n.sender_name}
-                      </p>
-                    )}
                     <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
                       {n.message}
                     </p>

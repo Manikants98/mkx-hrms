@@ -55,7 +55,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
     final leaves = context.watch<LeavesProvider>();
 
     return Scaffold(
-      backgroundColor: M3ETheme.of(context).colorScheme.surfaceContainer,
+      backgroundColor: M3ETheme.of(context).colorScheme.surface,
       appBar: MkxAppBar(
         title: 'Leaves',
         subtitle: 'Track balances and submit time off',
@@ -79,7 +79,6 @@ class _LeavesScreenState extends State<LeavesScreen> {
       ),
       body: M3ERefreshIndicator.contained(
         onRefresh: _loadData,
-        color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(10),
@@ -87,8 +86,6 @@ class _LeavesScreenState extends State<LeavesScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildDynamicQuotaCards(context, leaves),
-
-              /// Status Filter Chips
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Builder(builder: (context) {
@@ -107,7 +104,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
                         }
                         return M3ETheme.of(context)
                             .colorScheme
-                            .surfaceContainerLowest;
+                            .surfaceContainerHighest;
                       }),
                     ),
                     selectedIndex: filters.indexOf(leaves.selectedFilter),
@@ -333,116 +330,123 @@ class _LeavesScreenState extends State<LeavesScreen> {
       return const SizedBox.shrink();
     }
 
-    return M3ECard(
-      variant: M3ECardVariant.filled,
-      borderRadius: BorderRadius.circular(16),
-      color: M3ETheme.of(context).colorScheme.surfaceContainerLowest,
-      padding: EdgeInsets.zero,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: IntrinsicHeight(
-          child: Row(
-            children: displayQuotas.asMap().entries.map((entry) {
-              final index = entry.key;
-              final quota = entry.value;
-              final color = UiHelpers.parseHexColor(
-                quota.color,
-                defaultColor: index % 3 == 0
-                    ? AppColors.info
-                    : (index % 3 == 1 ? AppColors.success : AppColors.warning),
-              );
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: displayQuotas.asMap().entries.map((entry) {
+          final index = entry.key;
+          final quota = entry.value;
+          final color = UiHelpers.parseHexColor(
+            quota.color,
+            defaultColor: index % 3 == 0
+                ? AppColors.info
+                : (index % 3 == 1 ? AppColors.success : AppColors.warning),
+          );
 
-              final statCol = Container(
-                constraints: const BoxConstraints(minWidth: 160),
-                padding: const EdgeInsets.symmetric(
-                  vertical: 16,
-                  horizontal: 20,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '${quota.remaining}',
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w700,
-                        color: color,
-                        height: 1,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          quota.name ?? quota.code ?? 'Leave',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: M3ETheme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Text(
-                              '${quota.used} / ${quota.total}',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: M3ETheme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant
-                                    .withValues(alpha: 0.7),
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: color.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                quota.isPaid == false ? 'Unpaid' : 'Paid',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  color: color,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-
-              if (index == displayQuotas.length - 1) {
-                return statCol;
-              }
-
-              return Row(
+          final statCol = M3ECard(
+            variant: M3ECardVariant.filled,
+            color: M3ETheme.of(context).colorScheme.surfaceContainerHighest,
+            padding: const EdgeInsets.symmetric(
+              vertical: 16,
+              horizontal: 20,
+            ),
+            borderRadius: index == 0
+                ? const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    bottomLeft: Radius.circular(16),
+                    bottomRight: Radius.circular(4),
+                    topRight: Radius.circular(4),
+                  )
+                : (index == displayQuotas.length - 1
+                    ? const BorderRadius.only(
+                        topRight: Radius.circular(16),
+                        bottomRight: Radius.circular(16),
+                        bottomLeft: Radius.circular(4),
+                        topLeft: Radius.circular(4),
+                      )
+                    : BorderRadius.circular(4)),
+            child: Container(
+              constraints: const BoxConstraints(minWidth: 120),
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  statCol,
-                  Container(
-                    width: 2,
-                    color: M3ETheme.of(context).colorScheme.surfaceContainer,
+                  Text(
+                    '${quota.remaining}',
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w700,
+                      color: color,
+                      height: 1,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        quota.name ?? quota.code ?? 'Leave',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color:
+                              M3ETheme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Text(
+                            '${quota.used} / ${quota.total}',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: M3ETheme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant
+                                  .withValues(alpha: 0.7),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: color.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              quota.isPaid == false ? 'Unpaid' : 'Paid',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: color,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ],
-              );
-            }).toList(),
-          ),
-        ),
+              ),
+            ),
+          );
+
+          if (index == displayQuotas.length - 1) {
+            return statCol;
+          }
+
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              statCol,
+              const SizedBox(width: 4),
+            ],
+          );
+        }).toList(),
       ),
     );
   }

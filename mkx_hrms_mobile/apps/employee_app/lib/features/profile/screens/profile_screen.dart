@@ -67,7 +67,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final theme = M3ETheme.of(context);
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.surfaceContainer,
+      backgroundColor: M3ETheme.of(context).colorScheme.surface,
       appBar: MkxAppBar(
         title: 'Profile',
         subtitle: 'Employment records and account preferences',
@@ -88,7 +88,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             M3ECard(
               variant: M3ECardVariant.filled,
               borderRadius: BorderRadius.circular(16),
-              color: M3ETheme.of(context).colorScheme.surfaceContainerLowest,
+              color: M3ETheme.of(context).colorScheme.surfaceContainerHighest,
               padding: const EdgeInsets.all(20),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,7 +150,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4),
               child: Text(
-                'EMPLOYEMENT DETAILS',
+                'EMPLOYMENT DETAILS',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
@@ -493,7 +493,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 value: progress,
                 minHeight: 4,
                 backgroundColor:
-                    isDark ? AppColors.darkSecondary : AppColors.lightSecondary,
+                    M3ETheme.of(context).colorScheme.surfaceContainerHigh,
                 valueColor: AlwaysStoppedAnimation<Color>(color),
               ),
             ),

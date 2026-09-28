@@ -48,8 +48,9 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
     final colorScheme = M3ETheme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: scheme.surfaceContainer,
+      backgroundColor: scheme.surface,
       appBar: MkxAppBar(
+        automaticallyImplyLeading: false,
         title: 'Profile',
         subtitle: 'HR Admin account preferences',
         actions: [
@@ -71,7 +72,7 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
               M3ECard(
                 variant: M3ECardVariant.filled,
                 borderRadius: BorderRadius.circular(16),
-                color: colorScheme.surfaceContainerLowest,
+                color: colorScheme.surfaceContainerHighest,
                 padding: const EdgeInsets.all(20),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,

@@ -43,8 +43,9 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
     final M3EThemeData theme = M3ETheme.of(context);
     final M3EColorScheme scheme = theme.colorScheme;
     return Scaffold(
-      backgroundColor: scheme.surfaceContainer,
+      backgroundColor: scheme.surface,
       appBar: const MkxAppBar(
+        automaticallyImplyLeading: false,
         title: 'Employees',
         subtitle: 'Workforce directory & staff records',
       ),
@@ -94,7 +95,7 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
               )
             : null,
         filled: true,
-        fillColor: M3ETheme.of(context).colorScheme.surfaceContainerLowest,
+        fillColor: M3ETheme.of(context).colorScheme.surfaceContainerHighest,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14,
           vertical: 12,
@@ -133,7 +134,7 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
                 if (states.contains(WidgetState.selected)) {
                   return M3ETheme.of(context).colorScheme.primary;
                 }
-                return M3ETheme.of(context).colorScheme.surfaceContainerLowest;
+                return M3ETheme.of(context).colorScheme.surfaceContainerHighest;
               }),
             ),
             selectedIndex: provider.departments.indexWhere((dept) =>

@@ -95,7 +95,7 @@ class PunchCard extends StatelessWidget {
               ),
               const SizedBox(width: 4),
               Text(
-                'MKX Tech Headquarters • ${record?.location ?? "Office"}',
+                record?.location ?? "Office",
                 style: TextStyle(
                   fontSize: 12,
                   color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
@@ -103,66 +103,80 @@ class PunchCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          M3ECard(
-            variant: M3ECardVariant.filled,
-            borderRadius: BorderRadius.circular(16),
-            color: M3ETheme.of(context).colorScheme.surfaceContainer,
-            padding: EdgeInsets.zero,
-            child: IntrinsicHeight(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: _buildTimeColumn(
-                        context,
-                        title: 'Punch In',
-                        time: record?.checkIn ?? '--:--',
-                        icon: Icons.login_rounded,
-                        iconColor: AppColors.success,
-                      ),
-                    ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: M3ECard(
+                  variant: M3ECardVariant.filled,
+                  borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(12),
+                      bottomLeft: Radius.circular(12),
+                      bottomRight: Radius.circular(4),
+                      topRight: Radius.circular(4)),
+                  color: M3ETheme.of(context).colorScheme.surface,
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
+                  child: _buildTimeColumn(
+                    context,
+                    title: 'Punch In',
+                    time: record?.checkIn ?? '--:--',
+                    icon: Icons.login_rounded,
+                    iconColor: AppColors.success,
                   ),
-                  Container(
-                    width: 4,
-                    color:
-                        M3ETheme.of(context).colorScheme.surfaceContainerLowest,
-                  ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: _buildTimeColumn(
-                        context,
-                        title: 'Punch Out',
-                        time: record?.checkOut ?? '--:--',
-                        icon: Icons.logout_rounded,
-                        iconColor: AppColors.warning,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    width: 4,
-                    color:
-                        M3ETheme.of(context).colorScheme.surfaceContainerLowest,
-                  ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: _buildTimeColumn(
-                        context,
-                        title: 'Total Hours',
-                        time: displayWorkHours,
-                        icon: Icons.timer_outlined,
-                        iconColor: AppColors.info,
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
+              Container(
+                color: M3ETheme.of(context).colorScheme.surface,
+                child: const SizedBox(width: 4),
+              ),
+              Expanded(
+                child: M3ECard(
+                  variant: M3ECardVariant.filled,
+                  borderRadius: BorderRadius.only(
+                      topRight: Radius.circular(4),
+                      bottomRight: Radius.circular(4),
+                      bottomLeft: Radius.circular(4),
+                      topLeft: Radius.circular(4)),
+                  color: M3ETheme.of(context).colorScheme.surface,
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
+                  child: _buildTimeColumn(
+                    context,
+                    title: 'Punch Out',
+                    time: record?.checkOut ?? '--:--',
+                    icon: Icons.logout_rounded,
+                    iconColor: AppColors.warning,
+                  ),
+                ),
+              ),
+              Container(
+                color: M3ETheme.of(context).colorScheme.surface,
+                child: const SizedBox(width: 4),
+              ),
+              Expanded(
+                child: M3ECard(
+                  variant: M3ECardVariant.filled,
+                  borderRadius: BorderRadius.only(
+                      topRight: Radius.circular(12),
+                      bottomRight: Radius.circular(12),
+                      bottomLeft: Radius.circular(4),
+                      topLeft: Radius.circular(4)),
+                  color: M3ETheme.of(context).colorScheme.surface,
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
+                  child: _buildTimeColumn(
+                    context,
+                    title: 'Total Hours',
+                    time: displayWorkHours,
+                    icon: Icons.timer_outlined,
+                    iconColor: AppColors.info,
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
           if (!hasCheckedIn)
             if (isPunching)
               Center(
@@ -210,20 +224,17 @@ class PunchCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 14),
               width: double.infinity,
               decoration: BoxDecoration(
-                color:
-                    isDark ? AppColors.successBgDark : AppColors.successBgLight,
+                color: M3ETheme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.check_circle_rounded,
-                      color: AppColors.success, size: 18),
+                  const Icon(Icons.check_circle_rounded, size: 18),
                   const SizedBox(width: 8),
                   Text(
                     'Punched for Today (${record?.workHours ?? "Completed"})',
                     style: TextStyle(
-                      color: AppColors.success,
                       fontWeight: FontWeight.w600,
                       fontSize: 13,
                     ),

@@ -52,8 +52,9 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
     final M3EColorScheme scheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: scheme.surfaceContainer,
+      backgroundColor: scheme.surface,
       appBar: MkxAppBar(
+        automaticallyImplyLeading: false,
         title: 'Attendance',
         subtitle: DateFormat('EEEE, d MMMM yyyy').format(provider.selectedDate),
       ),
@@ -95,59 +96,60 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
   }
 
   Widget _buildSummaryRow(bool isDark, HrAttendanceProvider provider) {
-    return M3ECard(
-      variant: M3ECardVariant.filled,
-      borderRadius: BorderRadius.circular(16),
-      color: M3ETheme.of(context).colorScheme.surfaceContainerLowest,
-      padding: EdgeInsets.zero,
-      child: IntrinsicHeight(
-        child: Row(
-          children: [
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                child: _buildStatCol(
-                  'Total',
-                  provider.records.length,
-                  Colors.blue,
-                ),
-              ),
+    return Row(
+      children: [
+        Expanded(
+          child: M3ECard(
+            variant: M3ECardVariant.filled,
+            color: M3ETheme.of(context).colorScheme.surfaceContainerHighest,
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(16),
+              bottomLeft: Radius.circular(16),
+              bottomRight: Radius.circular(4),
+              topRight: Radius.circular(4),
             ),
-            Container(
-              width: 4,
-              color: M3ETheme.of(context).colorScheme.surfaceContainer,
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                child: _buildStatCol(
-                    'Present', provider.presentCount, Colors.green),
-              ),
-            ),
-            Container(
-              width: 4,
-              color: M3ETheme.of(context).colorScheme.surfaceContainer,
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                child: _buildStatCol('Late', provider.lateCount, Colors.orange),
-              ),
-            ),
-            Container(
-              width: 4,
-              color: M3ETheme.of(context).colorScheme.surfaceContainer,
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                child: _buildStatCol(
-                    'Absent', provider.absentCount, AppColors.error),
-              ),
-            ),
-          ],
+            child: _buildStatCol('Total', provider.records.length, Colors.blue),
+          ),
         ),
-      ),
+        const SizedBox(width: 4),
+        Expanded(
+          child: M3ECard(
+            variant: M3ECardVariant.filled,
+            color: M3ETheme.of(context).colorScheme.surfaceContainerHighest,
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+            borderRadius: BorderRadius.circular(4),
+            child:
+                _buildStatCol('Present', provider.presentCount, Colors.green),
+          ),
+        ),
+        const SizedBox(width: 4),
+        Expanded(
+          child: M3ECard(
+            variant: M3ECardVariant.filled,
+            color: M3ETheme.of(context).colorScheme.surfaceContainerHighest,
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+            borderRadius: BorderRadius.circular(4),
+            child: _buildStatCol('Late', provider.lateCount, Colors.orange),
+          ),
+        ),
+        const SizedBox(width: 4),
+        Expanded(
+          child: M3ECard(
+            variant: M3ECardVariant.filled,
+            color: M3ETheme.of(context).colorScheme.surfaceContainerHighest,
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+            borderRadius: const BorderRadius.only(
+              topRight: Radius.circular(16),
+              bottomRight: Radius.circular(16),
+              bottomLeft: Radius.circular(4),
+              topLeft: Radius.circular(4),
+            ),
+            child:
+                _buildStatCol('Absent', provider.absentCount, AppColors.error),
+          ),
+        ),
+      ],
     );
   }
 
@@ -237,7 +239,7 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
             if (states.contains(WidgetState.selected)) {
               return M3ETheme.of(context).colorScheme.primary;
             }
-            return M3ETheme.of(context).colorScheme.surfaceContainerLowest;
+            return M3ETheme.of(context).colorScheme.surfaceContainerHighest;
           }),
         ),
         selectedIndex: selectedIndex,

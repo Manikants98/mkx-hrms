@@ -64,8 +64,11 @@ class SectionTile extends StatelessWidget {
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: scheme.surfaceContainerLowest,
-        borderRadius: customBorderRadius ?? (isStandalone ? BorderRadius.circular(14) : BorderRadius.circular(3)),
+        color: scheme.surfaceContainerHighest,
+        borderRadius: customBorderRadius ??
+            (isStandalone
+                ? BorderRadius.circular(14)
+                : BorderRadius.circular(3)),
       ),
       child: child,
     );
@@ -107,7 +110,7 @@ class SectionCard extends StatelessWidget {
     final M3EThemeData theme = M3ETheme.of(context);
     final M3EColorScheme scheme = theme.colorScheme;
     final total = children.length;
-    final dividerColor = scheme.surfaceContainer;
+    final dividerColor = scheme.surface;
     final defaultPadding =
         tilePadding ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 14);
 

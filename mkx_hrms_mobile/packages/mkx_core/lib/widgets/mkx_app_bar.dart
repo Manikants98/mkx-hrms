@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:material_3_expressive/components/app_bars/m3e_app_bars.dart';
 import 'package:material_3_expressive/foundations/theme/m3e_theme.dart';
 
 /// Custom top app bar matching the MKX HRMS design system using system fonts.
@@ -23,6 +24,9 @@ class MkxAppBar extends StatelessWidget implements PreferredSizeWidget {
   /// Whether to show the bottom divider border. Defaults to true.
   final bool showBorder;
 
+  /// Whether to automatically imply a back button. Defaults to true.
+  final bool automaticallyImplyLeading;
+
   const MkxAppBar({
     super.key,
     required this.title,
@@ -30,6 +34,7 @@ class MkxAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.leading,
     this.actions,
     this.showBorder = true,
+    this.automaticallyImplyLeading = true,
   });
 
   @override
@@ -40,8 +45,6 @@ class MkxAppBar extends StatelessWidget implements PreferredSizeWidget {
     final colorScheme = M3ETheme.of(context).colorScheme;
     final isDark = colorScheme.brightness == Brightness.dark;
 
-    // surface = tile color (darkCard / lightCard), outline = border token
-    final surfaceColor = colorScheme.surfaceContainerLowest;
     final fgColor = colorScheme.onSurface;
     final mutedColor =
         isDark ? const Color(0xFFA1A1AA) : const Color(0xFF6E6E73);
@@ -50,69 +53,58 @@ class MkxAppBar extends StatelessWidget implements PreferredSizeWidget {
       isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
     );
 
-    final ModalRoute<dynamic>? parentRoute = ModalRoute.of(context);
-    final canPop = parentRoute?.impliesAppBarDismissal ?? false;
-    final hasLeading = leading != null || canPop;
-
-    return Container(
-      color: surfaceColor,
-      child: SafeArea(
-        bottom: false,
-        child: SizedBox(
-          height: preferredSize.height,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                if (hasLeading)
-                  leading ??
-                      IconButton(
-                        icon: const Icon(
-                          Icons.arrow_back,
-                          size: 20,
-                        ),
-                        onPressed: () => Navigator.of(context).pop(),
-                        color: fgColor,
-                      ),
-                if (!hasLeading) const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -0.3,
-                          color: fgColor,
-                        ),
-                      ),
-                      if (subtitle != null) ...[
-                        const SizedBox(height: 1),
-                        Text(
-                          subtitle!,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                            color: mutedColor,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                ...?actions,
-                if (actions == null) const SizedBox(width: 16),
-              ],
-            ),
-          ),
-        ),
+    Widget titleWidget = Text(
+      title,
+      style: TextStyle(
+        fontSize: 17,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.3,
+        color: fgColor,
       ),
+    );
+
+    if (subtitle != null) {
+      titleWidget = Padding(
+        padding: const EdgeInsets.only(left: 8.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            titleWidget,
+            const SizedBox(height: 1),
+            Text(
+              subtitle!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+                color: mutedColor,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    Widget? effectiveLeading = leading;
+    if (automaticallyImplyLeading && effectiveLeading == null) {
+      final ModalRoute<dynamic>? parentRoute = ModalRoute.of(context);
+      if (parentRoute?.canPop ?? false) {
+        effectiveLeading = IconButton(
+          icon: Icon(
+            Icons.arrow_back_rounded,
+            color: colorScheme.onSurface,
+          ),
+          onPressed: () => Navigator.of(context).pop(),
+        );
+      }
+    }
+
+    return M3EAppBar.top(
+      title: titleWidget,
+      leading: effectiveLeading,
+      actions: actions,
     );
   }
 }

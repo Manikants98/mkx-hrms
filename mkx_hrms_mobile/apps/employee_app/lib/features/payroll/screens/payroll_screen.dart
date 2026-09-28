@@ -53,81 +53,105 @@ class _PayrollScreenState extends State<PayrollScreen> {
     final latest = payroll.latestPayslip;
     final theme = M3ETheme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: theme.surfaceContainer,
+      backgroundColor: theme.surface,
       appBar: const MkxAppBar(
         title: 'Salary & Payslips',
         subtitle: 'Remuneration statements and annual earnings',
       ),
-      body: SafeArea(
-        top: false,
-        child: M3ERefreshIndicator.contained(
-          onRefresh: _loadData,
-          color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (latest != null)
-                  SectionTile(
-                    isDark: isDark,
-                    position: TilePosition.only,
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: M3ERefreshIndicator.contained(
+        onRefresh: _loadData,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (payroll.isLoading)
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.7,
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 40),
+                      child: SizedBox(
+                          width: 48,
+                          height: 48,
+                          child: M3EProgressIndicator.circularWavy(
+                              strokeWidth: 3)),
+                    ),
+                  ),
+                )
+              else if (payroll.slips.isEmpty)
+                const EmptyState(
+                  icon: Icons.receipt_long_outlined,
+                  title: 'No salary slips generated yet',
+                  description:
+                      'Your generated salary slips and statements will be listed here after monthly payroll runs.',
+                )
+              else
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (latest != null)
+                      SectionTile(
+                        isDark: isDark,
+                        position: TilePosition.only,
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Latest Disbursement',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                    color: isDark
+                                        ? AppColors.darkMuted
+                                        : AppColors.lightMuted,
+                                  ),
+                                ),
+                                StatusBadge(status: latest.status),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
                             Text(
-                              'Latest Disbursement',
+                              latest.formattedNetPay,
                               style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
+                                fontSize: 32,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.6,
+                                color: isDark
+                                    ? AppColors.darkForeground
+                                    : AppColors.lightForeground,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${latest.monthLabel} • Paid on ${latest.payDate}',
+                              style: TextStyle(
+                                fontSize: 12,
                                 color: isDark
                                     ? AppColors.darkMuted
                                     : AppColors.lightMuted,
                               ),
                             ),
-                            StatusBadge(status: latest.status),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          latest.formattedNetPay,
-                          style: TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.6,
-                            color: isDark
-                                ? AppColors.darkForeground
-                                : AppColors.lightForeground,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${latest.monthLabel} • Paid on ${latest.payDate}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: isDark
-                                ? AppColors.darkMuted
-                                : AppColors.lightMuted,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        M3ECard(
-                          variant: M3ECardVariant.filled,
-                          color: theme.surfaceContainer,
-                          padding: EdgeInsets.zero,
-                          borderRadius: BorderRadius.circular(16),
-                          child: IntrinsicHeight(
-                            child: Row(
+                            const SizedBox(height: 16),
+                            Row(
                               children: [
                                 Expanded(
-                                  child: Padding(
+                                  child: M3ECard(
+                                    variant: M3ECardVariant.filled,
+                                    color: theme.surface,
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 16, horizontal: 12),
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(16),
+                                      bottomLeft: Radius.circular(16),
+                                      bottomRight: Radius.circular(4),
+                                      topRight: Radius.circular(4),
+                                    ),
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.center,
@@ -160,14 +184,14 @@ class _PayrollScreenState extends State<PayrollScreen> {
                                     ),
                                   ),
                                 ),
-                                Container(
-                                  width: 4,
-                                  color: theme.surfaceContainerLowest,
-                                ),
+                                const SizedBox(width: 4),
                                 Expanded(
-                                  child: Padding(
+                                  child: M3ECard(
+                                    variant: M3ECardVariant.filled,
+                                    color: theme.surface,
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 16, horizontal: 12),
+                                    borderRadius: BorderRadius.circular(4),
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.center,
@@ -198,14 +222,19 @@ class _PayrollScreenState extends State<PayrollScreen> {
                                     ),
                                   ),
                                 ),
-                                Container(
-                                  width: 4,
-                                  color: theme.surfaceContainerLowest,
-                                ),
+                                const SizedBox(width: 4),
                                 Expanded(
-                                  child: Padding(
+                                  child: M3ECard(
+                                    variant: M3ECardVariant.filled,
+                                    color: theme.surface,
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 16, horizontal: 12),
+                                    borderRadius: const BorderRadius.only(
+                                      topRight: Radius.circular(16),
+                                      bottomRight: Radius.circular(16),
+                                      bottomLeft: Radius.circular(4),
+                                      topLeft: Radius.circular(4),
+                                    ),
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.center,
@@ -238,113 +267,91 @@ class _PayrollScreenState extends State<PayrollScreen> {
                                 ),
                               ],
                             ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                const SizedBox(height: 10),
-
-                // Past Payslips List
-                Text(
-                  'Payslip History',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.2,
-                  ),
-                ),
-                const SizedBox(height: 10),
-
-                if (payroll.isLoading && payroll.slips.isEmpty)
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 40),
-                      child: SizedBox(
-                          width: 48,
-                          height: 48,
-                          child: M3EProgressIndicator.circularWavy(
-                              strokeWidth: 3)),
-                    ),
-                  )
-                else if (payroll.slips.isEmpty)
-                  const EmptyState(
-                    icon: Icons.receipt_long_outlined,
-                    title: 'No salary slips generated yet',
-                    description:
-                        'Your generated salary slips and statements will be listed here after monthly payroll runs.',
-                  )
-                else
-                  SectionCard(
-                    isDark: isDark,
-                    children: payroll.slips.map((item) {
-                      return InkWell(
-                        onTap: () => _openDetailModal(item),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: M3ETheme.of(context)
-                                    .colorScheme
-                                    .surfaceContainer,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Icon(
-                                Icons.receipt_outlined,
-                                size: 22,
-                                color: M3ETheme.of(context).colorScheme.primary,
-                              ),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    item.monthLabel,
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    '${item.payDate} • ${item.payrollCode}',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: isDark
-                                          ? AppColors.darkMuted
-                                          : AppColors.lightMuted,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  item.formattedNetPay,
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.success,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                StatusBadge(status: item.status),
-                              ],
-                            ),
                           ],
                         ),
-                      );
-                    }).toList(),
-                  ),
-                const SizedBox(height: 40),
-              ],
-            ),
+                      ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Payslip History',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    SectionCard(
+                      isDark: isDark,
+                      children: payroll.slips.map((item) {
+                        return InkWell(
+                          onTap: () => _openDetailModal(item),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 44,
+                                height: 44,
+                                decoration: BoxDecoration(
+                                  color: M3ETheme.of(context)
+                                      .colorScheme
+                                      .surfaceContainer,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  Icons.receipt_outlined,
+                                  size: 22,
+                                  color:
+                                      M3ETheme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item.monthLabel,
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      '${item.payDate} • ${item.payrollCode}',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: isDark
+                                            ? AppColors.darkMuted
+                                            : AppColors.lightMuted,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    item.formattedNetPay,
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppColors.success,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  StatusBadge(status: item.status),
+                                ],
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              const SizedBox(height: 40),
+            ],
           ),
         ),
       ),

@@ -37,8 +37,9 @@ class _HrLeavesScreenState extends State<HrLeavesScreen> {
     final M3EColorScheme scheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: scheme.surfaceContainer,
+      backgroundColor: scheme.surface,
       appBar: const MkxAppBar(
+        automaticallyImplyLeading: false,
         title: 'Leave Requests',
         subtitle: 'Review and approve workforce time off',
       ),
@@ -106,7 +107,7 @@ class _HrLeavesScreenState extends State<HrLeavesScreen> {
             if (states.contains(WidgetState.selected)) {
               return M3ETheme.of(context).colorScheme.primary;
             }
-            return M3ETheme.of(context).colorScheme.surfaceContainerLowest;
+            return M3ETheme.of(context).colorScheme.surfaceContainerHighest;
           }),
         ),
         selectedIndex: _tabs.indexOf(provider.statusFilter),

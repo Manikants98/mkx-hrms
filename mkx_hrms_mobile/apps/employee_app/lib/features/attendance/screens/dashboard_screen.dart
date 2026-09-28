@@ -216,8 +216,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final pendingLeaveRequests = leaves.balances?.pendingRequests ?? 0;
 
     return Scaffold(
-      backgroundColor: M3ETheme.of(context).colorScheme.surfaceContainer,
+      backgroundColor: M3ETheme.of(context).colorScheme.surface,
       appBar: MkxAppBar(
+        automaticallyImplyLeading: false,
         title: 'Dashboard',
         subtitle: 'Good ${_greeting()}, ${user?.name ?? "Employee"}',
         actions: [
@@ -255,7 +256,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 onPunchIn: _handlePunchIn,
                 onPunchOut: _handlePunchOut,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
               if (_celebrations.isNotEmpty) ...[
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -540,7 +541,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: const SizedBox(
                         width: 36,
                         height: 36,
-                        child: M3EProgressIndicator.circular()),
+                        child: M3EProgressIndicator.circularWavy()),
                   ),
                 )
               else if (attendance.history.isEmpty)
@@ -601,9 +602,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               width: 48,
                               height: 48,
                               decoration: BoxDecoration(
-                                color: isDark
-                                    ? AppColors.darkSecondary
-                                    : AppColors.lightSecondary,
+                                color: M3ETheme.of(context).colorScheme.surface,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Column(
@@ -616,9 +615,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
-                                      color: isDark
-                                          ? AppColors.darkMuted
-                                          : AppColors.lightMuted,
+                                      color: M3ETheme.of(context)
+                                          .colorScheme
+                                          .onSurfaceVariant,
                                     ),
                                   ),
                                   Text(
@@ -626,9 +625,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     style: TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.w800,
-                                      color: isDark
-                                          ? AppColors.darkForeground
-                                          : AppColors.lightForeground,
+                                      color: M3ETheme.of(context)
+                                          .colorScheme
+                                          .onSurface,
                                     ),
                                   ),
                                 ],

@@ -119,11 +119,14 @@ class AiProvider extends ChangeNotifier {
   /// Loads AI dashboard insights
   Future<void> loadDashboardInsights() async {
     _isLoadingInsights = true;
+    _errorMessage = null;
     notifyListeners();
-    
+
     try {
       _dashboardInsights = await _repo.getDashboardInsights();
-    } catch (_) {} finally {
+    } catch (e) {
+      _errorMessage = e.toString().replaceAll('Exception: ', '');
+    } finally {
       _isLoadingInsights = false;
       notifyListeners();
     }

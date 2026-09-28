@@ -39,16 +39,31 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Widget _getIconForType(String? type) {
     switch (type) {
       case 'leave':
-        return const Icon(Icons.event_available, color: Colors.green, size: 24);
+        return const Icon(Icons.event_available, color: Colors.green, size: 20);
       case 'recruitment':
-        return const Icon(Icons.work_outline, color: Colors.blue, size: 24);
+        return const Icon(Icons.work_outline, color: Colors.blue, size: 20);
       case 'payroll':
-        return const Icon(Icons.payment, color: Colors.orange, size: 24);
+        return const Icon(Icons.payment, color: Colors.orange, size: 20);
       case 'attendance':
         return const Icon(Icons.notifications_none,
-            color: Colors.purple, size: 24);
+            color: Colors.purple, size: 20);
       default:
-        return const Icon(Icons.card_giftcard, color: Colors.amber, size: 24);
+        return const Icon(Icons.card_giftcard, color: Colors.amber, size: 20);
+    }
+  }
+
+  Color _getColorForType(String? type) {
+    switch (type) {
+      case 'leave':
+        return Colors.green;
+      case 'recruitment':
+        return Colors.blue;
+      case 'payroll':
+        return Colors.orange;
+      case 'attendance':
+        return Colors.purple;
+      default:
+        return Colors.amber;
     }
   }
 
@@ -62,7 +77,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final notifications = provider.notifications;
 
     return Scaffold(
-      backgroundColor: colorScheme.surfaceContainer,
+      backgroundColor: M3ETheme.of(context).colorScheme.surface,
       appBar: MkxAppBar(
         title: 'Notifications',
         actions: [
@@ -109,8 +124,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                   Container(
                                     padding: const EdgeInsets.all(8),
                                     decoration: BoxDecoration(
-                                      color:
-                                          colorScheme.surfaceContainerHighest,
+                                      color: _getColorForType(n.type)
+                                          .withValues(alpha: 0.08),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: _getIconForType(n.type),
@@ -148,18 +163,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                             ),
                                           ],
                                         ),
-                                        if (n.senderName != null &&
-                                            n.senderName!.isNotEmpty) ...[
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            'From: ${n.senderName}',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w600,
-                                              color: colorScheme.primary,
-                                            ),
-                                          ),
-                                        ],
                                         const SizedBox(height: 6),
                                         Text(
                                           n.message,

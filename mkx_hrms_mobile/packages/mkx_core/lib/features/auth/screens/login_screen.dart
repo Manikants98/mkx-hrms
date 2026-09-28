@@ -63,7 +63,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final auth = context.watch<AuthProvider>();
     final scheme = M3ETheme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: scheme.surfaceContainer,
+      backgroundColor: scheme.surface,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -82,20 +82,17 @@ class _LoginScreenState extends State<LoginScreen> {
                         width: 58,
                         height: 58,
                         decoration: BoxDecoration(
-                          color: isDark
-                              ? AppColors.darkSecondary
-                              : AppColors.lightSecondary,
+                          color: scheme.primary.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Icon(
                           Icons.fingerprint_rounded,
                           size: 32,
-                          color: isDark
-                              ? AppColors.darkPrimary
-                              : AppColors.lightPrimary,
+                          color: scheme.primary,
                         ),
                       ),
                     ),
+                    const SizedBox(height: 10),
                     Text(
                       'MKX HRMS',
                       textAlign: TextAlign.center,
@@ -103,9 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         fontSize: 24,
                         fontWeight: FontWeight.w800,
                         letterSpacing: -0.5,
-                        color: isDark
-                            ? AppColors.darkForeground
-                            : AppColors.lightForeground,
+                        color: scheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -114,8 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14,
-                        color:
-                            isDark ? AppColors.darkMuted : AppColors.lightMuted,
+                        color: scheme.onSurfaceVariant,
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -123,7 +117,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     // Card Container
                     M3ECard(
                       variant: M3ECardVariant.elevated,
-                      color: isDark ? AppColors.darkCard : AppColors.lightCard,
+                      color: M3ETheme.of(context)
+                          .colorScheme
+                          .surfaceContainerHighest,
                       padding: const EdgeInsets.all(24),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,

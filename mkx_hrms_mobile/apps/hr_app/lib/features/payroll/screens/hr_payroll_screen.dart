@@ -55,7 +55,7 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
 
     await showModalBottomSheet(
       context: context,
-      backgroundColor: M3ETheme.of(context).colorScheme.surfaceContainerLow,
+      backgroundColor: M3ETheme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -184,8 +184,9 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
     final scheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: scheme.surfaceContainer,
+      backgroundColor: scheme.surface,
       appBar: MkxAppBar(
+        automaticallyImplyLeading: false,
         title: 'Payroll',
         subtitle:
             '${_monthNames[provider.selectedMonth - 1]} ${provider.selectedYear}',

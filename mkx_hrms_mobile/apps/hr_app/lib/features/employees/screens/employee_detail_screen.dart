@@ -38,7 +38,7 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
         final email = data['email']?.toString() ?? '';
 
         return Scaffold(
-          backgroundColor: M3ETheme.of(context).colorScheme.surfaceContainer,
+          backgroundColor: M3ETheme.of(context).colorScheme.surface,
           appBar: MkxAppBar(
             title: 'Employee Profile',
             subtitle: name.isNotEmpty ? '$name • $email' : 'Employment details',
@@ -199,7 +199,7 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
       variant: M3ECardVariant.filled,
       borderRadius: BorderRadius.circular(16),
       padding: const EdgeInsets.all(20),
-      color: M3ETheme.of(context).colorScheme.surfaceContainerLowest,
+      color: M3ETheme.of(context).colorScheme.surfaceContainerHighest,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
