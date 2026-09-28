@@ -29,11 +29,6 @@ class HrShellScreen extends StatelessWidget {
       icon: Icons.today_outlined,
       activeIcon: Icons.today_rounded,
     ),
-    // _HrNavItem(
-    //   label: 'Payroll',
-    //   icon: Icons.payments_outlined,
-    //   activeIcon: Icons.payments_rounded,
-    // ),
     _HrNavItem(
       label: 'Profile',
       icon: Icons.person_outline_rounded,
