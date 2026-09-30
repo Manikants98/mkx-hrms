@@ -25,7 +25,11 @@ class NotificationsProvider extends ChangeNotifier {
       _notifications = data.notifications;
       _unreadCount = data.unreadCount;
     } catch (e) {
-      _errorMessage = 'Failed to load notifications.';
+      if (e.toString().contains('401')) {
+        _errorMessage = 'Session expired. Please sign out and sign back in.';
+      } else {
+        _errorMessage = 'Failed to load notifications.';
+      }
     } finally {
       _isLoading = false;
       notifyListeners();

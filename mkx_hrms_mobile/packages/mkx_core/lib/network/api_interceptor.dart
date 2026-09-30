@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import '../storage/token_storage.dart';
+import 'dio_client.dart';
 
 /// Network interceptor injecting Authorization headers and structured logging
 class ApiInterceptor extends Interceptor {
@@ -44,6 +45,14 @@ class ApiInterceptor extends Interceptor {
         '❌ [DIO ERR ${err.response?.statusCode}] ${err.requestOptions.path}: ${err.message}',
       );
     }
+
+    if (err.response?.statusCode == 401) {
+      final path = err.requestOptions.path;
+      if (!path.contains('/auth/login')) {
+        DioClient.handleUnauthorized();
+      }
+    }
+
     return handler.next(err);
   }
 }

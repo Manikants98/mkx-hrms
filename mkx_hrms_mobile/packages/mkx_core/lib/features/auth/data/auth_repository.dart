@@ -1,4 +1,5 @@
 import 'package:mkx_core/constants/api_endpoints.dart';
+import 'package:mkx_core/network/api_exception.dart';
 import 'package:mkx_core/network/dio_client.dart';
 import 'package:mkx_core/storage/token_storage.dart';
 import '../models/user_model.dart';
@@ -43,8 +44,13 @@ class AuthRepository {
         await _storage.saveUserRaw(user.toRawJson());
         return user;
       }
+    } on ApiException catch (e) {
+      if (e.statusCode == 401) {
+        await _storage.clearToken();
+        return null;
+      }
+      return getCachedUser();
     } catch (_) {
-      // Fallback to cached profile if offline
       return getCachedUser();
     }
     return null;

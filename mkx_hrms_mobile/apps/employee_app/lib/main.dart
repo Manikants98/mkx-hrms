@@ -10,6 +10,7 @@ import 'package:mkx_core/theme/app_theme.dart';
 import 'package:mkx_core/theme/app_theme_scope.dart';
 import 'package:mkx_core/theme/app_theme_settings.dart';
 import 'package:mkx_core/widgets/splash_screen.dart';
+import 'package:mkx_core/utils/ui_helpers.dart';
 import 'package:provider/provider.dart';
 
 import 'features/ai_assistant/state/ai_provider.dart';
@@ -19,7 +20,7 @@ import 'features/navigation/screens/main_shell_screen.dart';
 import 'features/notifications/state/notifications_provider.dart';
 import 'features/payroll/state/payroll_provider.dart';
 
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+final GlobalKey<NavigatorState> navigatorKey = UiHelpers.rootNavigatorKey;
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
@@ -134,6 +135,7 @@ class _MkxHrmsAppState extends State<MkxHrmsApp> {
 
                   return MaterialApp(
                     navigatorKey: navigatorKey,
+                    scaffoldMessengerKey: UiHelpers.rootScaffoldMessengerKey,
                     title: 'MKX HRMS',
                     debugShowCheckedModeBanner: false,
                     theme:

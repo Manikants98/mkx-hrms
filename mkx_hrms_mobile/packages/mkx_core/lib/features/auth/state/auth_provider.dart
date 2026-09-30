@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mkx_core/storage/token_storage.dart';
+import '../../../network/dio_client.dart';
 import '../data/auth_repository.dart';
 import '../models/user_model.dart';
 
@@ -21,6 +22,9 @@ class AuthProvider extends ChangeNotifier {
   ThemeMode get themeMode => _themeMode;
 
   AuthProvider() {
+    DioClient.onUnauthorized = () {
+      logout();
+    };
     _initApp();
   }
 

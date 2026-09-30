@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import '../constants/api_endpoints.dart';
 import '../storage/token_storage.dart';
+import '../utils/ui_helpers.dart';
 import 'api_exception.dart';
 import 'api_interceptor.dart';
 
@@ -17,13 +18,32 @@ class DioClient {
     );
 
     _dio.interceptors.add(ApiInterceptor());
-    // _initCustomBaseUrl(); // Temporarily disabled to force live URL
   }
 
   static final DioClient instance = DioClient._();
   late final Dio _dio;
 
   Dio get dio => _dio;
+
+  /// Global callback invoked on 401 Unauthorized errors to handle session termination.
+  static void Function()? onUnauthorized;
+
+  static DateTime? _lastUnauthorizedTime;
+
+  /// Throttled handler for 401 Unauthorized responses to avoid repetitive logout calls.
+  static void handleUnauthorized() {
+    final now = DateTime.now();
+    if (_lastUnauthorizedTime != null &&
+        now.difference(_lastUnauthorizedTime!).inSeconds < 3) {
+      return;
+    }
+    _lastUnauthorizedTime = now;
+
+    UiHelpers.showGlobalSnackBar('Session Expired', isError: true);
+    onUnauthorized?.call();
+    UiHelpers.rootNavigatorKey.currentState
+        ?.popUntil((route) => route.isFirst);
+  }
 
   // Future<void> _initCustomBaseUrl() async {
   //   final customUrl = await TokenStorage.instance.getBaseUrl();

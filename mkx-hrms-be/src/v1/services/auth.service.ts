@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt, { JwtPayload, SignOptions } from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET || "mkx-hrms-secret-jwt-key-2026";
-const JWT_EXPIRES_IN = (process.env.JWT_EXPIRES_IN || "7d") as string;
+const JWT_EXPIRES_IN = (process.env.JWT_EXPIRES_IN || "30d") as string;
 
 /**
  * Payload carried by generated authentication JSON Web Tokens

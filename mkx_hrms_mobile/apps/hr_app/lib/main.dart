@@ -8,6 +8,7 @@ import 'package:mkx_core/theme/app_theme.dart';
 import 'package:mkx_core/theme/app_theme_scope.dart';
 import 'package:mkx_core/theme/app_theme_settings.dart';
 import 'package:mkx_core/widgets/splash_screen.dart';
+import 'package:mkx_core/utils/ui_helpers.dart';
 import 'package:provider/provider.dart';
 
 import 'features/attendance/screens/hr_attendance_screen.dart';
@@ -50,6 +51,7 @@ class _HrAppState extends State<HrApp> {
     _themeSettings = AppThemeSettings();
     _themeSettings.loadSettings();
     _router = GoRouter(
+      navigatorKey: UiHelpers.rootNavigatorKey,
       initialLocation: '/',
       refreshListenable: _authProvider,
       redirect: (context, state) {
@@ -167,6 +169,7 @@ class _HrAppState extends State<HrApp> {
                         seedColor: seedColor, brightness: Brightness.dark);
 
                 return MaterialApp.router(
+                  scaffoldMessengerKey: UiHelpers.rootScaffoldMessengerKey,
                   title: 'MKX HRMS Admin',
                   theme: AppTheme.lightTheme(lightScheme, settings.fontFamily),
                   darkTheme:

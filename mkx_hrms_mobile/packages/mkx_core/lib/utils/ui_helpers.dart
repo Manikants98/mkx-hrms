@@ -7,6 +7,70 @@ import '../constants/app_colors.dart';
 class UiHelpers {
   UiHelpers._();
 
+  /// Global key used for displaying top-level SnackBars across the entire application.
+  static final GlobalKey<ScaffoldMessengerState> rootScaffoldMessengerKey =
+      GlobalKey<ScaffoldMessengerState>();
+
+  /// Global key used for top-level navigation operations across the application.
+  static final GlobalKey<NavigatorState> rootNavigatorKey =
+      GlobalKey<NavigatorState>();
+
+  /// Displays a global SnackBar toast without requiring a local BuildContext.
+  static void showGlobalSnackBar(
+    String message, {
+    bool isError = false,
+    bool isSuccess = false,
+  }) {
+    final state = rootScaffoldMessengerKey.currentState;
+    if (state == null) return;
+    state.hideCurrentSnackBar();
+
+    Color bgColor = AppColors.lightPrimary;
+    Color textColor = AppColors.lightPrimaryForeground;
+
+    if (isError) {
+      bgColor = AppColors.error;
+      textColor = Colors.white;
+    } else if (isSuccess) {
+      bgColor = AppColors.success;
+      textColor = Colors.white;
+    }
+
+    state.showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              isError
+                  ? Icons.error_outline_rounded
+                  : (isSuccess
+                      ? Icons.check_circle_outline_rounded
+                      : Icons.info_outline_rounded),
+              color: textColor,
+              size: 20,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: bgColor,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
   static void showSnackBar(
     BuildContext context,
     String message, {
