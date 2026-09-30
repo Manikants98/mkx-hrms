@@ -20,6 +20,8 @@ import 'features/employees/state/employees_provider.dart';
 import 'features/leaves/screens/hr_leaves_screen.dart';
 import 'features/leaves/state/hr_leaves_provider.dart';
 import 'features/navigation/screens/hr_shell_screen.dart';
+import 'features/notifications/screens/notifications_screen.dart';
+import 'features/notifications/state/notifications_provider.dart';
 import 'features/payroll/screens/hr_payroll_screen.dart';
 import 'features/payroll/state/hr_payroll_provider.dart';
 import 'features/profile/screens/hr_profile_screen.dart';
@@ -78,6 +80,10 @@ class _HrAppState extends State<HrApp> {
           path: '/login',
           builder: (context, state) => const LoginScreen(),
         ),
+        GoRoute(
+          path: '/notifications',
+          builder: (context, state) => const NotificationsScreen(),
+        ),
         ShellRoute(
           builder: (context, state, child) => HrShellScreen(child: child),
           routes: [
@@ -135,6 +141,7 @@ class _HrAppState extends State<HrApp> {
         ChangeNotifierProvider(create: (_) => HrLeavesProvider()),
         ChangeNotifierProvider(create: (_) => HrAttendanceProvider()),
         ChangeNotifierProvider(create: (_) => HrPayrollProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationsProvider()),
       ],
       child: AppThemeScope(
         settings: _themeSettings,

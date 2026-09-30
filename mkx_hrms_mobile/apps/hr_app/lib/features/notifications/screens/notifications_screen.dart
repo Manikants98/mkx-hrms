@@ -5,6 +5,7 @@ import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import '../state/notifications_provider.dart';
 
+/// Notifications screen displaying system and activity notifications.
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
 
@@ -101,22 +102,42 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             ),
         ],
       ),
-      body: provider.isLoading
-          ? const Center(child: M3EProgressIndicator.circularWavy())
-          : provider.errorMessage != null
-              ? Center(
-                  child: Text(provider.errorMessage!,
-                      style: TextStyle(color: colorScheme.error)))
-              : notifications.isEmpty
-                  ? Center(
-                      child: Text(
-                        'No notifications at this time',
-                        style: TextStyle(color: colorScheme.onSurfaceVariant),
+      body: M3ERefreshIndicator.contained(
+        onRefresh: () => provider.fetchNotifications(),
+        child: provider.isLoading
+            ? const Center(child: M3EProgressIndicator.circularWavy())
+            : provider.errorMessage != null
+                ? ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: [
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.6,
+                        child: Center(
+                          child: Text(
+                            provider.errorMessage!,
+                            style: TextStyle(color: colorScheme.error),
+                          ),
+                        ),
                       ),
-                    )
-                  : M3ERefreshIndicator.contained(
-                      onRefresh: () => provider.fetchNotifications(),
-                      child: SingleChildScrollView(
+                    ],
+                  )
+                : notifications.isEmpty
+                    ? ListView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        children: [
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.6,
+                            child: Center(
+                              child: Text(
+                                'No notifications at this time',
+                                style: TextStyle(
+                                    color: colorScheme.onSurfaceVariant),
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    : SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),
                         padding: const EdgeInsets.all(10),
                         child: SectionCard(

@@ -7,8 +7,10 @@ import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
+import 'package:go_router/go_router.dart';
 import '../../dashboard/models/dashboard_stats_model.dart';
 import '../../dashboard/state/dashboard_provider.dart';
+import '../../notifications/state/notifications_provider.dart';
 
 /// HR Admin Dashboard — matches employee_app structure and UI patterns
 class HrDashboardScreen extends StatefulWidget {
@@ -24,6 +26,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<DashboardProvider>().loadStats();
+      context.read<NotificationsProvider>().fetchNotifications();
     });
   }
 
@@ -32,6 +35,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
     final isDark = M3ETheme.of(context).brightness == Brightness.dark;
     final auth = context.watch<AuthProvider>();
     final provider = context.watch<DashboardProvider>();
+    final notifications = context.watch<NotificationsProvider>();
     final user = auth.currentUser;
     final M3EThemeData theme = M3ETheme.of(context);
     final M3EColorScheme scheme = theme.colorScheme;
@@ -42,11 +46,31 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
         automaticallyImplyLeading: false,
         title: 'Dashboard',
         subtitle: 'Good ${_greeting()}, ${user?.name ?? "HR Admin"}',
+        actions: [
+          Badge(
+            isLabelVisible: notifications.unreadCount > 0,
+            label: Text(notifications.unreadCount.toString()),
+            backgroundColor: scheme.error,
+            offset: const Offset(-8, 8),
+            child: IconButton(
+              icon: const Icon(Icons.notifications_none_rounded),
+              color: scheme.onSurface,
+              onPressed: () {
+                context.push('/notifications');
+              },
+            ),
+          ),
+        ],
       ),
       body: SafeArea(
         top: false,
         child: M3ERefreshIndicator.contained(
-          onRefresh: () => context.read<DashboardProvider>().loadStats(),
+          onRefresh: () async {
+            await Future.wait([
+              context.read<DashboardProvider>().loadStats(),
+              context.read<NotificationsProvider>().fetchNotifications(),
+            ]);
+          },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(10),
