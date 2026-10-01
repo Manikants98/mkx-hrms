@@ -12,10 +12,14 @@ import {
   updateJobPostingSchema,
 } from "../schemas/job-postings.schema";
 
-const router = Router();
+import { requireAuth } from "../../middlewares/auth.middleware";
 
+const router = Router();
 router.get("/", getJobPostings);
 router.get("/:id", getJobPostingById);
+// Protected routes for creating/updating/deleting
+router.use(requireAuth);
+
 router.post("/", validate(createJobPostingSchema), createJobPosting);
 router.put("/:id", validate(updateJobPostingSchema), updateJobPosting);
 router.delete("/:id", deleteJobPosting);

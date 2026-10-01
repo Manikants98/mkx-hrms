@@ -15,27 +15,39 @@ import jobPostingsRoutes from "./job-postings.routes";
 import contactRoutes from "./contact.routes";
 import aiRoutes from "./ai.routes";
 import notificationsRoutes from "./notifications.routes";
+import { requireAuth } from "../../middlewares/auth.middleware";
 
 const router = Router();
 
+// ==========================================
+// PUBLIC ROUTES (No Auth Required)
+// ==========================================
 router.use("/auth", authRoutes);
+router.use("/blogs", blogsRoutes);
+router.use("/job-postings", jobPostingsRoutes);
+router.use("/contact", contactRoutes);
+router.use("/leaves", leavesRoutes); // Granular auth inside leaves.routes.ts
 
+// ==========================================
+// AUTHENTICATION BARRIER
+// ==========================================
+// All routes below this line will require a valid JWT token
+router.use(requireAuth);
+
+// ==========================================
+// PRIVATE ROUTES (Protected)
+// ==========================================
 router.use("/users", userRoutes);
 router.use("/employees", employeesRoutes);
 router.use("/attendance", attendanceRoutes);
-router.use("/leaves", leavesRoutes);
 router.use("/payroll", payrollRoutes);
 router.use("/recruitment", recruitmentRoutes);
 router.use("/reports", reportsRoutes);
 router.use("/dashboard", dashboardRoutes);
 router.use("/hr/dashboard", dashboardRoutes);
 router.use("/settings", settingsRoutes);
-router.use("/blogs", blogsRoutes);
 router.use("/masters", mastersRoutes);
-router.use("/job-postings", jobPostingsRoutes);
-router.use("/contact", contactRoutes);
 router.use("/ai", aiRoutes);
 router.use("/notifications", notificationsRoutes);
 
 export default router;
-

@@ -55,20 +55,26 @@ class _HrAppState extends State<HrApp> {
       initialLocation: '/',
       refreshListenable: _authProvider,
       redirect: (context, state) {
-        final isLoggedIn = _authProvider.isAuthenticated;
-        final isInitializing = _authProvider.isInitializing;
-        final isGoingToLogin = state.matchedLocation == '/login';
-        final isGoingToSplash = state.matchedLocation == '/splash';
+        final auth = _authProvider;
+        final isSplash = state.matchedLocation == '/splash';
+        final isLogin = state.matchedLocation == '/login';
 
-        if (isInitializing && !isGoingToSplash) return '/splash';
-        if (isInitializing && isGoingToSplash) return null;
-
-        if (!isInitializing && isGoingToSplash) {
-          return isLoggedIn ? '/' : '/login';
+        // 1. App is initializing, show splash screen
+        if (auth.isInitializing) {
+          return isSplash ? null : '/splash';
         }
 
-        if (!isInitializing && !isLoggedIn && !isGoingToLogin) return '/login';
-        if (!isInitializing && isLoggedIn && isGoingToLogin) return '/';
+        // 2. App initialized, not authenticated, go to login
+        if (!auth.isAuthenticated) {
+          return isLogin ? null : '/login';
+        }
+
+        // 3. App initialized, authenticated, but trying to see login or splash, go to dashboard
+        if (isLogin || isSplash) {
+          return '/';
+        }
+
+        // 4. Otherwise, let them go where they wanted
         return null;
       },
       routes: [

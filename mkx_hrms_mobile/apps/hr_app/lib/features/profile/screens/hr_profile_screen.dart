@@ -10,6 +10,8 @@ import 'package:mkx_core/widgets/status_badge.dart';
 import 'package:mkx_core/widgets/theme_config_page.dart';
 import 'package:mkx_core/widgets/theme_mode_selector.dart';
 import 'package:provider/provider.dart';
+import 'package:mkx_core/widgets/app_skeleton.dart';
+import '../../../widgets/hr_skeletons.dart';
 
 /// HR Admin Profile, Settings, Theme Mode, and Logout Screen
 class HrProfileScreen extends StatefulWidget {
@@ -64,11 +66,17 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
       ),
       body: SafeArea(
         top: false,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        child: ValueListenableBuilder<bool>(
+          valueListenable: SkeletonConfig.isEnabled,
+          builder: (context, showSkeleton, _) {
+            if (showSkeleton || (auth.isLoading && user == null)) {
+              return HrProfileSkeleton(isDark: isDark);
+            }
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
               M3ECard(
                 variant: M3ECardVariant.filled,
                 borderRadius: BorderRadius.circular(16),
@@ -244,6 +252,8 @@ class _HrProfileScreenState extends State<HrProfileScreen> {
               const SizedBox(height: 10),
             ],
           ),
+            );
+          },
         ),
       ),
     );

@@ -28,10 +28,15 @@ class DioClient {
   /// Global callback invoked on 401 Unauthorized errors to handle session termination.
   static void Function()? onUnauthorized;
 
+  /// When true, bypasses automatic 401 logout for dashboard UI preview and testing.
+  static bool bypassUnauthorized = true;
+
   static DateTime? _lastUnauthorizedTime;
 
   /// Throttled handler for 401 Unauthorized responses to avoid repetitive logout calls.
   static void handleUnauthorized() {
+    if (bypassUnauthorized) return;
+
     final now = DateTime.now();
     if (_lastUnauthorizedTime != null &&
         now.difference(_lastUnauthorizedTime!).inSeconds < 3) {

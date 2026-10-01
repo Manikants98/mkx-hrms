@@ -14,13 +14,18 @@ import {
   verifySetPasswordTokenSchema,
 } from "../schemas/auth.schema";
 
+import { requireAuth } from "../../middlewares/auth.middleware";
+
 const router = Router();
 
+// Public routes
 router.post("/login", validate(loginSchema), login);
-router.post("/logout", logout);
-router.get("/me", getMe);
-router.post("/fcm-token", saveFcmToken);
 router.get("/set-password", validate(verifySetPasswordTokenSchema), verifySetPasswordToken);
 router.post("/set-password", validate(setPasswordSchema), setPasswordWithToken);
+
+// Protected routes
+router.post("/logout", requireAuth, logout);
+router.get("/me", requireAuth, getMe);
+router.post("/fcm-token", requireAuth, saveFcmToken);
 
 export default router;

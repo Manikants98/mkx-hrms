@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import '../state/notifications_provider.dart';
+import 'package:mkx_core/widgets/app_skeleton.dart';
+import '../../../widgets/employee_skeletons.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -101,23 +103,32 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             ),
         ],
       ),
-      body: provider.isLoading
-          ? const Center(child: M3EProgressIndicator.circularWavy())
-          : provider.errorMessage != null
-              ? Center(
-                  child: Text(provider.errorMessage!,
-                      style: TextStyle(color: colorScheme.error)))
-              : notifications.isEmpty
-                  ? Center(
-                      child: Text(
-                        'No notifications at this time',
-                        style: TextStyle(color: colorScheme.onSurfaceVariant),
-                      ),
-                    )
-                  : M3ERefreshIndicator.contained(
-                      onRefresh: () => provider.fetchNotifications(),
-                      child: SingleChildScrollView(
-                        physics: const AlwaysScrollableScrollPhysics(),
+      body: ValueListenableBuilder<bool>(
+        valueListenable: SkeletonConfig.isEnabled,
+        builder: (context, isLoading, child) {
+          return Skeleton(
+            isLoading: isLoading,
+            skeleton: EmployeeNotificationsSkeleton(isDark: isDark),
+            child: child!,
+          );
+        },
+        child: provider.isLoading
+            ? const Center(child: M3EProgressIndicator.circularWavy())
+            : provider.errorMessage != null
+                ? Center(
+                    child: Text(provider.errorMessage!,
+                        style: TextStyle(color: colorScheme.error)))
+                : notifications.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No notifications at this time',
+                          style: TextStyle(color: colorScheme.onSurfaceVariant),
+                        ),
+                      )
+                    : M3ERefreshIndicator.contained(
+                        onRefresh: () => provider.fetchNotifications(),
+                        child: SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
                         padding: const EdgeInsets.all(10),
                         child: SectionCard(
                           isDark: isDark,
@@ -201,6 +212,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         ),
                       ),
                     ),
+                    ),
     );
   }
 }
+
+

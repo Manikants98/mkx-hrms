@@ -9,6 +9,8 @@ import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
 import '../models/hr_leave_model.dart';
 import '../state/hr_leaves_provider.dart';
+import 'package:mkx_core/widgets/app_skeleton.dart';
+import '../../../widgets/hr_skeletons.dart';
 
 /// HR Leave Management — matches employee_app structure and UI patterns
 class HrLeavesScreen extends StatefulWidget {
@@ -53,30 +55,37 @@ class _HrLeavesScreenState extends State<HrLeavesScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildStatusFilters(isDark, provider),
-                if (provider.isLoading && provider.leaves.isEmpty)
-                  const Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 40),
-                      child: SizedBox(
-                          width: 52,
-                          height: 52,
-                          child: M3EProgressIndicator.circularWavy()),
-                    ),
-                  )
-                else if (provider.leaves.isEmpty)
-                  EmptyState(
-                    icon: Icons.event_note_outlined,
-                    title: 'No ${provider.statusFilter} leave requests',
-                    description: 'All employee leave requests will appear here',
-                  )
-                else
-                  SectionCard(
-                    isDark: isDark,
-                    children: provider.leaves.map((leave) {
-                      return _LeaveTile(leave: leave, isDark: isDark);
-                    }).toList(),
-                  ),
+                ValueListenableBuilder<bool>(
+                  valueListenable: SkeletonConfig.isEnabled,
+                  builder: (context, showSkeleton, _) {
+                    if (showSkeleton ||
+                        (provider.isLoading && provider.leaves.isEmpty)) {
+                      return HrLeavesSkeleton(isDark: isDark);
+                    }
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildStatusFilters(isDark, provider),
+                        const SizedBox(height: 10),
+                        if (provider.leaves.isEmpty)
+                          EmptyState(
+                            icon: Icons.event_note_outlined,
+                            title: 'No ${provider.statusFilter} leave requests',
+                            description:
+                                'All employee leave requests will appear here',
+                          )
+                        else
+                          SectionCard(
+                            isDark: isDark,
+                            children: provider.leaves.map((leave) {
+                              return _LeaveTile(leave: leave, isDark: isDark);
+                            }).toList(),
+                          ),
+                      ],
+                    );
+                  },
+                ),
                 const SizedBox(height: 20),
               ],
             ),

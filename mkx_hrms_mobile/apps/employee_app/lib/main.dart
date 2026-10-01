@@ -33,7 +33,6 @@ void main() async {
     await Firebase.initializeApp();
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-    // Enable foreground heads-up notifications
     await FirebaseMessaging.instance
         .setForegroundNotificationPresentationOptions(
       alert: true,

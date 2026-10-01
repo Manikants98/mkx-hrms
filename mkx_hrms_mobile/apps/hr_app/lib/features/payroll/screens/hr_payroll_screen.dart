@@ -12,6 +12,8 @@ import 'package:provider/provider.dart';
 
 import '../models/hr_payroll_model.dart';
 import '../state/hr_payroll_provider.dart';
+import 'package:mkx_core/widgets/app_skeleton.dart';
+import '../../../widgets/hr_skeletons.dart';
 
 /// HR Payroll Processing — matches employee_app structure and UI patterns
 class HrPayrollScreen extends StatefulWidget {
@@ -216,31 +218,29 @@ class _HrPayrollScreenState extends State<HrPayrollScreen> {
                 const SizedBox(height: 10),
                 _buildFilterChips(isDark, provider),
                 const SizedBox(height: 10),
-                if (provider.isLoading && provider.payrolls.isEmpty)
-                  const Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 40),
-                      child: SizedBox(
-                          width: 52,
-                          height: 52,
-                          child: M3EProgressIndicator.circularWavy(
-                              strokeWidth: 3)),
-                    ),
-                  )
-                else if (filteredPayrolls.isEmpty)
-                  EmptyState(
-                    icon: Icons.payments_outlined,
-                    title: 'No $_statusFilter payroll records',
-                    description:
-                        'No payroll data found for ${_monthNames[provider.selectedMonth - 1]} ${provider.selectedYear}',
-                  )
-                else
-                  SectionCard(
-                    isDark: isDark,
-                    children: filteredPayrolls.map((payroll) {
-                      return _PayrollRow(payroll: payroll, isDark: isDark);
-                    }).toList(),
-                  ),
+                ValueListenableBuilder<bool>(
+                  valueListenable: SkeletonConfig.isEnabled,
+                  builder: (context, showSkeleton, _) {
+                    if (showSkeleton ||
+                        (provider.isLoading && provider.payrolls.isEmpty)) {
+                      return HrPayrollSkeleton(isDark: isDark);
+                    }
+                    if (filteredPayrolls.isEmpty) {
+                      return EmptyState(
+                        icon: Icons.payments_outlined,
+                        title: 'No $_statusFilter payroll records',
+                        description:
+                            'No payroll data found for ${_monthNames[provider.selectedMonth - 1]} ${provider.selectedYear}',
+                      );
+                    }
+                    return SectionCard(
+                      isDark: isDark,
+                      children: filteredPayrolls.map((payroll) {
+                        return _PayrollRow(payroll: payroll, isDark: isDark);
+                      }).toList(),
+                    );
+                  },
+                ),
                 const SizedBox(height: 20),
               ],
             ),

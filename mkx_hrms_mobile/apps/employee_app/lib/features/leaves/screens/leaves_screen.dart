@@ -8,6 +8,8 @@ import 'package:mkx_core/widgets/empty_state.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
+import 'package:mkx_core/widgets/app_skeleton.dart';
+import '../../../widgets/employee_skeletons.dart';
 import 'package:provider/provider.dart';
 
 import '../models/leave_model.dart';
@@ -77,10 +79,19 @@ class _LeavesScreenState extends State<LeavesScreen> {
           ),
         ],
       ),
-      body: M3ERefreshIndicator.contained(
-        onRefresh: _loadData,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
+      body: ValueListenableBuilder<bool>(
+        valueListenable: SkeletonConfig.isEnabled,
+        builder: (context, isLoading, child) {
+          return Skeleton(
+            isLoading: isLoading,
+            skeleton: EmployeeLeavesSkeleton(isDark: isDark),
+            child: child!,
+          );
+        },
+        child: M3ERefreshIndicator.contained(
+          onRefresh: _loadData,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -301,6 +312,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

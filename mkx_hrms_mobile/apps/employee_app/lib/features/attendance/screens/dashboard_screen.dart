@@ -11,6 +11,8 @@ import 'package:mkx_core/widgets/metric_card.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
+import 'package:mkx_core/widgets/app_skeleton.dart';
+import '../../../widgets/employee_skeletons.dart';
 import 'package:provider/provider.dart';
 
 import '../../leaves/state/leaves_provider.dart';
@@ -241,10 +243,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-      body: M3ERefreshIndicator.contained(
-        onRefresh: _loadData,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
+      body: ValueListenableBuilder<bool>(
+        valueListenable: SkeletonConfig.isEnabled,
+        builder: (context, isLoading, child) {
+          return Skeleton(
+            isLoading: isLoading,
+            skeleton: EmployeeDashboardSkeleton(isDark: isDark),
+            child: child!,
+          );
+        },
+        child: M3ERefreshIndicator.contained(
+          onRefresh: _loadData,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -668,6 +679,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
       ),
+      ),
     );
   }
 
@@ -778,3 +790,5 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 }
+
+

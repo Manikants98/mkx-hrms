@@ -20,6 +20,7 @@ class DashboardProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      await Future.delayed(const Duration(milliseconds: 2500));
       _stats = await _repo.getStats();
     } catch (e) {
       _errorMessage = e.toString().replaceAll('Exception: ', '');

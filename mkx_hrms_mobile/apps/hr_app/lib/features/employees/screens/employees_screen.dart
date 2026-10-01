@@ -9,6 +9,8 @@ import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
 import '../models/employee_list_model.dart';
 import '../state/employees_provider.dart';
+import 'package:mkx_core/widgets/app_skeleton.dart';
+import '../../../widgets/hr_skeletons.dart';
 
 /// HR Employee Directory — matches employee_app structure and UI patterns
 class EmployeesScreen extends StatefulWidget {
@@ -56,13 +58,24 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildSearchBar(isDark),
-                _buildFilterChips(isDark),
-                _buildEmployeeList(isDark),
-              ],
+            child: ValueListenableBuilder<bool>(
+              valueListenable: SkeletonConfig.isEnabled,
+              builder: (context, showSkeleton, _) {
+                final provider = context.read<EmployeesProvider>();
+                if (showSkeleton ||
+                    (provider.isLoading && provider.employees.isEmpty)) {
+                  return HrEmployeesSkeleton(isDark: isDark);
+                }
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildSearchBar(isDark),
+                    _buildFilterChips(isDark),
+                    _buildEmployeeList(isDark),
+                  ],
+                );
+              },
             ),
           ),
         ),
@@ -167,18 +180,6 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
 
   Widget _buildEmployeeList(bool isDark) {
     final provider = context.watch<EmployeesProvider>();
-
-    if (provider.isLoading && provider.employees.isEmpty) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 40),
-          child: SizedBox(
-              width: 52,
-              height: 52,
-              child: M3EProgressIndicator.circularWavy(strokeWidth: 3)),
-        ),
-      );
-    }
 
     if (provider.employees.isEmpty) {
       return EmptyState(

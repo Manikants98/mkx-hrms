@@ -115,7 +115,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = M3ETheme.of(context).brightness == Brightness.dark;
+    final colorScheme = M3ETheme.of(context).colorScheme;
     final leaves = context.watch<LeavesProvider>();
     final dateDisplay = DateFormat('MMM dd, yyyy');
 
@@ -132,7 +132,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.darkCard : AppColors.lightCard,
+        color: colorScheme.surfaceContainerLow,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SafeArea(
@@ -151,8 +151,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color:
-                          isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                      color: colorScheme.outlineVariant,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -170,9 +169,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
-                            color: isDark
-                                ? AppColors.darkForeground
-                                : AppColors.lightForeground,
+                            color: colorScheme.onSurface,
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -182,9 +179,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                             vertical: 3,
                           ),
                           decoration: BoxDecoration(
-                            color: isDark
-                                ? AppColors.infoBgDark
-                                : AppColors.infoBgLight,
+                            color: colorScheme.primaryContainer,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -192,7 +187,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.info,
+                              color: colorScheme.onPrimaryContainer,
                             ),
                           ),
                         ),
@@ -203,8 +198,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                       onPressed: () => Navigator.of(context).pop(),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
-                      color:
-                          isDark ? AppColors.darkMuted : AppColors.lightMuted,
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ],
                 ),
@@ -213,7 +207,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                   'Submit your time-off request for manager authorization.',
                   style: TextStyle(
                     fontSize: 12,
-                    color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -227,9 +221,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
-                        color: isDark
-                            ? AppColors.darkForeground
-                            : AppColors.lightForeground,
+                        color: colorScheme.onSurface,
                       ),
                     ),
                     if (leaves.isLoadingLeaveTypes)
@@ -244,17 +236,14 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14),
                   decoration: BoxDecoration(
-                    color: isDark
-                        ? AppColors.darkInput
-                        : AppColors.lightBackground,
+                    color: colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
                       value: _selectedLeaveType,
                       isExpanded: true,
-                      dropdownColor:
-                          isDark ? AppColors.darkCard : AppColors.lightCard,
+                      dropdownColor: colorScheme.surfaceContainerLow,
                       items: leaves.masterLeaveTypes.isNotEmpty
                           ? leaves.masterLeaveTypes.map((type) {
                               final color = UiHelpers.parseHexColor(type.color);
@@ -277,9 +266,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                                         style: TextStyle(
                                           fontSize: 14,
                                           fontWeight: FontWeight.w500,
-                                          color: isDark
-                                              ? AppColors.darkForeground
-                                              : AppColors.lightForeground,
+                                          color: colorScheme.onSurface,
                                         ),
                                       ),
                                     ),
@@ -294,9 +281,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                                   type,
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: isDark
-                                        ? AppColors.darkForeground
-                                        : AppColors.lightForeground,
+                                    color: colorScheme.onSurface,
                                   ),
                                 ),
                               );
@@ -309,7 +294,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                     ),
                   ),
                 ),
-                _buildQuotaIndicator(leaves, isDark),
+                _buildQuotaIndicator(leaves, colorScheme),
                 const SizedBox(height: 16),
 
                 // Date Selectors
@@ -324,9 +309,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
-                              color: isDark
-                                  ? AppColors.darkForeground
-                                  : AppColors.lightForeground,
+                              color: colorScheme.onSurface,
                             ),
                           ),
                           const SizedBox(height: 6),
@@ -339,9 +322,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                                 vertical: 14,
                               ),
                               decoration: BoxDecoration(
-                                color: isDark
-                                    ? AppColors.darkInput
-                                    : AppColors.lightBackground,
+                                color: colorScheme.surfaceContainerHighest,
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Row(
@@ -349,14 +330,15 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                                   Icon(
                                     Icons.calendar_today_outlined,
                                     size: 16,
-                                    color: isDark
-                                        ? AppColors.darkMuted
-                                        : AppColors.lightMuted,
+                                    color: colorScheme.onSurfaceVariant,
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
                                     dateDisplay.format(_startDate),
-                                    style: TextStyle(fontSize: 13),
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: colorScheme.onSurface,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -375,9 +357,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
-                              color: isDark
-                                  ? AppColors.darkForeground
-                                  : AppColors.lightForeground,
+                              color: colorScheme.onSurface,
                             ),
                           ),
                           const SizedBox(height: 6),
@@ -390,9 +370,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                                 vertical: 14,
                               ),
                               decoration: BoxDecoration(
-                                color: isDark
-                                    ? AppColors.darkInput
-                                    : AppColors.lightBackground,
+                                color: colorScheme.surfaceContainerHighest,
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Row(
@@ -400,14 +378,15 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                                   Icon(
                                     Icons.calendar_today_outlined,
                                     size: 16,
-                                    color: isDark
-                                        ? AppColors.darkMuted
-                                        : AppColors.lightMuted,
+                                    color: colorScheme.onSurfaceVariant,
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
                                     dateDisplay.format(_endDate),
-                                    style: TextStyle(fontSize: 13),
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: colorScheme.onSurface,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -466,7 +445,8 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
   }
 
   /// Builds live quota card indicating remaining leave balance and limit checks
-  Widget _buildQuotaIndicator(LeavesProvider leaves, bool isDark) {
+  Widget _buildQuotaIndicator(
+      LeavesProvider leaves, M3EColorScheme colorScheme) {
     final selectedName = _selectedLeaveType ?? '';
     final list = leaves.balances?.list ?? [];
     LeaveQuota? quota;
@@ -511,8 +491,8 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: isExceeded
-            ? (isDark ? AppColors.errorBgDark : AppColors.errorBgLight)
-            : (isDark ? AppColors.darkSecondary : AppColors.lightSecondary),
+            ? colorScheme.errorContainer
+            : colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(10),
         border: isExceeded
             ? Border.all(color: AppColors.error.withValues(alpha: 0.4))
@@ -531,7 +511,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                         ? Icons.warning_amber_rounded
                         : Icons.account_balance_wallet_outlined,
                     size: 15,
-                    color: isExceeded ? AppColors.error : color,
+                    color: isExceeded ? colorScheme.error : color,
                   ),
                   const SizedBox(width: 6),
                   Text(
@@ -540,10 +520,8 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: isExceeded
-                          ? AppColors.error
-                          : (isDark
-                              ? AppColors.darkForeground
-                              : AppColors.lightForeground),
+                          ? colorScheme.onErrorContainer
+                          : colorScheme.onSurface,
                     ),
                   ),
                 ],
@@ -553,7 +531,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: isExceeded ? AppColors.error : color,
+                  color: isExceeded ? colorScheme.error : color,
                 ),
               ),
             ],
@@ -564,10 +542,9 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
             child: LinearProgressIndicator(
               value: total > 0 ? (used / total).clamp(0.0, 1.0) : 0.0,
               minHeight: 4,
-              backgroundColor:
-                  isDark ? AppColors.darkBorder : AppColors.lightBorder,
+              backgroundColor: colorScheme.outlineVariant,
               valueColor: AlwaysStoppedAnimation<Color>(
-                isExceeded ? AppColors.error : color,
+                isExceeded ? colorScheme.error : color,
               ),
             ),
           ),
@@ -579,7 +556,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                 '$used used • $total allocated',
                 style: TextStyle(
                   fontSize: 11,
-                  color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
               if (isExceeded)
@@ -590,7 +567,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.error,
+                    color: colorScheme.error,
                   ),
                 )
               else
@@ -599,7 +576,7 @@ class _ApplyLeaveBottomSheetState extends State<ApplyLeaveBottomSheet> {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
-                    color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
             ],

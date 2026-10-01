@@ -1,5 +1,7 @@
 import 'package:employee_app/features/leaves/models/leave_model.dart';
 import 'package:employee_app/features/leaves/widgets/apply_leave_bottom_sheet.dart';
+import 'package:mkx_core/widgets/app_skeleton.dart';
+import '../../../widgets/employee_skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:mkx_core/constants/app_colors.dart';
@@ -80,9 +82,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(10),
-        child: Column(
+      body: ValueListenableBuilder<bool>(
+        valueListenable: SkeletonConfig.isEnabled,
+        builder: (context, isLoading, child) {
+          return Skeleton(
+            isLoading: isLoading,
+            skeleton: EmployeeProfileSkeleton(isDark: M3ETheme.of(context).brightness == Brightness.dark),
+            child: child!,
+          );
+        },
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(10),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             M3ECard(
@@ -324,6 +335,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
+      ),
     );
   }
 
@@ -524,3 +536,5 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 }
+
+

@@ -6,6 +6,8 @@ import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
 import '../state/employees_provider.dart';
+import 'package:mkx_core/widgets/app_skeleton.dart';
+import '../../../widgets/hr_skeletons.dart';
 
 /// Detailed employee profile screen matching employee_app structure
 class EmployeeDetailScreen extends StatefulWidget {
@@ -45,32 +47,28 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
           ),
           body: SafeArea(
             top: false,
-            child: provider.isLoadingDetail
-                ? const Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 40),
-                      child: SizedBox(
-                          width: 52,
-                          height: 52,
-                          child: M3EProgressIndicator.circularWavy(
-                              strokeWidth: 3)),
+            child: ValueListenableBuilder<bool>(
+              valueListenable: SkeletonConfig.isEnabled,
+              builder: (context, showSkeleton, _) {
+                if (showSkeleton || provider.isLoadingDetail) {
+                  return HrEmployeeDetailSkeleton(isDark: isDark);
+                }
+                if (data.isEmpty) {
+                  return Center(
+                    child: Text(
+                      'Employee record not found',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: M3ETheme.of(context)
+                            .colorScheme
+                            .onSurfaceVariant,
+                      ),
                     ),
-                  )
-                : data.isEmpty
-                    ? Center(
-                        child: Text(
-                          'Employee record not found',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: M3ETheme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant,
-                          ),
-                        ),
-                      )
-                    : SingleChildScrollView(
-                        padding: const EdgeInsets.all(10),
-                        child: Column(
+                  );
+                }
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.all(10),
+                  child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             _buildProfileHeader(isDark, data, name),
@@ -180,7 +178,9 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
                             const SizedBox(height: 20),
                           ],
                         ),
-                      ),
+                      );
+              },
+            ),
           ),
         );
       },

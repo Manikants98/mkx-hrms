@@ -6,6 +6,8 @@ import 'package:mkx_core/widgets/empty_state.dart';
 import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:mkx_core/widgets/section_tile.dart';
 import 'package:mkx_core/widgets/status_badge.dart';
+import 'package:mkx_core/widgets/app_skeleton.dart';
+import '../../../widgets/employee_skeletons.dart';
 import 'package:provider/provider.dart';
 
 import '../models/payslip_model.dart';
@@ -58,10 +60,19 @@ class _PayrollScreenState extends State<PayrollScreen> {
         title: 'Salary & Payslips',
         subtitle: 'Remuneration statements and annual earnings',
       ),
-      body: M3ERefreshIndicator.contained(
-        onRefresh: _loadData,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
+      body: ValueListenableBuilder<bool>(
+        valueListenable: SkeletonConfig.isEnabled,
+        builder: (context, isLoading, child) {
+          return Skeleton(
+            isLoading: isLoading,
+            skeleton: EmployeePayrollSkeleton(isDark: isDark),
+            child: child!,
+          );
+        },
+        child: M3ERefreshIndicator.contained(
+          onRefresh: _loadData,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -355,6 +366,9 @@ class _PayrollScreenState extends State<PayrollScreen> {
           ),
         ),
       ),
+      ),
     );
   }
 }
+
+

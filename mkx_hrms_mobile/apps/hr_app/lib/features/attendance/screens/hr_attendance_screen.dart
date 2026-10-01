@@ -11,6 +11,8 @@ import 'package:provider/provider.dart';
 
 import '../models/hr_attendance_model.dart';
 import '../state/hr_attendance_provider.dart';
+import 'package:mkx_core/widgets/app_skeleton.dart';
+import '../../../widgets/hr_skeletons.dart';
 
 /// HR Attendance Management — matches employee_app structure and UI patterns
 class HrAttendanceScreen extends StatefulWidget {
@@ -70,22 +72,37 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildSummaryRow(isDark, provider),
-                _buildDateFilters(isDark, provider),
-                if (provider.records.isEmpty)
-                  const EmptyState(
-                    icon: Icons.today_outlined,
-                    title: 'No attendance records',
-                    description:
-                        'No workforce punch data recorded for this date',
-                  )
-                else
-                  SectionCard(
-                    isDark: isDark,
-                    children: provider.records.map((rec) {
-                      return _AttendanceRow(record: rec, isDark: isDark);
-                    }).toList(),
-                  ),
+                ValueListenableBuilder<bool>(
+                  valueListenable: SkeletonConfig.isEnabled,
+                  builder: (context, showSkeleton, _) {
+                    if (showSkeleton ||
+                        (provider.isLoading && provider.records.isEmpty)) {
+                      return HrAttendanceSkeleton(isDark: isDark);
+                    }
+                    
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildSummaryRow(isDark, provider),
+                        _buildDateFilters(isDark, provider),
+                        if (provider.records.isEmpty)
+                          const EmptyState(
+                            icon: Icons.today_outlined,
+                            title: 'No attendance records',
+                            description:
+                                'No workforce punch data recorded for this date',
+                          )
+                        else
+                          SectionCard(
+                            isDark: isDark,
+                            children: provider.records.map((rec) {
+                              return _AttendanceRow(record: rec, isDark: isDark);
+                            }).toList(),
+                          ),
+                      ],
+                    );
+                  },
+                ),
                 const SizedBox(height: 20),
               ],
             ),

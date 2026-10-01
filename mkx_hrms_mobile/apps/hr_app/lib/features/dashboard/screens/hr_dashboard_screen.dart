@@ -11,6 +11,8 @@ import 'package:go_router/go_router.dart';
 import '../../dashboard/models/dashboard_stats_model.dart';
 import '../../dashboard/state/dashboard_provider.dart';
 import '../../notifications/state/notifications_provider.dart';
+import 'package:mkx_core/widgets/app_skeleton.dart';
+import '../../../widgets/hr_skeletons.dart';
 
 /// HR Admin Dashboard — matches employee_app structure and UI patterns
 class HrDashboardScreen extends StatefulWidget {
@@ -74,15 +76,22 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildAttendanceSection(isDark, provider.stats),
-                const SizedBox(height: 4),
-                _buildMetricsGrid(isDark, provider.stats),
-                const SizedBox(height: 10),
-                _buildRecentActivity(isDark, provider.stats),
-              ],
+            child: ValueListenableBuilder<bool>(
+              valueListenable: SkeletonConfig.isEnabled,
+              builder: (context, showSkeleton, _) {
+                return (showSkeleton || provider.isLoading)
+                    ? HrDashboardSkeleton(isDark: isDark)
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildAttendanceSection(isDark, provider.stats),
+                          const SizedBox(height: 4),
+                          _buildMetricsGrid(isDark, provider.stats),
+                          const SizedBox(height: 10),
+                          _buildRecentActivity(isDark, provider.stats),
+                        ],
+                      );
+              },
             ),
           ),
         ),
