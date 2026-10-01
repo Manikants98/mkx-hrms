@@ -243,15 +243,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-      body: ValueListenableBuilder<bool>(
-        valueListenable: SkeletonConfig.isEnabled,
-        builder: (context, isLoading, child) {
-          return Skeleton(
-            isLoading: isLoading,
-            skeleton: EmployeeDashboardSkeleton(isDark: isDark),
-            child: child!,
-          );
-        },
+      body: Skeleton(
+        isLoading: attendance.isLoading && attendance.history.isEmpty,
+        skeleton: EmployeeDashboardSkeleton(isDark: isDark),
         child: M3ERefreshIndicator.contained(
           onRefresh: _loadData,
           child: SingleChildScrollView(
@@ -543,19 +537,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               const SizedBox(height: 10),
-              if (attendance.isLoading && attendance.history.isEmpty)
-                SectionTile(
-                  isDark: isDark,
-                  position: TilePosition.only,
-                  padding: const EdgeInsets.all(24),
-                  child: Center(
-                    child: const SizedBox(
-                        width: 36,
-                        height: 36,
-                        child: M3EProgressIndicator.circularWavy()),
-                  ),
-                )
-              else if (attendance.history.isEmpty)
+              if (attendance.history.isEmpty)
                 const EmptyState(
                   icon: Icons.event_busy_outlined,
                   title: 'No attendance records yet',

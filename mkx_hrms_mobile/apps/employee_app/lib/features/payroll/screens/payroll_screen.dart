@@ -60,15 +60,9 @@ class _PayrollScreenState extends State<PayrollScreen> {
         title: 'Salary & Payslips',
         subtitle: 'Remuneration statements and annual earnings',
       ),
-      body: ValueListenableBuilder<bool>(
-        valueListenable: SkeletonConfig.isEnabled,
-        builder: (context, isLoading, child) {
-          return Skeleton(
-            isLoading: isLoading,
-            skeleton: EmployeePayrollSkeleton(isDark: isDark),
-            child: child!,
-          );
-        },
+      body: Skeleton(
+        isLoading: payroll.isLoading && payroll.slips.isEmpty,
+        skeleton: EmployeePayrollSkeleton(isDark: isDark),
         child: M3ERefreshIndicator.contained(
           onRefresh: _loadData,
           child: SingleChildScrollView(
@@ -77,21 +71,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (payroll.isLoading)
-                SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.7,
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 40),
-                      child: SizedBox(
-                          width: 48,
-                          height: 48,
-                          child: M3EProgressIndicator.circularWavy(
-                              strokeWidth: 3)),
-                    ),
-                  ),
-                )
-              else if (payroll.slips.isEmpty)
+              if (payroll.slips.isEmpty)
                 const EmptyState(
                   icon: Icons.receipt_long_outlined,
                   title: 'No salary slips generated yet',

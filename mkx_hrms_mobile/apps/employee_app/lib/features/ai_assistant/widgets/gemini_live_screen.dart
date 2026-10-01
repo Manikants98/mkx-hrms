@@ -454,8 +454,13 @@ class _SmartAssistantLiveScreenState extends State<SmartAssistantLiveScreen>
                               vertical: 8,
                             ),
                             decoration: BoxDecoration(
-                              color: colorScheme.surfaceContainerHigh,
+                              color: colorScheme.surfaceContainerHighest,
                               borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: colorScheme.outlineVariant
+                                    .withValues(alpha: 0.5),
+                                width: 1,
+                              ),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -527,7 +532,10 @@ class _SmartAssistantLiveScreenState extends State<SmartAssistantLiveScreen>
             onPressed: () => Navigator.of(context).pop(),
             icon: Icon(Icons.arrow_back_rounded, color: colorScheme.onSurface),
             style: IconButton.styleFrom(
-              backgroundColor: colorScheme.surfaceContainer,
+              backgroundColor: colorScheme.surfaceContainerHighest,
+              side: BorderSide(
+                color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+              ),
             ),
           ),
           _buildLiveStatusBadge(colorScheme),
@@ -547,7 +555,10 @@ class _SmartAssistantLiveScreenState extends State<SmartAssistantLiveScreen>
               color: colorScheme.onSurface,
             ),
             style: IconButton.styleFrom(
-              backgroundColor: colorScheme.surfaceContainer,
+              backgroundColor: colorScheme.surfaceContainerHighest,
+              side: BorderSide(
+                color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+              ),
             ),
           ),
         ],
@@ -685,9 +696,11 @@ class _SmartAssistantLiveScreenState extends State<SmartAssistantLiveScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainer,
+        color: colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outlineVariant),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -733,8 +746,10 @@ class _SmartAssistantLiveScreenState extends State<SmartAssistantLiveScreen>
           width: chipWidth,
           child: ActionChip(
             onPressed: () => _handleVoiceQuery(prompt),
-            backgroundColor: colorScheme.surfaceContainer,
-            side: BorderSide(color: colorScheme.outlineVariant),
+            backgroundColor: colorScheme.surfaceContainerHighest,
+            side: BorderSide(
+              color: colorScheme.outlineVariant.withValues(alpha: 0.6),
+            ),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
@@ -814,10 +829,10 @@ class _SmartAssistantLiveScreenState extends State<SmartAssistantLiveScreen>
           width: 54,
           height: 54,
           decoration: BoxDecoration(
-            color: colorScheme.surfaceContainer,
+            color: colorScheme.surfaceContainerHighest,
             shape: BoxShape.circle,
             border: Border.all(
-              color: colorScheme.outlineVariant,
+              color: colorScheme.outlineVariant.withValues(alpha: 0.6),
               width: 1,
             ),
           ),

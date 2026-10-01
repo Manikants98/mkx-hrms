@@ -32,7 +32,7 @@ class SkeletonConfig {
   SkeletonConfig._();
 
   /// Reactive notifier indicating whether skeleton preview mode is permanently active.
-  static final ValueNotifier<bool> isEnabled = ValueNotifier<bool>(true);
+  static final ValueNotifier<bool> isEnabled = ValueNotifier<bool>(false);
 
   /// Toggles the skeleton preview state globally.
   static void toggle() {

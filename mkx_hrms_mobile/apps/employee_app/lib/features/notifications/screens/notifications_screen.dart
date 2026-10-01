@@ -103,18 +103,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             ),
         ],
       ),
-      body: ValueListenableBuilder<bool>(
-        valueListenable: SkeletonConfig.isEnabled,
-        builder: (context, isLoading, child) {
-          return Skeleton(
-            isLoading: isLoading,
-            skeleton: EmployeeNotificationsSkeleton(isDark: isDark),
-            child: child!,
-          );
-        },
-        child: provider.isLoading
-            ? const Center(child: M3EProgressIndicator.circularWavy())
-            : provider.errorMessage != null
+      body: Skeleton(
+        isLoading: provider.isLoading && notifications.isEmpty,
+        skeleton: EmployeeNotificationsSkeleton(isDark: isDark),
+        child: provider.errorMessage != null
                 ? Center(
                     child: Text(provider.errorMessage!,
                         style: TextStyle(color: colorScheme.error)))

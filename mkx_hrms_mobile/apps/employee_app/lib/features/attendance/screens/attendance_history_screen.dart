@@ -272,15 +272,9 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
           ),
         ],
       ),
-      body: ValueListenableBuilder<bool>(
-        valueListenable: SkeletonConfig.isEnabled,
-        builder: (context, isLoading, child) {
-          return Skeleton(
-            isLoading: isLoading,
-            skeleton: EmployeeAttendanceSkeleton(isDark: isDark),
-            child: child!,
-          );
-        },
+      body: Skeleton(
+        isLoading: attendance.isLoading && attendance.history.isEmpty,
+        skeleton: EmployeeAttendanceSkeleton(isDark: isDark),
         child: M3ERefreshIndicator.contained(
           onRefresh: () async {
             await context.read<AttendanceProvider>().loadAttendance();
@@ -319,20 +313,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                   ),
                 ),
                 const SizedBox(height: 5),
-                if (attendance.isLoading && attendance.history.isEmpty)
-                  SectionTile(
-                    isDark: isDark,
-                    position: TilePosition.only,
-                    padding: const EdgeInsets.all(24),
-                    child: const Center(
-                      child: SizedBox(
-                        width: 36,
-                        height: 36,
-                        child: M3EProgressIndicator.circularWavy(),
-                      ),
-                    ),
-                  )
-                else if (filtered.isEmpty)
+                if (filtered.isEmpty)
                   const EmptyState(
                     icon: M3EIcons.history_outlined,
                     title: 'No records found',

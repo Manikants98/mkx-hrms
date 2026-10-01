@@ -59,9 +59,8 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
                       'Employee record not found',
                       style: TextStyle(
                         fontSize: 14,
-                        color: M3ETheme.of(context)
-                            .colorScheme
-                            .onSurfaceVariant,
+                        color:
+                            M3ETheme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                   );
@@ -69,116 +68,111 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
                 return SingleChildScrollView(
                   padding: const EdgeInsets.all(10),
                   child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildProfileHeader(isDark, data, name),
-                            const SizedBox(height: 12),
-                            _buildSectionHeader('WORK INFORMATION', isDark),
-                            const SizedBox(height: 6),
-                            SectionCard(
-                              isDark: isDark,
-                              children: [
-                                _buildDetailRow(
-                                  'Employee ID',
-                                  data['employee_id']?.toString() ??
-                                      data['id']?.toString() ??
-                                      '—',
-                                  isDark,
-                                ),
-                                _buildDetailRow(
-                                  'Department',
-                                  data['department']?.toString() ?? '—',
-                                  isDark,
-                                ),
-                                _buildDetailRow(
-                                  'Designation / Role',
-                                  data['designation']?.toString() ??
-                                      data['role']?.toString() ??
-                                      '—',
-                                  isDark,
-                                ),
-                                _buildDetailRow(
-                                  'Assigned Shift',
-                                  data['shift']?.toString() ??
-                                      data['shift_name']?.toString() ??
-                                      'General Day Shift',
-                                  isDark,
-                                ),
-                                _buildDetailRow(
-                                  'Reporting Manager',
-                                  data['manager']?.toString() ??
-                                      (data['manager_details'] is Map
-                                          ? data['manager_details']['name']
-                                              ?.toString()
-                                          : null) ??
-                                      data['manager_name']?.toString() ??
-                                      '—',
-                                  isDark,
-                                ),
-                                _buildDetailRow(
-                                  'Date of Joining',
-                                  data['join_date']?.toString() ?? '—',
-                                  isDark,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 14),
-                            _buildSectionHeader('CONTACT DETAILS', isDark),
-                            const SizedBox(height: 6),
-                            SectionCard(
-                              isDark: isDark,
-                              children: [
-                                _buildDetailRow(
-                                  'Corporate Email',
-                                  data['email']?.toString() ?? '—',
-                                  isDark,
-                                ),
-                                _buildDetailRow(
-                                  'Phone Number',
-                                  data['phone']?.toString().isNotEmpty == true
-                                      ? data['phone'].toString()
-                                      : 'Not provided',
-                                  isDark,
-                                ),
-                                _buildDetailRow(
-                                  'Office Location',
-                                  data['address']?.toString().isNotEmpty == true
-                                      ? data['address'].toString()
-                                      : 'Corporate Headquarters',
-                                  isDark,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 14),
-                            if (data['salary_structures'] is List &&
-                                (data['salary_structures'] as List)
-                                    .isNotEmpty) ...[
-                              _buildSectionHeader('SALARY STRUCTURE', isDark),
-                              const SizedBox(height: 6),
-                              SectionCard(
-                                isDark: isDark,
-                                children:
-                                    (data['salary_structures'] as List).map((
-                                  s,
-                                ) {
-                                  final item = s as Map<String, dynamic>;
-                                  final structure = item['salary_structure']
-                                          as Map<String, dynamic>? ??
-                                      {};
-                                  final name = structure['name']?.toString() ??
-                                      'Salary Item';
-                                  final amount =
-                                      item['amount']?.toString() ?? '0';
-                                  return _buildDetailRow(
-                                      name, '₹$amount', isDark);
-                                }).toList(),
-                              ),
-                              const SizedBox(height: 14),
-                            ],
-                            const SizedBox(height: 20),
-                          ],
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildProfileHeader(isDark, data, name),
+                      const SizedBox(height: 10),
+                      _buildSectionHeader('WORK INFORMATION', isDark),
+                      const SizedBox(height: 10),
+                      SectionCard(
+                        isDark: isDark,
+                        children: [
+                          _buildDetailRow(
+                            'Employee ID',
+                            data['employee_id']?.toString() ??
+                                data['id']?.toString() ??
+                                '—',
+                            isDark,
+                          ),
+                          _buildDetailRow(
+                            'Department',
+                            data['department']?.toString() ?? '—',
+                            isDark,
+                          ),
+                          _buildDetailRow(
+                            'Designation / Role',
+                            data['designation']?.toString() ??
+                                data['role']?.toString() ??
+                                '—',
+                            isDark,
+                          ),
+                          _buildDetailRow(
+                            'Assigned Shift',
+                            data['shift']?.toString() ??
+                                data['shift_name']?.toString() ??
+                                'General Day Shift',
+                            isDark,
+                          ),
+                          _buildDetailRow(
+                            'Reporting Manager',
+                            data['manager']?.toString() ??
+                                (data['manager_details'] is Map
+                                    ? data['manager_details']['name']
+                                        ?.toString()
+                                    : null) ??
+                                data['manager_name']?.toString() ??
+                                '—',
+                            isDark,
+                          ),
+                          _buildDetailRow(
+                            'Date of Joining',
+                            data['join_date']?.toString() ?? '—',
+                            isDark,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      _buildSectionHeader('CONTACT DETAILS', isDark),
+                      const SizedBox(height: 10),
+                      SectionCard(
+                        isDark: isDark,
+                        children: [
+                          _buildDetailRow(
+                            'Corporate Email',
+                            data['email']?.toString() ?? '—',
+                            isDark,
+                          ),
+                          _buildDetailRow(
+                            'Phone Number',
+                            data['phone']?.toString().isNotEmpty == true
+                                ? data['phone'].toString()
+                                : 'Not provided',
+                            isDark,
+                          ),
+                          _buildDetailRow(
+                            'Office Location',
+                            data['address']?.toString().isNotEmpty == true
+                                ? data['address'].toString()
+                                : 'Corporate Headquarters',
+                            isDark,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      if (data['salary_structures'] is List &&
+                          (data['salary_structures'] as List).isNotEmpty) ...[
+                        _buildSectionHeader('SALARY STRUCTURE', isDark),
+                        const SizedBox(height: 10),
+                        SectionCard(
+                          isDark: isDark,
+                          children: (data['salary_structures'] as List).map((
+                            s,
+                          ) {
+                            final item = s as Map<String, dynamic>;
+                            final structure = item['salary_structure']
+                                    as Map<String, dynamic>? ??
+                                {};
+                            final name =
+                                structure['name']?.toString() ?? 'Salary Item';
+                            final amount = item['amount']?.toString() ?? '0';
+                            return _buildDetailRow(name, '₹$amount', isDark);
+                          }).toList(),
                         ),
-                      );
+                        const SizedBox(height: 14),
+                      ],
+                    ],
+                  ),
+                );
               },
             ),
           ),

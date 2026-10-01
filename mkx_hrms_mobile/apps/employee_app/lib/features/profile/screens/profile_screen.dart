@@ -82,15 +82,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-      body: ValueListenableBuilder<bool>(
-        valueListenable: SkeletonConfig.isEnabled,
-        builder: (context, isLoading, child) {
-          return Skeleton(
-            isLoading: isLoading,
-            skeleton: EmployeeProfileSkeleton(isDark: M3ETheme.of(context).brightness == Brightness.dark),
-            child: child!,
-          );
-        },
+      body: Skeleton(
+        isLoading: auth.isLoading,
+        skeleton: EmployeeProfileSkeleton(isDark: M3ETheme.of(context).brightness == Brightness.dark),
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(10),
           child: Column(

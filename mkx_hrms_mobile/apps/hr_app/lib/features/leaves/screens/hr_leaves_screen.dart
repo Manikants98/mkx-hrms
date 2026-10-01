@@ -67,7 +67,6 @@ class _HrLeavesScreenState extends State<HrLeavesScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildStatusFilters(isDark, provider),
-                        const SizedBox(height: 10),
                         if (provider.leaves.isEmpty)
                           EmptyState(
                             icon: Icons.event_note_outlined,

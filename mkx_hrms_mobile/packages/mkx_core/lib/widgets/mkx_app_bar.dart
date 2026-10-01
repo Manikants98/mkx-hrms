@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_3_expressive/components/app_bars/m3e_app_bars.dart';
 import 'package:material_3_expressive/foundations/theme/m3e_theme.dart';
-import 'app_skeleton.dart';
 
 /// Custom top app bar matching the MKX HRMS design system using system fonts.
 ///
@@ -28,9 +27,6 @@ class MkxAppBar extends StatelessWidget implements PreferredSizeWidget {
   /// Whether to automatically imply a back button. Defaults to true.
   final bool automaticallyImplyLeading;
 
-  /// Whether to include the skeleton toggle action in the app bar. Defaults to true.
-  final bool showSkeletonToggle;
-
   const MkxAppBar({
     super.key,
     required this.title,
@@ -39,7 +35,6 @@ class MkxAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.actions,
     this.showBorder = true,
     this.automaticallyImplyLeading = true,
-    this.showSkeletonToggle = true,
   });
 
   @override
@@ -107,20 +102,6 @@ class MkxAppBar extends StatelessWidget implements PreferredSizeWidget {
     }
 
     final List<Widget> effectiveActions = [
-      if (showSkeletonToggle)
-        ValueListenableBuilder<bool>(
-          valueListenable: SkeletonConfig.isEnabled,
-          builder: (context, enabled, _) {
-            return IconButton(
-              icon: Icon(
-                enabled ? Icons.auto_awesome : Icons.auto_awesome_outlined,
-              ),
-              tooltip: enabled ? 'Show Real Data' : 'Show Skeleton',
-              color: colorScheme.onSurface,
-              onPressed: SkeletonConfig.toggle,
-            );
-          },
-        ),
       if (actions != null) ...actions!,
     ];
 

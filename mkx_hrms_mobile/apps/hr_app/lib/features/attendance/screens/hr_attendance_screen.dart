@@ -79,7 +79,7 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
                         (provider.isLoading && provider.records.isEmpty)) {
                       return HrAttendanceSkeleton(isDark: isDark);
                     }
-                    
+
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -96,7 +96,11 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
                           SectionCard(
                             isDark: isDark,
                             children: provider.records.map((rec) {
-                              return _AttendanceRow(record: rec, isDark: isDark);
+                              return _AttendanceRow(
+                                record: rec,
+                                isDark: isDark,
+                                selectedDate: provider.selectedDate,
+                              );
                             }).toList(),
                           ),
                       ],
@@ -277,13 +281,44 @@ class _HrAttendanceScreenState extends State<HrAttendanceScreen> {
 class _AttendanceRow extends StatelessWidget {
   final HrAttendanceModel record;
   final bool isDark;
+  final DateTime selectedDate;
 
-  const _AttendanceRow({required this.record, required this.isDark});
+  const _AttendanceRow({
+    required this.record,
+    required this.isDark,
+    required this.selectedDate,
+  });
 
   @override
   Widget build(BuildContext context) {
     final primaryColor = M3ETheme.of(context).colorScheme.primary;
     final mutedColor = M3ETheme.of(context).colorScheme.onSurfaceVariant;
+
+    String displayDuration = record.duration ?? '';
+
+    if (record.checkIn != null &&
+        record.checkIn != '--:--' &&
+        (record.checkOut == null || record.checkOut == '--:--') &&
+        (displayDuration.isEmpty || displayDuration == '0h 00m')) {
+      try {
+        final now = DateTime.now();
+        if (selectedDate.year == now.year &&
+            selectedDate.month == now.month &&
+            selectedDate.day == now.day) {
+          final format = DateFormat('hh:mm a');
+          // Handle specific formats like '10:15 AM'
+          final checkInTime = format.parse(record.checkIn!);
+          final checkInDateTime = DateTime(now.year, now.month, now.day,
+              checkInTime.hour, checkInTime.minute);
+          final diff = now.difference(checkInDateTime);
+          if (!diff.isNegative) {
+            final h = diff.inHours;
+            final m = diff.inMinutes % 60;
+            displayDuration = '${h}h ${m}m';
+          }
+        }
+      } catch (_) {}
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -328,17 +363,17 @@ class _AttendanceRow extends StatelessWidget {
                     ),
                     const SizedBox(width: 10),
                     Text(
-                      'Out: ${record.checkOut ?? "—"}',
+                      'Out: ${record.checkOut ?? "--:--"}',
                       style: TextStyle(
                         fontSize: 11.5,
                         fontWeight: FontWeight.w500,
                         color: mutedColor,
                       ),
                     ),
-                    if (record.duration != null) ...[
+                    if (displayDuration.isNotEmpty) ...[
                       const SizedBox(width: 8),
                       Text(
-                        '(${record.duration})',
+                        '($displayDuration)',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,

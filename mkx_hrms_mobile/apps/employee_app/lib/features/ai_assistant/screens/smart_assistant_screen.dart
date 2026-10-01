@@ -5,16 +5,17 @@ import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:mkx_core/features/auth/state/auth_provider.dart';
+import 'package:mkx_core/widgets/mkx_app_bar.dart';
 import 'package:provider/provider.dart';
 
 import '../models/ai_chat_model.dart';
 import '../state/ai_provider.dart';
 import '../widgets/gemini_live_screen.dart';
 
-/// Smart Assistant Screen — AI-powered HR concierge inspired by Google Gemini.
+/// Smart Assistant Screen — AI-powered HR concierge conforming to the MKX HRMS design system.
 ///
 /// Implements a 3-stage interface:
-/// 1. Prompt Starters home screen with suggestion cards and greeting.
+/// 1. Prompt Starters home screen with greeting, live voice mode banner, and suggestion cards.
 /// 2. Full-screen Gemini Live Voice-to-Voice assistant.
 /// 3. Conversation view with waveform bubbles, markdown, and reactions.
 class SmartAssistantScreen extends StatefulWidget {
@@ -97,6 +98,7 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
     final ai = context.watch<AiProvider>();
     final theme = M3ETheme.of(context);
     final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
 
     if (!ai.hasMessages) {
       _lastMessageCount = 0;
@@ -106,48 +108,52 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
     }
 
     return Scaffold(
-      backgroundColor: colorScheme.surfaceContainer,
+      backgroundColor: colorScheme.surface,
       resizeToAvoidBottomInset: true,
       appBar: _buildAppBar(ai, colorScheme),
-      body: Column(
-        children: [
-          Expanded(
-            child: ai.isFetchingHistory
-                ? Center(
-                    child: SizedBox(
-                      width: 44,
-                      height: 44,
-                      child: M3EProgressIndicator.circularWavy(
-                        strokeWidth: 3,
-                        color: colorScheme.primary,
+      body: SafeArea(
+        bottom: true,
+        child: Column(
+          children: [
+            Expanded(
+              child: ai.isFetchingHistory
+                  ? Center(
+                      child: SizedBox(
+                        width: 32,
+                        height: 32,
+                        child: M3EProgressIndicator.circular(
+                          strokeWidth: 2.5,
+                          color: colorScheme.primary,
+                        ),
                       ),
-                    ),
-                  )
-                : ai.hasMessages
-                    ? _buildMessageList(ai, colorScheme)
-                    : _buildPromptStarterHome(firstName, colorScheme),
-          ),
-          if (ai.isLoading) _buildTypingIndicator(colorScheme),
-          _buildInputBar(colorScheme),
-          const SizedBox(height: 5)
-        ],
+                    )
+                  : ai.hasMessages
+                      ? _buildMessageList(ai, colorScheme, isDark)
+                      : _buildPromptStarterHome(firstName, colorScheme, isDark),
+            ),
+            if (ai.isLoading) _buildTypingIndicator(colorScheme),
+            _buildInputBar(colorScheme),
+          ],
+        ),
       ),
     );
   }
 
-  /// App bar with back button, Gemini Live pill, and clear history action.
+  /// App bar with back button, live voice mode action, and clear history action.
   PreferredSizeWidget _buildAppBar(AiProvider ai, M3EColorScheme colorScheme) {
-    return AppBar(
-      backgroundColor: colorScheme.surfaceContainerLowest,
-      elevation: 0,
-      scrolledUnderElevation: 0,
-      leading: IconButton(
-        icon: Icon(Icons.arrow_back_rounded, color: colorScheme.onSurface),
-        onPressed: () => Navigator.of(context).pop(),
-      ),
-      titleSpacing: 0,
-      title: const Text("Smart Assistant"),
+    return MkxAppBar(
+      title: 'Smart Assistant',
+      subtitle: 'HR Concierge & Work Copilot',
       actions: [
+        IconButton(
+          tooltip: 'Live Voice Mode',
+          icon: Icon(
+            Icons.mic_none_rounded,
+            color: colorScheme.primary,
+            size: 22,
+          ),
+          onPressed: () => _openGeminiLive(),
+        ),
         if (ai.hasMessages)
           IconButton(
             tooltip: 'Clear Conversation',
@@ -162,7 +168,7 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: const Text('Chat history cleared'),
-                    backgroundColor: colorScheme.surfaceContainerHigh,
+                    backgroundColor: colorScheme.surfaceContainerHighest,
                     duration: const Duration(seconds: 2),
                   ),
                 );
@@ -174,54 +180,22 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
     );
   }
 
-  /// Screen 1 — Home with personalised greeting and 2×2 suggestion cards.
-  Widget _buildPromptStarterHome(String firstName, M3EColorScheme colorScheme) {
+  /// Screen 1 — Home with personalised greeting, live voice banner, and 2x2 suggestion cards.
+  Widget _buildPromptStarterHome(
+    String firstName,
+    M3EColorScheme colorScheme,
+    bool isDark,
+  ) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //   children: [
-          //     Container(
-          //       padding:
-          //           const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          //       decoration: BoxDecoration(
-          //         color: colorScheme.surfaceContainer,
-          //         borderRadius: BorderRadius.circular(16),
-          //         border: Border.all(
-          //           color: colorScheme.primary.withValues(alpha: 0.5),
-          //         ),
-          //       ),
-          //       child: Text(
-          //         'GO PREMIUM',
-          //         style: TextStyle(
-          //           color: colorScheme.primary,
-          //           fontSize: 10,
-          //           fontWeight: FontWeight.w800,
-          //           letterSpacing: 0.6,
-          //         ),
-          //       ),
-          //     ),
-          //     CircleAvatar(
-          //       radius: 18,
-          //       backgroundColor: colorScheme.surfaceContainerHigh,
-          //       child: Text(
-          //         firstName.isNotEmpty ? firstName[0].toUpperCase() : 'E',
-          //         style: TextStyle(
-          //           color: colorScheme.primary,
-          //           fontWeight: FontWeight.bold,
-          //         ),
-          //       ),
-          //     ),
-          //   ],
-          // ),
-          // const SizedBox(height: 28),
           Text(
             'Hi, $firstName',
             style: TextStyle(
               color: colorScheme.primary,
-              fontSize: 22,
+              fontSize: 20,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -230,31 +204,136 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
             'How can I help today?',
             style: TextStyle(
               color: colorScheme.onSurface,
-              fontSize: 28,
+              fontSize: 26,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.5,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            "I'm here to help — from quick answers to smart recommendations.",
+            "I'm here to help — from quick answers to smart recommendations about your work and HR benefits.",
             style: TextStyle(
               color: colorScheme.onSurfaceVariant,
               fontSize: 13,
               height: 1.4,
             ),
           ),
-          const SizedBox(height: 28),
-          _buildSuggestionGrid(colorScheme),
-          // const SizedBox(height: 20),
-          // _buildProBanner(colorScheme),
+          const SizedBox(height: 20),
+          _buildLiveVoiceBanner(colorScheme, isDark),
+          const SizedBox(height: 20),
+          Text(
+            'Quick Suggestions',
+            style: TextStyle(
+              color: colorScheme.onSurface,
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 10),
+          _buildSuggestionGrid(colorScheme, isDark),
         ],
       ),
     );
   }
 
-  /// 2×2 grid of HRMS-specific prompt suggestions.
-  Widget _buildSuggestionGrid(M3EColorScheme colorScheme) {
+  /// Interactive banner promoting hands-free Gemini Live voice interaction.
+  Widget _buildLiveVoiceBanner(M3EColorScheme colorScheme, bool isDark) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _openGeminiLive(),
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color:
+                  colorScheme.primary.withValues(alpha: isDark ? 0.35 : 0.25),
+              width: 1.2,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: colorScheme.primary,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.mic_rounded,
+                  color: colorScheme.onPrimary,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Live Voice Mode',
+                          style: TextStyle(
+                            color: colorScheme.onSurface,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: colorScheme.primary.withValues(
+                              alpha: isDark ? 0.25 : 0.12,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            'VOICE AI',
+                            style: TextStyle(
+                              color: colorScheme.primary,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Speak hands-free with real-time AI voice conversation',
+                      style: TextStyle(
+                        color: colorScheme.onSurfaceVariant,
+                        fontSize: 12,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 14,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 2x2 grid of HRMS-specific prompt suggestions.
+  Widget _buildSuggestionGrid(M3EColorScheme colorScheme, bool isDark) {
     return Column(
       children: [
         Row(
@@ -262,6 +341,7 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
             Expanded(
               child: _buildSuggestionCard(
                 colorScheme: colorScheme,
+                isDark: isDark,
                 icon: Icons.beach_access_rounded,
                 title: 'Leave Balance',
                 subtitle: 'Check remaining casual & sick leaves in seconds.',
@@ -272,6 +352,7 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
             Expanded(
               child: _buildSuggestionCard(
                 colorScheme: colorScheme,
+                isDark: isDark,
                 icon: Icons.schedule_rounded,
                 title: 'Shift & Timing',
                 subtitle: 'View your scheduled shift hours and timing details.',
@@ -286,6 +367,7 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
             Expanded(
               child: _buildSuggestionCard(
                 colorScheme: colorScheme,
+                isDark: isDark,
                 icon: Icons.receipt_long_rounded,
                 title: 'Payslip & Salary',
                 subtitle:
@@ -298,6 +380,7 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
             Expanded(
               child: _buildSuggestionCard(
                 colorScheme: colorScheme,
+                isDark: isDark,
                 icon: Icons.fingerprint_rounded,
                 title: 'Attendance Log',
                 subtitle: 'Review monthly attendance logs and punch history.',
@@ -312,6 +395,7 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
             Expanded(
               child: _buildSuggestionCard(
                 colorScheme: colorScheme,
+                isDark: isDark,
                 icon: Icons.policy_rounded,
                 title: 'Company Policies',
                 subtitle: 'Ask about HR policies, benefits, and holidays.',
@@ -323,8 +407,9 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
             Expanded(
               child: _buildSuggestionCard(
                 colorScheme: colorScheme,
+                isDark: isDark,
                 icon: Icons.cake_rounded,
-                title: 'Team Celebrations',
+                title: 'Celebrations',
                 subtitle: 'View upcoming birthdays and anniversaries.',
                 prompt:
                     'Are there any upcoming birthdays or work anniversaries in my team this month?',
@@ -338,6 +423,7 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
 
   Widget _buildSuggestionCard({
     required M3EColorScheme colorScheme,
+    required bool isDark,
     required IconData icon,
     required String title,
     required String subtitle,
@@ -349,43 +435,53 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
         onTap: () => _sendMessage(prompt),
         borderRadius: BorderRadius.circular(16),
         child: Container(
-          height: 140,
+          height: 136,
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerLowest,
+            color: colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+              width: 1,
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Icon(icon, size: 18, color: colorScheme.primary),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: TextStyle(
-                        color: colorScheme.onSurface,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(
+                    alpha: isDark ? 0.20 : 0.08,
                   ),
-                ],
-              ),
-              const Spacer(),
-              Text(
-                subtitle,
-                style: TextStyle(
-                  color: colorScheme.onSurfaceVariant,
-                  fontSize: 11,
-                  height: 1.35,
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                maxLines: 3,
+                child: Icon(icon, size: 18, color: colorScheme.primary),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                title,
+                style: TextStyle(
+                  color: colorScheme.onSurface,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 4),
+              Expanded(
+                child: Text(
+                  subtitle,
+                  style: TextStyle(
+                    color: colorScheme.onSurfaceVariant,
+                    fontSize: 11,
+                    height: 1.35,
+                  ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
@@ -395,21 +491,29 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
   }
 
   /// Screen 3 — Scrollable conversation message list (anchored to latest messages).
-  Widget _buildMessageList(AiProvider ai, M3EColorScheme colorScheme) {
+  Widget _buildMessageList(
+    AiProvider ai,
+    M3EColorScheme colorScheme,
+    bool isDark,
+  ) {
     return ListView.builder(
       controller: _scrollController,
       reverse: true,
-      padding: const EdgeInsets.fromLTRB(10, 16, 10, 12),
+      padding: const EdgeInsets.fromLTRB(14, 16, 14, 12),
       itemCount: ai.messages.length,
       itemBuilder: (context, index) {
         final message = ai.messages[ai.messages.length - 1 - index];
-        return _buildMessageItem(message, colorScheme);
+        return _buildMessageItem(message, colorScheme, isDark);
       },
     );
   }
 
-  /// Renders a user bubble or AI markdown card (with optional waveform for voice).
-  Widget _buildMessageItem(ChatMessage msg, M3EColorScheme colorScheme) {
+  /// Renders a user bubble or AI markdown card conforming to MKX HRMS design.
+  Widget _buildMessageItem(
+    ChatMessage msg,
+    M3EColorScheme colorScheme,
+    bool isDark,
+  ) {
     final screenWidth = MediaQuery.sizeOf(context).width;
 
     if (msg.isUser) {
@@ -418,17 +522,24 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
         child: Container(
           margin: const EdgeInsets.only(bottom: 12),
           constraints: BoxConstraints(
-            maxWidth: screenWidth * 0.78,
+            maxWidth: screenWidth * 0.80,
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: colorScheme.primaryContainer,
+            color: colorScheme.primary,
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(18),
               topRight: Radius.circular(18),
               bottomLeft: Radius.circular(18),
               bottomRight: Radius.circular(4),
             ),
+            boxShadow: [
+              BoxShadow(
+                color: colorScheme.primary.withValues(alpha: 0.2),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -456,7 +567,7 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
                 msg.text,
                 style: TextStyle(
                   fontSize: 14,
-                  color: colorScheme.onSurface,
+                  color: colorScheme.onPrimary,
                   height: 1.4,
                 ),
               ),
@@ -471,7 +582,7 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         constraints: BoxConstraints(
-          maxWidth: screenWidth * 0.86,
+          maxWidth: screenWidth * 0.88,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -486,12 +597,16 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
-                color: colorScheme.surfaceContainerLowest,
+                color: colorScheme.surfaceContainerHighest,
                 borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(18),
+                  topLeft: Radius.circular(4),
                   topRight: Radius.circular(18),
                   bottomRight: Radius.circular(18),
-                  bottomLeft: Radius.circular(4),
+                  bottomLeft: Radius.circular(18),
+                ),
+                border: Border.all(
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                  width: 1,
                 ),
               ),
               child: Column(
@@ -504,12 +619,18 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
                       p: TextStyle(
                         fontSize: 14,
                         color: colorScheme.onSurface,
-                        height: 1.45,
+                        height: 1.5,
                       ),
                       strong: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
                         color: colorScheme.primary,
+                      ),
+                      code: TextStyle(
+                        fontSize: 12,
+                        fontFamily: 'monospace',
+                        color: colorScheme.onSurface,
+                        backgroundColor: colorScheme.surfaceContainerHigh,
                       ),
                       listBullet: const TextStyle(
                         fontSize: 0,
@@ -541,7 +662,7 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
                             ? Icons.thumb_down_rounded
                             : Icons.thumb_down_alt_outlined,
                         color: msg.isLiked == false
-                            ? Colors.redAccent
+                            ? colorScheme.error
                             : colorScheme.onSurfaceVariant,
                         onTap: () => setState(
                           () =>
@@ -558,7 +679,8 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
                             SnackBar(
                               content: const Text('Copied to clipboard'),
                               duration: const Duration(seconds: 1),
-                              backgroundColor: colorScheme.surfaceContainerHigh,
+                              backgroundColor:
+                                  colorScheme.surfaceContainerHighest,
                             ),
                           );
                         },
@@ -595,17 +717,21 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
     );
   }
 
-  /// Animated "Gemini is thinking…" indicator shown while awaiting a reply.
+  /// Animated typing indicator with standard circular spinner.
   Widget _buildTypingIndicator(M3EColorScheme colorScheme) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 16, 12),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       child: Align(
         alignment: Alignment.centerLeft,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerLowest,
+            color: colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+              width: 1,
+            ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -613,14 +739,14 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
               SizedBox(
                 width: 14,
                 height: 14,
-                child: M3EProgressIndicator.circularWavy(
+                child: M3EProgressIndicator.circular(
                   strokeWidth: 2,
                   color: colorScheme.primary,
                 ),
               ),
               const SizedBox(width: 8),
               Text(
-                'Gemini is thinking...',
+                'Assistant is thinking...',
                 style: TextStyle(
                   fontSize: 12,
                   color: colorScheme.onSurfaceVariant,
@@ -640,63 +766,51 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
       padding: const EdgeInsets.only(
         left: 12,
         right: 12,
-        top: 12,
-        bottom: 20,
+        top: 5,
+        bottom: 10,
       ),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLowest,
+        color: colorScheme.surface,
       ),
       child: Container(
-        padding: const EdgeInsets.only(left: 12, right: 8, top: 2, bottom: 2),
+        padding: const EdgeInsets.only(left: 14, right: 6, top: 0, bottom: 0),
         decoration: BoxDecoration(
-          color: colorScheme.surfaceContainer,
-          borderRadius: BorderRadius.circular(16),
+          color: colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(50),
+          border: Border.all(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.6),
+            width: 1,
+          ),
         ),
         child: Row(
           children: [
             Expanded(
-              child: Theme(
-                data: Theme.of(context).copyWith(
-                  inputDecorationTheme: const InputDecorationTheme(
-                    filled: false,
-                    fillColor: Colors.transparent,
-                    hoverColor: Colors.transparent,
-                    focusColor: Colors.transparent,
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    errorBorder: InputBorder.none,
-                    focusedErrorBorder: InputBorder.none,
-                    disabledBorder: InputBorder.none,
+              child: TextField(
+                controller: _inputController,
+                maxLines: null,
+                textInputAction: TextInputAction.send,
+                onSubmitted: (_) => _sendMessage(),
+                cursorColor: colorScheme.primary,
+                style: TextStyle(fontSize: 14, color: colorScheme.onSurface),
+                decoration: InputDecoration(
+                  hintText: 'Ask about leaves, attendance, payroll...',
+                  hintStyle: TextStyle(
+                    color: colorScheme.onSurfaceVariant,
+                    fontSize: 13,
                   ),
-                ),
-                child: TextField(
-                  controller: _inputController,
-                  maxLines: null,
-                  textInputAction: TextInputAction.send,
-                  onSubmitted: (_) => _sendMessage(),
-                  cursorColor: colorScheme.primary,
-                  style: TextStyle(fontSize: 14, color: colorScheme.onSurface),
-                  decoration: InputDecoration(
-                    hintText: 'Describe your query...',
-                    hintStyle: TextStyle(
-                      color: colorScheme.onSurfaceVariant,
-                      fontSize: 13,
-                    ),
-                    filled: false,
-                    fillColor: Colors.transparent,
-                    hoverColor: Colors.transparent,
-                    focusColor: Colors.transparent,
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    errorBorder: InputBorder.none,
-                    focusedErrorBorder: InputBorder.none,
-                    disabledBorder: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 10,
-                    ),
+                  filled: false,
+                  fillColor: Colors.transparent,
+                  hoverColor: Colors.transparent,
+                  focusColor: Colors.transparent,
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  errorBorder: InputBorder.none,
+                  focusedErrorBorder: InputBorder.none,
+                  disabledBorder: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 8,
                   ),
                 ),
               ),

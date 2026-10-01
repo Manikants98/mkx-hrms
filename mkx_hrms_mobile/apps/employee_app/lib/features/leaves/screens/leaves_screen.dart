@@ -79,15 +79,9 @@ class _LeavesScreenState extends State<LeavesScreen> {
           ),
         ],
       ),
-      body: ValueListenableBuilder<bool>(
-        valueListenable: SkeletonConfig.isEnabled,
-        builder: (context, isLoading, child) {
-          return Skeleton(
-            isLoading: isLoading,
-            skeleton: EmployeeLeavesSkeleton(isDark: isDark),
-            child: child!,
-          );
-        },
+      body: Skeleton(
+        isLoading: leaves.isLoading && leaves.history.isEmpty,
+        skeleton: EmployeeLeavesSkeleton(isDark: isDark),
         child: M3ERefreshIndicator.contained(
           onRefresh: _loadData,
           child: SingleChildScrollView(
@@ -145,18 +139,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
               ),
 
               /// History List
-              if (leaves.isLoading && leaves.history.isEmpty)
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 40),
-                    child: SizedBox(
-                        width: 48,
-                        height: 48,
-                        child:
-                            M3EProgressIndicator.circularWavy(strokeWidth: 3)),
-                  ),
-                )
-              else if (leaves.filteredHistory.isEmpty)
+              if (leaves.filteredHistory.isEmpty)
                 EmptyState(
                   icon: Icons.event_available_outlined,
                   title: 'No leave applications found',

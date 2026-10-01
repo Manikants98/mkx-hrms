@@ -226,10 +226,7 @@ class _SeedSwatch extends StatelessWidget {
   Widget build(BuildContext context) {
     final M3EThemeData theme = M3ETheme.of(context);
     final M3EColorScheme scheme = theme.colorScheme;
-    final Color tick =
-        ThemeData.estimateBrightnessForColor(color) == Brightness.dark
-            ? const Color(0xFFFFFFFF)
-            : const Color(0xFF000000);
+    final Color tick = scheme.surface;
 
     return M3ETappable(
       onTap: onTap,
@@ -249,10 +246,6 @@ class _SeedSwatch extends StatelessWidget {
               decoration: BoxDecoration(
                 color: onTap == null ? color.withValues(alpha: 0.38) : color,
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: selected ? scheme.onSurface : scheme.outlineVariant,
-                  width: selected ? 3 : 1,
-                ),
               ),
               child:
                   selected ? Icon(M3EIcons.check, size: 24, color: tick) : null,
@@ -313,16 +306,12 @@ class _FamilySwatch extends StatelessWidget {
                     ? scheme.secondaryContainer
                     : scheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: selected ? scheme.onSurface : scheme.outlineVariant,
-                  width: selected ? 3 : 1,
-                ),
               ),
               child: Text(
                 'Aa',
                 style: theme.typeScale.titleMedium.copyWith(
                   fontFamily: family,
-                  color: scheme.onSurface,
+                  color: selected ? scheme.surface : scheme.onSurface,
                 ),
               ),
             ),
