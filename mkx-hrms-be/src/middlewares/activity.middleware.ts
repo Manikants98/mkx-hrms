@@ -201,7 +201,11 @@ export const activityTrackingMiddleware = async (
           include: { employee: true },
         });
         if (user) {
-          actorName = actorName || user.employee?.name || (user.first_name ? `${user.first_name} ${user.last_name}`.trim() : null) || "User";
+          actorName =
+            actorName ||
+            user.employee?.name ||
+            (user.first_name ? `${user.first_name} ${user.last_name}`.trim() : null) ||
+            "User";
           actorEmployeeId = actorEmployeeId || user.employee?.id || null;
         }
       }

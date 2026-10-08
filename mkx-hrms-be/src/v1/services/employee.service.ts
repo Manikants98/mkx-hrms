@@ -195,7 +195,9 @@ export const createEmployeeWithUser = async (
             employee_id: employee.id,
             salary_structure_id: Number(structure.salary_structure_id),
             amount: Number(structure.amount) || 0,
-            effective_date: structure.effective_date ? new Date(structure.effective_date) : new Date(),
+            effective_date: structure.effective_date
+              ? new Date(structure.effective_date)
+              : new Date(),
             status: structure.status || "Active",
           },
         });

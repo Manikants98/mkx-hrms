@@ -35,7 +35,10 @@ export interface ManageWorkShiftDrawerProps {
  * Validation schema for Work Shift form
  */
 const workShiftValidationSchema = Yup.object({
-  name: Yup.string().trim().required("Shift name is required").min(2, "Must be at least 2 characters"),
+  name: Yup.string()
+    .trim()
+    .required("Shift name is required")
+    .min(2, "Must be at least 2 characters"),
   code: Yup.string().trim().required("Code is required"),
   start_time: Yup.string().trim().required("Start time is required"),
   end_time: Yup.string().trim().required("End time is required"),
@@ -183,21 +186,10 @@ export const ManageWorkShiftDrawer: React.FC<ManageWorkShiftDrawerProps> = ({
             required
           />
 
-          <Input
-            name="end_time"
-            label="End Time"
-            placeholder="06:00 PM"
-            formik={formik}
-            required
-          />
+          <Input name="end_time" label="End Time" placeholder="06:00 PM" formik={formik} required />
         </div>
 
-        <ActiveInactiveField
-          name="status"
-          label="Status"
-          formik={formik}
-          required
-        />
+        <ActiveInactiveField name="status" label="Status" formik={formik} required />
 
         <Input
           name="description"

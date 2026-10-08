@@ -10,14 +10,7 @@ import {
   Schedule,
   Search,
 } from "@mui/icons-material";
-import {
-  Button,
-  Chip,
-  IconButton,
-  InputAdornment,
-  InputBase,
-  MenuItem,
-} from "@mui/material";
+import { Button, Chip, IconButton, InputAdornment, InputBase, MenuItem } from "@mui/material";
 import { ArrowMenu } from "shared/ArrowMenu";
 import { CustomDialog } from "shared/CustomDialog";
 import { DataTable, type ColumnDef } from "shared/DataTable";
@@ -29,10 +22,7 @@ import {
   useUpdateMasterWorkShift,
   type MasterWorkShift,
 } from "services/masters";
-import {
-  ManageWorkShiftDrawer,
-  type WorkShiftFormValues,
-} from "../drawers/ManageWorkShiftDrawer";
+import { ManageWorkShiftDrawer, type WorkShiftFormValues } from "../drawers/ManageWorkShiftDrawer";
 
 /**
  * Filter status choices matching Employee directory pattern
@@ -55,11 +45,7 @@ interface WorkShiftRowActionsProps {
  * @param props - Component props
  * @returns Rendered row action menu
  */
-const WorkShiftRowActions: React.FC<WorkShiftRowActionsProps> = ({
-  row,
-  onEdit,
-  onDelete,
-}) => {
+const WorkShiftRowActions: React.FC<WorkShiftRowActionsProps> = ({ row, onEdit, onDelete }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   return (
@@ -379,12 +365,7 @@ export const WorkShiftMasterTab: React.FC = () => {
       </div>
 
       {/* Data Table */}
-      <DataTable
-        data={shifts}
-        columns={columns}
-        loading={isLoading || isFetching}
-        pageSize={10}
-      />
+      <DataTable data={shifts} columns={columns} loading={isLoading || isFetching} pageSize={10} />
 
       {/* Form Drawer */}
       <ManageWorkShiftDrawer

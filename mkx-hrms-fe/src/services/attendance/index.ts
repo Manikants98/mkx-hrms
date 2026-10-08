@@ -86,9 +86,10 @@ export const useGetAttendanceStats = (params?: {
 }) => {
   const queryString = params
     ? `?${new URLSearchParams(
-        Object.entries(params).filter(
-          ([, v]) => v !== undefined && v !== "" && v !== "All",
-        ) as [string, string][],
+        Object.entries(params).filter(([, v]) => v !== undefined && v !== "" && v !== "All") as [
+          string,
+          string,
+        ][],
       ).toString()}`
     : "";
 
@@ -226,4 +227,3 @@ export const useGenerateDailyAttendance = (onSuccessCallback?: () => void) => {
       }),
   };
 };
-

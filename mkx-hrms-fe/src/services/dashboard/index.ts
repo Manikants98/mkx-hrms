@@ -177,10 +177,7 @@ export interface NotificationsResponse {
  * @returns React Query result with notifications and unread count
  */
 export const useGetNotifications = () => {
-  return useCustomQuery<ApiResponse<NotificationsResponse>>(
-    ["notifications"],
-    "/v1/notifications",
-  );
+  return useCustomQuery<ApiResponse<NotificationsResponse>>(["notifications"], "/v1/notifications");
 };
 
 /**
@@ -204,8 +201,6 @@ export const useMarkAllNotificationsRead = () => {
 
   return {
     ...mutation,
-    mutate: () =>
-      mutation.mutate({ url: "/v1/notifications/mark-all-read", method: "PATCH" }),
+    mutate: () => mutation.mutate({ url: "/v1/notifications/mark-all-read", method: "PATCH" }),
   };
 };
-

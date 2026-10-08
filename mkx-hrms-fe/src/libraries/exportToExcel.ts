@@ -8,10 +8,7 @@ import toast from "react-hot-toast";
  * @param defaultFilename - Name of the downloaded file including extension
  * @returns Promise that resolves once the download is triggered
  */
-export const downloadExcelFromApi = async (
-  url: string,
-  defaultFilename: string,
-): Promise<void> => {
+export const downloadExcelFromApi = async (url: string, defaultFilename: string): Promise<void> => {
   const toastId = toast.loading("Generating Excel export...");
 
   try {

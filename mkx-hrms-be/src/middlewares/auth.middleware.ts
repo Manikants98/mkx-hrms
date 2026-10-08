@@ -69,10 +69,13 @@ export const authenticateToken = async (
         });
       }
 
-      const resolvedRole =
-        dbUser.role?.name || emp?.role_rel?.name || decoded.role || "Employee";
+      const resolvedRole = dbUser.role?.name || emp?.role_rel?.name || decoded.role || "Employee";
 
-      const resolvedName = emp?.name || (dbUser.first_name ? `${dbUser.first_name} ${dbUser.last_name}`.trim() : null) || decoded.name || "User";
+      const resolvedName =
+        emp?.name ||
+        (dbUser.first_name ? `${dbUser.first_name} ${dbUser.last_name}`.trim() : null) ||
+        decoded.name ||
+        "User";
 
       req.user = {
         id: dbUser.id,
@@ -80,8 +83,7 @@ export const authenticateToken = async (
         name: resolvedName,
         role: resolvedRole,
         employee_db_id: emp?.id || decoded.employee_db_id,
-        employee_code:
-          emp?.employee_id || dbUser.employee_id || decoded.employee_code,
+        employee_code: emp?.employee_id || dbUser.employee_id || decoded.employee_code,
       };
     } else {
       req.user = decoded;
@@ -100,11 +102,7 @@ export const authenticateToken = async (
  * @param res - Express response
  * @param next - Next middleware delegate
  */
-export const requireAuth = (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): void => {
+export const requireAuth = (req: Request, res: Response, next: NextFunction): void => {
   if (!req.user) {
     const authHeader = req.headers.authorization;
 
@@ -132,4 +130,3 @@ export const requireAuth = (
 
   next();
 };
-

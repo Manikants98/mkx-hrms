@@ -63,9 +63,9 @@ export const getReportAnalytics = async (
 
     /** Pending Leaves Calculation (Replaces Time to Hire) */
     const pendingLeaves = await prisma.leave.count({
-      where: { status: "Pending" }
+      where: { status: "Pending" },
     });
-    
+
     /** Monthly Compensation Calculation */
     const payrollRecords = await prisma.payroll.findMany();
     const totalMonthlyCompensation = payrollRecords.reduce(
@@ -144,14 +144,14 @@ export const getReportAnalytics = async (
     });
 
     /** 4. Department Distribution (Replaces Recruitment Sources) */
-    const activeEmployees = allEmployees.filter(e => e.status === "Active");
+    const activeEmployees = allEmployees.filter((e) => e.status === "Active");
     const currentDeptMap: Record<string, number> = {};
-    
-    activeEmployees.forEach(e => {
+
+    activeEmployees.forEach((e) => {
       const dName = e.department_rel?.name || "Unassigned";
       currentDeptMap[dName] = (currentDeptMap[dName] || 0) + 1;
     });
-    
+
     const colors = ["#00b1d8", "#45ba50", "#ff8b25", "#ad87ed", "#f43f5e", "#8b5cf6"];
     const department_distribution = Object.keys(currentDeptMap).map((name, i) => ({
       name,

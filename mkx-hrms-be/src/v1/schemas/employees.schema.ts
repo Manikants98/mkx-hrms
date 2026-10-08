@@ -47,7 +47,7 @@ export const updateEmployeeSchema = z.object({
           amount: z.union([z.string(), z.number()]),
           effective_date: z.string().optional(),
           status: z.string().optional(),
-        })
+        }),
       )
       .optional(),
   }),
@@ -61,7 +61,7 @@ export const assignEmployeeSalaryStructuresSchema = z.object({
         amount: z.union([z.string(), z.number()]),
         effective_date: z.string().optional(),
         status: z.string().optional(),
-      })
+      }),
     ),
   }),
 });

@@ -28,6 +28,7 @@ export interface PayrollRecord {
   email: string;
   role: string;
   department: string;
+  employee_id?: string;
   month?: number;
   year?: number;
   gross_pay?: string;

@@ -69,7 +69,10 @@ export default function LeaveApproval() {
   const handleAction = async (status: "Approved" | "Rejected") => {
     setIsSubmitting(true);
     try {
-      await api.post(`/v1/leaves/approval/${token}`, { status, remark: remark.trim() || undefined });
+      await api.post(`/v1/leaves/approval/${token}`, {
+        status,
+        remark: remark.trim() || undefined,
+      });
       toast.success(`Leave ${status.toLowerCase()} successfully.`);
       setSuccessAction(status);
       setPageState("success");

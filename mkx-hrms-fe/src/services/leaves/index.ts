@@ -125,7 +125,8 @@ export const useUpdateLeaveStatus = (onSuccessCallback?: () => void) => {
   >({
     toastMessages: {
       loading: "Updating leave request...",
-      success: (res) => `Leave request for ${res.data?.name || ""} ${res.data?.status || "updated"}`,
+      success: (res) =>
+        `Leave request for ${res.data?.name || ""} ${res.data?.status || "updated"}`,
     },
     onSuccess: () => {
       if (onSuccessCallback) onSuccessCallback();
@@ -148,4 +149,3 @@ export const useUpdateLeaveStatus = (onSuccessCallback?: () => void) => {
       }),
   };
 };
-

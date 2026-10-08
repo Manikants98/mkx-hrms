@@ -221,7 +221,6 @@ export const buildWelcomeEmailHtml = (options: EmployeeWelcomeEmailOptions): str
 </html>`;
 };
 
-
 export const buildWelcomeEmailPlainText = (options: EmployeeWelcomeEmailOptions): string => {
   const baseUrl = options.portalUrl || process.env.APP_PORTAL_URL || "https://mkxhrms.vercel.app";
   const portalUrl = options.setPasswordToken
@@ -243,7 +242,6 @@ Immediate Action Required: For optimal system infrastructure protection, this si
 Sent by MKX Technologies Pvt. Ltd. • 129, Street Number 13, Block A, New Ashok Nagar, New Delhi
 `;
 };
-
 
 export interface LeaveApprovalEmailOptions {
   managerName: string;
@@ -335,7 +333,6 @@ export const buildLeaveApprovalEmailHtml = (options: LeaveApprovalEmailOptions):
 </html>`;
 };
 
-
 export const buildLeaveApprovalEmailPlainText = (options: LeaveApprovalEmailOptions): string => {
   const baseUrl = options.portalUrl || process.env.APP_PORTAL_URL || "https://mkxhrms.vercel.app";
   const portalUrl = `${baseUrl.replace(/\/login$/, "")}/leave-approval/${options.approvalToken}`;
@@ -356,7 +353,6 @@ ${portalUrl}
 Sent by MKX Technologies Pvt. Ltd.
 `;
 };
-
 
 export interface LeaveStatusUpdateEmailOptions {
   employeeName: string;
@@ -426,7 +422,6 @@ export const buildLeaveStatusUpdateEmailHtml = (options: LeaveStatusUpdateEmailO
 </body>
 </html>`;
 };
-
 
 export const buildLeaveStatusUpdateEmailPlainText = (
   options: LeaveStatusUpdateEmailOptions,

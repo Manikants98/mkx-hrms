@@ -67,12 +67,14 @@ erDiagram
 ## 2. Key Changes Made
 
 ### A. Database Layer (`mkx-hrms-be/prisma/schema.prisma`)
+
 - **Decoupled static keys**: Removed static `base_salary` on Employee in favor of dynamic assignments.
 - **Enriched `SalaryStructure`**: Added `is_deduction`, `is_taxable`, `is_base_salary`, `calculation_type` ("Fixed" | "Percentage"), and `default_value`.
 - **Created `EmployeeSalaryStructure`**: Dedicated junction table mapping an employee to multiple salary structures with custom individual amount overrides.
 - **Created `PayrollItem` & enriched `Payroll`**: Itemized breakdown table recording every earning, deduction, and Loss of Pay (LOP) adjustment with cycle month and year.
 
 ### B. Backend Services & Controllers (`mkx-hrms-be`)
+
 - **[employees.controller.ts](file:///c:/Users/lenovo/Desktop/MKXDev/mkx-hrms/mkx-hrms-be/src/v1/controllers/employees.controller.ts)**:
   - Added `getEmployeeSalaryStructures` (`GET /v1/employees/:id/salary-structures`).
   - Added `assignEmployeeSalaryStructures` (`POST /v1/employees/:id/salary-structures`).
@@ -84,6 +86,7 @@ erDiagram
   - Updated `getPayroll`, `getMyPayroll`, and `exportPayroll` with itemized line items.
 
 ### C. Web Frontend (`mkx-hrms-fe`)
+
 - **[ManageEmployee Drawer](file:///c:/Users/lenovo/Desktop/MKXDev/mkx-hrms/mkx-hrms-fe/src/pages/Employees/ManageEmployee/index.tsx)**:
   - Added interactive "Compensation & Multiple Salary Structures" builder.
   - Allows selecting and assigning multiple components (basic salary, allowances, deductions) with individual amount inputs.
@@ -101,6 +104,7 @@ erDiagram
   - Configured dynamic components with Type (Earning vs Deduction), Base Salary flag, Taxable flag, and calculation types.
 
 ### D. Mobile App (`mkx_hrms_mobile`)
+
 - **[payslip_model.dart](file:///c:/Users/lenovo/Desktop/MKXDev/mkx-hrms/mkx_hrms_mobile/lib/features/payroll/models/payslip_model.dart)**:
   - Added `PayslipItem` model parsing itemized components.
   - Added `grossPay`, `totalDeductions`, `workingDays`, `paidDays`, `lopDays`, `lopAmount`.

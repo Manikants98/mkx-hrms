@@ -10,14 +10,7 @@ import {
   Search,
   TimeToLeave,
 } from "@mui/icons-material";
-import {
-  Button,
-  Chip,
-  IconButton,
-  InputAdornment,
-  InputBase,
-  MenuItem,
-} from "@mui/material";
+import { Button, Chip, IconButton, InputAdornment, InputBase, MenuItem } from "@mui/material";
 import { ArrowMenu } from "shared/ArrowMenu";
 import { CustomDialog } from "shared/CustomDialog";
 import { DataTable, type ColumnDef } from "shared/DataTable";
@@ -29,10 +22,7 @@ import {
   useUpdateMasterLeaveType,
   type MasterLeaveType,
 } from "services/masters";
-import {
-  ManageLeaveTypeDrawer,
-  type LeaveTypeFormValues,
-} from "../drawers/ManageLeaveTypeDrawer";
+import { ManageLeaveTypeDrawer, type LeaveTypeFormValues } from "../drawers/ManageLeaveTypeDrawer";
 
 /**
  * Filter status choices matching Employee directory pattern
@@ -55,11 +45,7 @@ interface LeaveTypeRowActionsProps {
  * @param props - Component props
  * @returns Rendered row action menu
  */
-const LeaveTypeRowActions: React.FC<LeaveTypeRowActionsProps> = ({
-  row,
-  onEdit,
-  onDelete,
-}) => {
+const LeaveTypeRowActions: React.FC<LeaveTypeRowActionsProps> = ({ row, onEdit, onDelete }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   return (
@@ -334,8 +320,6 @@ export const LeaveTypeMasterTab: React.FC = () => {
           />
         ))}
       </div>
-
-
 
       {/* Action Toolbar matching Employee Section */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

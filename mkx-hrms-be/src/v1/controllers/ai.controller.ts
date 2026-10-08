@@ -75,20 +75,20 @@ export const chatWithAssistant = async (req: Request, res: Response): Promise<vo
           : "No payroll record available.";
 
         const otherEmployees = await prisma.employee.findMany({
-          where: { id: { not: user.employee_db_id }, status: 'Active' },
+          where: { id: { not: user.employee_db_id }, status: "Active" },
           select: {
             name: true,
             email: true,
             birth_date: true,
             join_date: true,
             avatar: true,
-            department_rel: { select: { name: true } }
-          }
+            department_rel: { select: { name: true } },
+          },
         });
 
         const shifts = await prisma.workShift.findMany({
-          where: { status: 'Active' },
-          select: { name: true, start_time: true, end_time: true, grace_mins: true }
+          where: { status: "Active" },
+          select: { name: true, start_time: true, end_time: true, grace_mins: true },
         });
 
         const generalPolicies = `

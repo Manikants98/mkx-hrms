@@ -112,11 +112,7 @@ export default function Careers() {
         </div>
       </section>
 
-      <ApplyJobModal
-        open={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        job={selectedJob}
-      />
+      <ApplyJobModal open={isModalOpen} onClose={() => setIsModalOpen(false)} job={selectedJob} />
     </div>
   );
 }

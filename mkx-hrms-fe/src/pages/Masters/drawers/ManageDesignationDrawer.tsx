@@ -7,10 +7,7 @@ import { AppDrawer } from "shared/Drawer";
 import { Input } from "shared/Input";
 import { Select, type SelectOption } from "shared/Select";
 import ActiveInactiveField from "shared/ActiveInactiveField";
-import {
-  useGetMasterDepartments,
-  type MasterDesignation,
-} from "services/masters";
+import { useGetMasterDepartments, type MasterDesignation } from "services/masters";
 
 /**
  * Form values for creating or editing a Designation
@@ -37,7 +34,10 @@ export interface ManageDesignationDrawerProps {
  * Validation schema for Designation form
  */
 const designationValidationSchema = Yup.object({
-  title: Yup.string().trim().required("Designation title is required").min(2, "Must be at least 2 characters"),
+  title: Yup.string()
+    .trim()
+    .required("Designation title is required")
+    .min(2, "Must be at least 2 characters"),
   code: Yup.string().trim().optional(),
   department_id: Yup.mixed().optional(),
   description: Yup.string().trim().optional(),
@@ -87,7 +87,10 @@ export const ManageDesignationDrawer: React.FC<ManageDesignationDrawerProps> = (
       ? {
           title: initialData.title || "",
           code: initialData.code || "",
-          department_id: initialData.department_id !== null && initialData.department_id !== undefined ? initialData.department_id : "",
+          department_id:
+            initialData.department_id !== null && initialData.department_id !== undefined
+              ? initialData.department_id
+              : "",
           description: initialData.description || "",
           status: initialData.status || "Active",
         }
@@ -178,12 +181,7 @@ export const ManageDesignationDrawer: React.FC<ManageDesignationDrawerProps> = (
           formik={formik}
         />
 
-        <ActiveInactiveField
-          name="status"
-          label="Status"
-          formik={formik}
-          required
-        />
+        <ActiveInactiveField name="status" label="Status" formik={formik} required />
 
         <Input
           name="description"

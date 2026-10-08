@@ -10,14 +10,7 @@ import {
   People,
   Search,
 } from "@mui/icons-material";
-import {
-  Button,
-  Chip,
-  IconButton,
-  InputAdornment,
-  InputBase,
-  MenuItem,
-} from "@mui/material";
+import { Button, Chip, IconButton, InputAdornment, InputBase, MenuItem } from "@mui/material";
 import { ArrowMenu } from "shared/ArrowMenu";
 import { CustomDialog } from "shared/CustomDialog";
 import { DataTable, type ColumnDef } from "shared/DataTable";
@@ -55,11 +48,7 @@ interface DesignationRowActionsProps {
  * @param props - Component props
  * @returns Rendered row action menu
  */
-const DesignationRowActions: React.FC<DesignationRowActionsProps> = ({
-  row,
-  onEdit,
-  onDelete,
-}) => {
+const DesignationRowActions: React.FC<DesignationRowActionsProps> = ({ row, onEdit, onDelete }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   return (
@@ -322,8 +311,6 @@ export const DesignationMasterTab: React.FC = () => {
           />
         ))}
       </div>
-
-
 
       {/* Action Toolbar matching Employee Section */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

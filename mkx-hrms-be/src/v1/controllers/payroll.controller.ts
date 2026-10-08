@@ -166,6 +166,8 @@ export const getPayroll = async (
         employee_name: item.employee.name,
         employee_code:
           ((item.employee as Record<string, unknown>).employee_id as string) || item.payroll_code,
+        employee_id:
+          ((item.employee as Record<string, unknown>).employee_id as string) || item.payroll_code,
         email: item.employee.email,
         role: item.employee.role_rel?.name || "Staff",
         department: item.employee.department_rel?.name || "General",

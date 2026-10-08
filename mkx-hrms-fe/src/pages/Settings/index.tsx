@@ -60,8 +60,6 @@ const tabs: TabItem[] = [
   { id: "security", label: "Security", icon: Shield },
 ];
 
-
-
 /**
  * Delivery channels for system alerts
  */
@@ -270,8 +268,6 @@ export default function Settings() {
                 onValueChange={(val) => setProfileForm((prev) => ({ ...prev, role: String(val) }))}
               />
             </div>
-
-
 
             <div className="pt-4 border-t border-border flex justify-end">
               <Button

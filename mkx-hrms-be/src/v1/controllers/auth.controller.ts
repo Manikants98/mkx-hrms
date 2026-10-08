@@ -1,6 +1,11 @@
 import { Request, Response, NextFunction } from "express";
 import { prisma } from "../../libraries/prisma";
-import { comparePassword, generateToken, hashPassword, verifyToken } from "../services/auth.service";
+import {
+  comparePassword,
+  generateToken,
+  hashPassword,
+  verifyToken,
+} from "../services/auth.service";
 
 /**
  * Controller to handle user login and JWT token issuance
@@ -99,7 +104,9 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
       department: employee?.department_rel?.name || "Engineering",
       shift_id: employee?.shift_id || null,
       shift: employee?.shift_rel?.name || null,
-      shift_time: employee?.shift_rel ? `${employee.shift_rel.start_time} - ${employee.shift_rel.end_time}` : null,
+      shift_time: employee?.shift_rel
+        ? `${employee.shift_rel.start_time} - ${employee.shift_rel.end_time}`
+        : null,
       shift_rel: employee?.shift_rel || null,
       status: employee?.status || user.status || "Active",
       join_date: employee?.join_date ? employee.join_date.toISOString().split("T")[0] : null,
@@ -220,7 +227,9 @@ export const getMe = async (req: Request, res: Response, next: NextFunction): Pr
       department: employee?.department_rel?.name || "Engineering",
       shift_id: employee?.shift_id || null,
       shift: employee?.shift_rel?.name || null,
-      shift_time: employee?.shift_rel ? `${employee.shift_rel.start_time} - ${employee.shift_rel.end_time}` : null,
+      shift_time: employee?.shift_rel
+        ? `${employee.shift_rel.start_time} - ${employee.shift_rel.end_time}`
+        : null,
       shift_rel: employee?.shift_rel || null,
       status: employee?.status || user.status || "Active",
       join_date: employee?.join_date ? employee.join_date.toISOString().split("T")[0] : null,
@@ -296,7 +305,10 @@ export const setPasswordWithToken = async (
     const { token, password, confirmPassword } = req.body;
 
     if (!token || !password || !confirmPassword) {
-      res.sendError({ statusCode: 400, message: "Token, password, and confirmPassword are required" });
+      res.sendError({
+        statusCode: 400,
+        message: "Token, password, and confirmPassword are required",
+      });
       return;
     }
 
@@ -339,7 +351,11 @@ export const setPasswordWithToken = async (
   }
 };
 
-export const saveFcmToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const saveFcmToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -371,5 +387,3 @@ export const saveFcmToken = async (req: Request, res: Response, next: NextFuncti
     next(err);
   }
 };
-
-

@@ -49,9 +49,14 @@ const presetColors = [
  * Validation schema for Leave Type form
  */
 const leaveTypeValidationSchema = Yup.object({
-  name: Yup.string().trim().required("Leave type name is required").min(2, "Must be at least 2 characters"),
+  name: Yup.string()
+    .trim()
+    .required("Leave type name is required")
+    .min(2, "Must be at least 2 characters"),
   code: Yup.string().trim().required("Code is required"),
-  days_per_year: Yup.number().required("Allocated days per year is required").min(0, "Must be at least 0"),
+  days_per_year: Yup.number()
+    .required("Allocated days per year is required")
+    .min(0, "Must be at least 0"),
   is_paid: Yup.boolean().default(true),
   color: Yup.string().trim().optional(),
   description: Yup.string().trim().optional(),
@@ -225,22 +230,14 @@ export const ManageLeaveTypeDrawer: React.FC<ManageLeaveTypeDrawerProps> = ({
                 style={{
                   backgroundColor: color,
                   borderColor: formik.values.color === color ? "#ffffff" : "transparent",
-                  boxShadow:
-                    formik.values.color === color
-                      ? `0 0 0 2px ${color}`
-                      : "none",
+                  boxShadow: formik.values.color === color ? `0 0 0 2px ${color}` : "none",
                 }}
               />
             ))}
           </div>
         </div>
 
-        <ActiveInactiveField
-          name="status"
-          label="Status"
-          formik={formik}
-          required
-        />
+        <ActiveInactiveField name="status" label="Status" formik={formik} required />
 
         <Input
           name="description"

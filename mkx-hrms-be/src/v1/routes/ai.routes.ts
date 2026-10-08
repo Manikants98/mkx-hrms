@@ -15,4 +15,3 @@ router.delete("/history", requireAuth, clearChatHistory);
 router.get("/dashboard-insights", requireAuth, getDashboardInsights);
 
 export default router;
-

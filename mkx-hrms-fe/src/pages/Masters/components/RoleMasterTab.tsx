@@ -317,8 +317,6 @@ export const RoleMasterTab: React.FC = () => {
         ))}
       </div>
 
-
-
       {/* Action Toolbar matching Employee Section */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">

@@ -17,7 +17,7 @@ export const updateNotificationPreferencesSchema = z.object({
       z.object({
         email: z.boolean(),
         push: z.boolean(),
-      })
+      }),
     ),
   }),
 });

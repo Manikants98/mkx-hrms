@@ -74,7 +74,8 @@ export const CustomDialog: React.FC<CustomDialogProps> = ({
           className: "!bg-black/50 dark:!bg-black/75 !backdrop-blur-[2px]",
         },
         paper: {
-          className: `!bg-card !border !border-border !rounded-[8px] !text-foreground !shadow-2xl overflow-hidden ${paperClassName}`.trim(),
+          className:
+            `!bg-card !border !border-border !rounded-[8px] !text-foreground !shadow-2xl overflow-hidden ${paperClassName}`.trim(),
         },
       }}
     >
@@ -111,7 +112,9 @@ export const CustomDialog: React.FC<CustomDialogProps> = ({
       </DialogContent>
 
       {actions && (
-        <DialogActions className={`!px-5 !py-3 !border-t !border-border !gap-2 ${actionsClassName}`.trim()}>
+        <DialogActions
+          className={`!px-5 !py-3 !border-t !border-border !gap-2 ${actionsClassName}`.trim()}
+        >
           {actions}
         </DialogActions>
       )}

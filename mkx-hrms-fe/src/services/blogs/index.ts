@@ -93,7 +93,8 @@ export const useGetBlogs = (params?: {
   const queryParams = new URLSearchParams();
   if (params?.search) queryParams.append("search", params.search);
   if (params?.status && params.status !== "All") queryParams.append("status", params.status);
-  if (params?.category && params.category !== "All") queryParams.append("category", params.category);
+  if (params?.category && params.category !== "All")
+    queryParams.append("category", params.category);
   if (params?.startDate) queryParams.append("startDate", params.startDate);
   if (params?.endDate) queryParams.append("endDate", params.endDate);
 
@@ -112,10 +113,7 @@ export const useGetBlogs = (params?: {
  * @returns React Query query result
  */
 export const useGetBlogStats = () => {
-  return useCustomQuery<ApiResponse<BlogStats>>(
-    ["blog-stats"],
-    "/v1/blogs/stats",
-  );
+  return useCustomQuery<ApiResponse<BlogStats>>(["blog-stats"], "/v1/blogs/stats");
 };
 
 /**
@@ -124,10 +122,7 @@ export const useGetBlogStats = () => {
  * @returns React Query query result
  */
 export const useGetBlogFilters = () => {
-  return useCustomQuery<ApiResponse<BlogFilterOptions>>(
-    ["blog-filters"],
-    "/v1/blogs/filters",
-  );
+  return useCustomQuery<ApiResponse<BlogFilterOptions>>(["blog-filters"], "/v1/blogs/filters");
 };
 
 /**
@@ -137,13 +132,9 @@ export const useGetBlogFilters = () => {
  * @returns React Query query result
  */
 export const useGetBlogById = (idOrSlug: string | number | undefined) => {
-  return useCustomQuery<ApiResponse<BlogPost>>(
-    ["blog", idOrSlug],
-    `/v1/blogs/${idOrSlug}`,
-    {
-      enabled: Boolean(idOrSlug),
-    },
-  );
+  return useCustomQuery<ApiResponse<BlogPost>>(["blog", idOrSlug], `/v1/blogs/${idOrSlug}`, {
+    enabled: Boolean(idOrSlug),
+  });
 };
 
 /**

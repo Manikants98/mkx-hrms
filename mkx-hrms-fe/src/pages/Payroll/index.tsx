@@ -24,12 +24,15 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { ArrowMenu } from "shared/ArrowMenu";
-import { CustomDialog } from "shared/CustomDialog";
 import { DataTable, type ColumnDef } from "shared/DataTable";
 import { CustomDateRangePicker } from "shared/DatePicker";
 import { StatsCard } from "shared/StatsCard";
 import { FadeUpItem, StaggerContainer } from "shared/animations";
+import { AppDrawer } from "shared/Drawer";
 import { downloadExcelFromApi } from "src/utils/exportToExcel";
+
+const parseAmt = (val: string | number | undefined) =>
+  Number(String(val || 0).replace(/[^0-9.-]+/g, "")) || 0;
 
 /**
  * Type representing payroll disbursement status categories
@@ -42,6 +45,7 @@ import {
   useGetPayrollStats,
   useUpdatePayrollStatus,
   useProcessBatchPayroll,
+  exportPayslipPdf,
   type PayrollRecord,
 } from "services/payroll";
 import { RunPayrollDialog } from "./RunPayrollDialog";
@@ -309,11 +313,43 @@ export default function Payroll() {
   });
 
   const [isRunPayrollOpen, setIsRunPayrollOpen] = useState(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
   const processBatchMutation = useProcessBatchPayroll(() => {
     refetch();
     refetchStats();
   });
+
+  const handleDownloadPdf = async () => {
+    if (!viewingPayroll) return;
+    try {
+      setIsDownloadingPdf(true);
+      await exportPayslipPdf(viewingPayroll.db_id || viewingPayroll.id);
+    } catch (error) {
+      console.error("Failed to download PDF", error);
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
+
+  const payslipItems = useMemo(() => {
+    if (viewingPayroll?.items && viewingPayroll.items.length > 0) {
+      return viewingPayroll.items;
+    }
+    if (!viewingPayroll) return [];
+    return [
+      {
+        name: "Base Salary",
+        amount: viewingPayroll.gross_pay || viewingPayroll.base_salary || 0,
+        category: "Earning",
+      },
+      {
+        name: "Allowance",
+        amount: viewingPayroll.allowance || 0,
+        category: "Earning",
+      },
+    ].filter((i) => parseAmt(i.amount) > 0);
+  }, [viewingPayroll]);
 
   /**
    * Updates payroll status with feedback toast
@@ -570,177 +606,241 @@ export default function Payroll() {
       </FadeUpItem>
 
       {viewingPayroll && (
-        <CustomDialog
+        <AppDrawer
           open={Boolean(viewingPayroll)}
           onClose={() => setViewingPayroll(null)}
-          title="Employee Payslip Breakdown"
-          maxWidth="xs"
-        >
-          <div className="flex items-center gap-3 pb-4 border-b border-border">
-            <Avatar
-              src={viewingPayroll.avatar || undefined}
-              className="!w-12 !h-12 !bg-primary/20 !text-primary !text-lg !font-bold"
+          title={`Payslip Details — ${viewingPayroll.id}`}
+          width={600}
+          footer={
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => setViewingPayroll(null)}
+              className="!border-border !text-muted-foreground hover:!text-foreground !text-xs !normal-case !rounded-[5px]"
             >
-              {viewingPayroll.name.charAt(0)}
-            </Avatar>
-            <div>
-              <h4 className="text-base font-semibold text-foreground">{viewingPayroll.name}</h4>
-              <p className="text-xs text-muted-foreground">
-                {viewingPayroll.email} • {viewingPayroll.role}
-              </p>
-              <p className="text-xs text-muted-foreground">{viewingPayroll.department}</p>
-            </div>
-            <div className="ml-auto">
-              <Chip
-                label={viewingPayroll.status}
-                size="small"
-                color={
-                  viewingPayroll.status === "Processed"
-                    ? "success"
-                    : viewingPayroll.status === "Pending"
-                      ? "warning"
-                      : "error"
-                }
-                variant="outlined"
-                className="!text-xs"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            {/* Days calculation bar */}
-            <div className="grid grid-cols-3 gap-2 p-2.5 bg-secondary/30 rounded-[5px] text-xs">
+              Close
+            </Button>
+          }
+        >
+          <div className="flex flex-col gap-6 text-xs bg-background/50 rounded-md ">
+            {/* Header */}
+            <div className="flex justify-between items-start border-b border-border pb-4">
               <div>
-                <span className="text-[10px] text-muted-foreground block">Working Days</span>
-                <span className="font-semibold text-foreground">
-                  {viewingPayroll.working_days ?? 30} d
-                </span>
+                <h2 className="text-xl font-bold tracking-tight text-foreground">
+                  MKX Technologies Pvt. Ltd.
+                </h2>
+                <p className="text-muted-foreground text-[11px] mt-1">
+                  129, Block A, Street Number 13,
+                </p>
+                <p className="text-muted-foreground text-[11px]">
+                  New Ashok Nagar, New Delhi, India - 110096
+                </p>
               </div>
-              <div>
-                <span className="text-[10px] text-muted-foreground block">Paid Days</span>
-                <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                  {viewingPayroll.paid_days ?? 30} d
-                </span>
-              </div>
-              <div>
-                <span className="text-[10px] text-muted-foreground block">LOP Days</span>
-                <span className="font-semibold text-rose-600 dark:text-rose-400">
-                  {viewingPayroll.lop_days ?? 0} d
-                </span>
+              <div className="text-right">
+                <h3 className="text-lg font-semibold text-primary uppercase tracking-widest">
+                  Payslip
+                </h3>
+                <p className="font-medium text-foreground mt-1">
+                  For the month of {viewingPayroll.month}/{viewingPayroll.year}
+                </p>
+                <p className="text-muted-foreground text-[11px] mt-0.5">
+                  Pay Date: {viewingPayroll.pay_date}
+                </p>
+                <div className="mt-2 inline-block">
+                  <Chip
+                    label={viewingPayroll.status}
+                    size="small"
+                    color="success"
+                    variant="outlined"
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Itemized Line Items Breakdown */}
-            {viewingPayroll.items && viewingPayroll.items.length > 0 ? (
-              <div className="space-y-2">
-                <div className="space-y-1.5">
-                  <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">
-                    Earnings & Allowances
-                  </span>
-                  <div className="space-y-1">
-                    {viewingPayroll.items
-                      .filter((it) => it.category === "Earning")
-                      .map((it, idx) => (
-                        <div
-                          key={idx}
-                          className="flex justify-between items-center text-xs p-2 bg-secondary/40 rounded-[4px]"
-                        >
-                          <span className="text-foreground font-medium">{it.name}</span>
-                          <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                            +₹{Number(it.amount).toLocaleString()}
+            {/* Employee Details Grid */}
+            <div className="grid grid-cols-2 gap-y-3 gap-x-6 p-4 bg-secondary/20 rounded-[5px] border border-border/60">
+              <div className="flex flex-col">
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                  Employee Name
+                </span>
+                <span className="font-semibold text-sm text-foreground">{viewingPayroll.name}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                  Employee ID
+                </span>
+                <span className="font-medium text-foreground">
+                  {viewingPayroll.employee_id || "N/A"}
+                </span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                  Department
+                </span>
+                <span className="font-medium text-foreground">
+                  {viewingPayroll.department || "N/A"}
+                </span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                  Designation
+                </span>
+                <span className="font-medium text-foreground">{viewingPayroll.role || "N/A"}</span>
+              </div>
+            </div>
+
+            {/* Earnings & Deductions Table */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="border border-border rounded-[5px] overflow-hidden">
+                <div className="bg-secondary/40 px-3 py-2 font-semibold text-[11px] text-muted-foreground border-b border-border flex justify-between uppercase tracking-wider">
+                  <span>Earnings</span>
+                  <span>Amount</span>
+                </div>
+                <div className="divide-y divide-border/60">
+                  {payslipItems.filter((i) => i.category === "Earning").length > 0 ? (
+                    payslipItems
+                      .filter((i) => i.category === "Earning")
+                      .map((item, idx) => (
+                        <div key={idx} className="px-3 py-2 flex items-center justify-between">
+                          <span className="text-foreground">{item.name}</span>
+                          <span className="font-medium text-emerald-600 dark:text-emerald-400">
+                            ₹
+                            {parseAmt(item.amount).toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
                           </span>
                         </div>
-                      ))}
-                  </div>
-                </div>
-
-                {viewingPayroll.items.some((it) => it.category === "Deduction") && (
-                  <div className="space-y-1.5 pt-1">
-                    <span className="text-[11px] font-semibold text-rose-600 dark:text-rose-400 uppercase tracking-wider block">
-                      Deductions & Losses
-                    </span>
-                    <div className="space-y-1">
-                      {viewingPayroll.items
-                        .filter((it) => it.category === "Deduction")
-                        .map((it, idx) => (
-                          <div
-                            key={idx}
-                            className="flex justify-between items-center text-xs p-2 bg-secondary/40 rounded-[4px]"
-                          >
-                            <span className="text-foreground font-medium">{it.name}</span>
-                            <span className="font-semibold text-rose-600 dark:text-rose-400">
-                              -₹{Number(it.amount).toLocaleString()}
-                            </span>
-                          </div>
-                        ))}
+                      ))
+                  ) : (
+                    <div className="px-3 py-4 text-center text-muted-foreground text-[11px] italic">
+                      No Earnings
                     </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <div className="flex justify-between items-center text-xs p-2.5 bg-secondary/40 rounded-[5px]">
-                  <span className="text-muted-foreground">Base Salary</span>
-                  <span className="font-semibold text-foreground">
-                    {viewingPayroll.gross_pay || viewingPayroll.base_salary}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center text-xs p-2.5 bg-secondary/40 rounded-[5px]">
-                  <span className="text-muted-foreground">Allowance</span>
-                  <span className="font-semibold text-emerald-500">
-                    +{viewingPayroll.allowance || "₹0"}
-                  </span>
+                  )}
                 </div>
               </div>
-            )}
 
-            {/* Payout Summary */}
-            <div className="flex justify-between items-center text-xs p-3 bg-primary/10 border border-primary/20 rounded-[5px]">
-              <div>
-                <span className="font-bold text-foreground block">Net Disbursed Pay</span>
-                <span className="text-[10px] text-muted-foreground">
-                  Pay Date: {viewingPayroll.pay_date}
-                </span>
+              <div className="border border-border rounded-[5px] overflow-hidden">
+                <div className="bg-secondary/40 px-3 py-2 font-semibold text-[11px] text-muted-foreground border-b border-border flex justify-between uppercase tracking-wider">
+                  <span>Deductions</span>
+                  <span>Amount</span>
+                </div>
+                <div className="divide-y divide-border/60">
+                  {payslipItems.filter((i) => i.category === "Deduction").length > 0 ? (
+                    payslipItems
+                      .filter((i) => i.category === "Deduction")
+                      .map((item, idx) => (
+                        <div key={idx} className="px-3 py-2 flex items-center justify-between">
+                          <span className="text-foreground">{item.name}</span>
+                          <span className="font-medium text-rose-500">
+                            ₹
+                            {parseAmt(item.amount).toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </span>
+                        </div>
+                      ))
+                  ) : (
+                    <div className="px-3 py-4 text-center text-muted-foreground text-[11px] italic">
+                      No Deductions
+                    </div>
+                  )}
+                </div>
               </div>
-              <span className="text-base font-bold text-primary">{viewingPayroll.net_pay}</span>
             </div>
-          </div>
 
-          <div className="pt-2 border-t border-border space-y-2">
-            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-              Update Disbursement Status
-            </span>
-            <div className="flex flex-wrap gap-2">
+            {/* Totals Summary */}
+            <div className="flex justify-end border-t border-border/80 pt-4">
+              <div className="w-full max-w-[320px] flex flex-col gap-2.5 text-sm">
+                <div className="flex justify-between items-center text-muted-foreground">
+                  <span>Total Earnings (Gross Pay)</span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                    ₹
+                    {parseAmt(viewingPayroll.gross_pay).toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-muted-foreground">
+                  <span>Total Deductions</span>
+                  <span className="font-semibold text-rose-600 dark:text-rose-400">
+                    ₹
+                    {parseAmt(viewingPayroll.total_deductions).toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </span>
+                </div>
+                <div className="border-t border-border/60 flex justify-between items-center pt-2">
+                  <span className="font-bold text-foreground text-base">Net Disbursed</span>
+                  <span className="font-bold text-primary text-xl">
+                    ₹
+                    {parseAmt(viewingPayroll.net_pay).toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Update Disbursement Status Actions */}
+            <div className="pt-3 border-t border-border space-y-2">
+              <span className="text-[11px] pt-2 font-semibold text-muted-foreground uppercase tracking-wider">
+                Update Disbursement Status
+              </span>
+              <div className="flex flex-wrap gap-2 pt-2">
+                <Button
+                  size="small"
+                  variant={viewingPayroll.status === "Processed" ? "contained" : "outlined"}
+                  color="success"
+                  onClick={() => handleUpdateStatus(viewingPayroll, "Processed")}
+                  className="!text-xs !normal-case"
+                >
+                  Mark Processed
+                </Button>
+                <Button
+                  size="small"
+                  variant={viewingPayroll.status === "Pending" ? "contained" : "outlined"}
+                  color="warning"
+                  onClick={() => handleUpdateStatus(viewingPayroll, "Pending")}
+                  className="!text-xs !normal-case"
+                >
+                  Set Pending
+                </Button>
+                <Button
+                  size="small"
+                  variant={viewingPayroll.status === "On Hold" ? "contained" : "outlined"}
+                  color="error"
+                  onClick={() => handleUpdateStatus(viewingPayroll, "On Hold")}
+                  className="!text-xs !normal-case"
+                >
+                  Put On Hold
+                </Button>
+              </div>
+            </div>
+
+            {/* Action Buttons & Footer Notes */}
+            <div className="pt-4 flex flex-col items-center gap-4">
               <Button
+                variant="outlined"
                 size="small"
-                variant={viewingPayroll.status === "Processed" ? "contained" : "outlined"}
-                color="success"
-                onClick={() => handleUpdateStatus(viewingPayroll, "Processed")}
-                className="!text-xs !normal-case"
+                onClick={handleDownloadPdf}
+                disabled={isDownloadingPdf}
+                sx={{ textTransform: "none", borderRadius: "6px" }}
               >
-                Mark Processed
+                {isDownloadingPdf ? "Generating PDF..." : "Download PDF"}
               </Button>
-              <Button
-                size="small"
-                variant={viewingPayroll.status === "Pending" ? "contained" : "outlined"}
-                color="warning"
-                onClick={() => handleUpdateStatus(viewingPayroll, "Pending")}
-                className="!text-xs !normal-case"
-              >
-                Set Pending
-              </Button>
-              <Button
-                size="small"
-                variant={viewingPayroll.status === "On Hold" ? "contained" : "outlined"}
-                color="error"
-                onClick={() => handleUpdateStatus(viewingPayroll, "On Hold")}
-                className="!text-xs !normal-case"
-              >
-                Put On Hold
-              </Button>
+              <div className="text-center text-[10px] text-muted-foreground">
+                <p>
+                  This is a computer generated document and does not require a physical signature.
+                </p>
+              </div>
             </div>
           </div>
-        </CustomDialog>
+        </AppDrawer>
       )}
 
       <RunPayrollDialog

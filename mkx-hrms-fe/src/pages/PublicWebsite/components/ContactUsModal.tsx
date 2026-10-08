@@ -70,7 +70,13 @@ export const ContactUsModal: React.FC<ContactUsModalProps> = ({ open, onClose })
       }
     >
       <form id="contact-us-form" onSubmit={formik.handleSubmit} className="flex flex-col gap-3">
-        <Input required label="Name" name="name" value={formik.values.name} onChange={formik.handleChange} />
+        <Input
+          required
+          label="Name"
+          name="name"
+          value={formik.values.name}
+          onChange={formik.handleChange}
+        />
         <div className="grid grid-cols-2 gap-2">
           <Input
             required

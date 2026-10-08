@@ -134,7 +134,11 @@ export const useGetMasterDepartments = (params?: { search?: string; status?: str
  * @returns Mutation trigger
  */
 export const useCreateMasterDepartment = (onSuccessCallback?: () => void) => {
-  const mutation = useCustomMutation<ApiResponse<MasterDepartment>, unknown, Partial<MasterDepartment>>({
+  const mutation = useCustomMutation<
+    ApiResponse<MasterDepartment>,
+    unknown,
+    Partial<MasterDepartment>
+  >({
     toastMessages: {
       loading: "Creating department...",
       success: (res) => `Department ${res.data?.name || ""} created successfully!`,
@@ -169,7 +173,11 @@ export const useCreateMasterDepartment = (onSuccessCallback?: () => void) => {
  * @returns Mutation trigger
  */
 export const useUpdateMasterDepartment = (id: number, onSuccessCallback?: () => void) => {
-  const mutation = useCustomMutation<ApiResponse<MasterDepartment>, unknown, Partial<MasterDepartment>>({
+  const mutation = useCustomMutation<
+    ApiResponse<MasterDepartment>,
+    unknown,
+    Partial<MasterDepartment>
+  >({
     toastMessages: {
       loading: "Updating department...",
       success: (res) => `Department ${res.data?.name || ""} updated successfully!`,
@@ -282,13 +290,23 @@ export const useCreateMasterRole = (onSuccessCallback?: () => void) => {
 
   return {
     ...mutation,
-    mutate: (data: { name: string; description?: string; status?: string; permission_ids?: number[] }) =>
+    mutate: (data: {
+      name: string;
+      description?: string;
+      status?: string;
+      permission_ids?: number[];
+    }) =>
       mutation.mutate({
         url: "/v1/masters/roles",
         method: "POST",
         data,
       }),
-    mutateAsync: (data: { name: string; description?: string; status?: string; permission_ids?: number[] }) =>
+    mutateAsync: (data: {
+      name: string;
+      description?: string;
+      status?: string;
+      permission_ids?: number[];
+    }) =>
       mutation.mutateAsync({
         url: "/v1/masters/roles",
         method: "POST",
@@ -321,13 +339,23 @@ export const useUpdateMasterRole = (id: number, onSuccessCallback?: () => void) 
 
   return {
     ...mutation,
-    mutate: (data: { name?: string; description?: string; status?: string; permission_ids?: number[] }) =>
+    mutate: (data: {
+      name?: string;
+      description?: string;
+      status?: string;
+      permission_ids?: number[];
+    }) =>
       mutation.mutate({
         url: `/v1/masters/roles/${id}`,
         method: "PUT",
         data,
       }),
-    mutateAsync: (data: { name?: string; description?: string; status?: string; permission_ids?: number[] }) =>
+    mutateAsync: (data: {
+      name?: string;
+      description?: string;
+      status?: string;
+      permission_ids?: number[];
+    }) =>
       mutation.mutateAsync({
         url: `/v1/masters/roles/${id}`,
         method: "PUT",
@@ -403,7 +431,13 @@ export const useCreateMasterDesignation = (onSuccessCallback?: () => void) => {
   const mutation = useCustomMutation<
     ApiResponse<MasterDesignation>,
     unknown,
-    { title: string; code?: string; department_id?: number | null; description?: string; status?: string }
+    {
+      title: string;
+      code?: string;
+      department_id?: number | null;
+      description?: string;
+      status?: string;
+    }
   >({
     toastMessages: {
       loading: "Creating designation...",
@@ -416,13 +450,25 @@ export const useCreateMasterDesignation = (onSuccessCallback?: () => void) => {
 
   return {
     ...mutation,
-    mutate: (data: { title: string; code?: string; department_id?: number | null; description?: string; status?: string }) =>
+    mutate: (data: {
+      title: string;
+      code?: string;
+      department_id?: number | null;
+      description?: string;
+      status?: string;
+    }) =>
       mutation.mutate({
         url: "/v1/masters/designations",
         method: "POST",
         data,
       }),
-    mutateAsync: (data: { title: string; code?: string; department_id?: number | null; description?: string; status?: string }) =>
+    mutateAsync: (data: {
+      title: string;
+      code?: string;
+      department_id?: number | null;
+      description?: string;
+      status?: string;
+    }) =>
       mutation.mutateAsync({
         url: "/v1/masters/designations",
         method: "POST",
@@ -442,7 +488,13 @@ export const useUpdateMasterDesignation = (id: number, onSuccessCallback?: () =>
   const mutation = useCustomMutation<
     ApiResponse<MasterDesignation>,
     unknown,
-    { title?: string; code?: string; department_id?: number | null; description?: string; status?: string }
+    {
+      title?: string;
+      code?: string;
+      department_id?: number | null;
+      description?: string;
+      status?: string;
+    }
   >({
     toastMessages: {
       loading: "Updating designation...",
@@ -455,13 +507,25 @@ export const useUpdateMasterDesignation = (id: number, onSuccessCallback?: () =>
 
   return {
     ...mutation,
-    mutate: (data: { title?: string; code?: string; department_id?: number | null; description?: string; status?: string }) =>
+    mutate: (data: {
+      title?: string;
+      code?: string;
+      department_id?: number | null;
+      description?: string;
+      status?: string;
+    }) =>
       mutation.mutate({
         url: `/v1/masters/designations/${id}`,
         method: "PUT",
         data,
       }),
-    mutateAsync: (data: { title?: string; code?: string; department_id?: number | null; description?: string; status?: string }) =>
+    mutateAsync: (data: {
+      title?: string;
+      code?: string;
+      department_id?: number | null;
+      description?: string;
+      status?: string;
+    }) =>
       mutation.mutateAsync({
         url: `/v1/masters/designations/${id}`,
         method: "PUT",
@@ -528,7 +592,11 @@ export const useGetMasterLeaveTypes = (params?: { search?: string; status?: stri
  * @returns Mutation trigger
  */
 export const useCreateMasterLeaveType = (onSuccessCallback?: () => void) => {
-  const mutation = useCustomMutation<ApiResponse<MasterLeaveType>, unknown, Partial<MasterLeaveType>>({
+  const mutation = useCustomMutation<
+    ApiResponse<MasterLeaveType>,
+    unknown,
+    Partial<MasterLeaveType>
+  >({
     toastMessages: {
       loading: "Creating leave type...",
       success: (res) => `Leave type ${res.data?.name || ""} created successfully!`,
@@ -563,7 +631,11 @@ export const useCreateMasterLeaveType = (onSuccessCallback?: () => void) => {
  * @returns Mutation trigger
  */
 export const useUpdateMasterLeaveType = (id: number, onSuccessCallback?: () => void) => {
-  const mutation = useCustomMutation<ApiResponse<MasterLeaveType>, unknown, Partial<MasterLeaveType>>({
+  const mutation = useCustomMutation<
+    ApiResponse<MasterLeaveType>,
+    unknown,
+    Partial<MasterLeaveType>
+  >({
     toastMessages: {
       loading: "Updating leave type...",
       success: (res) => `Leave type ${res.data?.name || ""} updated successfully!`,
@@ -648,7 +720,11 @@ export const useGetMasterSalaryStructures = (params?: { search?: string; status?
  * @returns Mutation trigger
  */
 export const useCreateMasterSalaryStructure = (onSuccessCallback?: () => void) => {
-  const mutation = useCustomMutation<ApiResponse<MasterSalaryStructure>, unknown, Partial<MasterSalaryStructure>>({
+  const mutation = useCustomMutation<
+    ApiResponse<MasterSalaryStructure>,
+    unknown,
+    Partial<MasterSalaryStructure>
+  >({
     toastMessages: {
       loading: "Creating salary structure...",
       success: (res) => `Salary structure ${res.data?.name || ""} created successfully!`,
@@ -683,7 +759,11 @@ export const useCreateMasterSalaryStructure = (onSuccessCallback?: () => void) =
  * @returns Mutation trigger
  */
 export const useUpdateMasterSalaryStructure = (id: number, onSuccessCallback?: () => void) => {
-  const mutation = useCustomMutation<ApiResponse<MasterSalaryStructure>, unknown, Partial<MasterSalaryStructure>>({
+  const mutation = useCustomMutation<
+    ApiResponse<MasterSalaryStructure>,
+    unknown,
+    Partial<MasterSalaryStructure>
+  >({
     toastMessages: {
       loading: "Updating salary structure...",
       success: (res) => `Salary structure ${res.data?.name || ""} updated successfully!`,
@@ -768,7 +848,11 @@ export const useGetMasterWorkShifts = (params?: { search?: string; status?: stri
  * @returns Mutation trigger
  */
 export const useCreateMasterWorkShift = (onSuccessCallback?: () => void) => {
-  const mutation = useCustomMutation<ApiResponse<MasterWorkShift>, unknown, Partial<MasterWorkShift>>({
+  const mutation = useCustomMutation<
+    ApiResponse<MasterWorkShift>,
+    unknown,
+    Partial<MasterWorkShift>
+  >({
     toastMessages: {
       loading: "Creating work shift...",
       success: (res) => `Work shift ${res.data?.name || ""} created successfully!`,
@@ -803,7 +887,11 @@ export const useCreateMasterWorkShift = (onSuccessCallback?: () => void) => {
  * @returns Mutation trigger
  */
 export const useUpdateMasterWorkShift = (id: number, onSuccessCallback?: () => void) => {
-  const mutation = useCustomMutation<ApiResponse<MasterWorkShift>, unknown, Partial<MasterWorkShift>>({
+  const mutation = useCustomMutation<
+    ApiResponse<MasterWorkShift>,
+    unknown,
+    Partial<MasterWorkShift>
+  >({
     toastMessages: {
       loading: "Updating work shift...",
       success: (res) => `Work shift ${res.data?.name || ""} updated successfully!`,
