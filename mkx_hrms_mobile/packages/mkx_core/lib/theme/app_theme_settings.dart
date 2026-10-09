@@ -2,12 +2,10 @@ import 'package:flutter/widgets.dart';
 
 import '../storage/token_storage.dart';
 
-/**
- * Runtime theme palette choices, adapted for MKX HRMS.
- * Synchronizes and persists user preferences in local storage.
- */
+/// Runtime theme palette choices, adapted for MKX HRMS.
+/// Synchronizes and persists user preferences in local storage.
 class AppThemeSettings extends ChangeNotifier {
-  /** Seed choices offered when dynamic color is off. */
+  /// Seed choices offered when dynamic color is off.
   static const List<Color> seedOptions = <Color>[
     Color(0xFF6750A4),
     Color(0xFF00658F),
@@ -21,7 +19,7 @@ class AppThemeSettings extends ChangeNotifier {
     Color(0xFF000000), // Black
   ];
 
-  /** Labels shown under each entry in [seedOptions]. */
+  /// Labels shown under each entry in [seedOptions].
   static const List<String> seedLabels = <String>[
     'Default',
     'Ocean',
@@ -35,10 +33,10 @@ class AppThemeSettings extends ChangeNotifier {
     'Black',
   ];
 
-  /** Family name registered for Google Sans Flex. */
+  /// Family name registered for Google Sans Flex.
   static const String googleSansFlex = 'Google Sans Flex';
 
-  /** Family name registered for Poppins. */
+  /// Family name registered for Poppins.
   static const String poppins = 'Poppins';
 
   bool _autoTheming = true;
@@ -46,9 +44,7 @@ class AppThemeSettings extends ChangeNotifier {
   Color _seedColor = seedOptions.first;
   String? _fontFamily = googleSansFlex;
 
-  /**
-   * Restores persisted theme settings from local preferences.
-   */
+  /// Restores persisted theme settings from local preferences.
   Future<void> loadSettings() async {
     final mode = await TokenStorage.instance.getThemeMode();
     if (mode == 'dark' || mode == 'light') {
@@ -68,7 +64,7 @@ class AppThemeSettings extends ChangeNotifier {
     notifyListeners();
   }
 
-  /** Whether the theme follows the platform brightness. */
+  /// Whether the theme follows the platform brightness.
   bool get autoTheming => _autoTheming;
 
   set autoTheming(bool value) {
@@ -80,7 +76,7 @@ class AppThemeSettings extends ChangeNotifier {
     notifyListeners();
   }
 
-  /** Whether device dynamic color overrides the seeded scheme. */
+  /// Whether device dynamic color overrides the seeded scheme.
   bool get dynamicColoring => _dynamicColoring;
 
   set dynamicColoring(bool value) {
@@ -92,7 +88,7 @@ class AppThemeSettings extends ChangeNotifier {
     notifyListeners();
   }
 
-  /** Seed used to generate the scheme when dynamic color is off. */
+  /// Seed used to generate the scheme when dynamic color is off.
   Color get seedColor => _seedColor;
 
   set seedColor(Color value) {
@@ -104,7 +100,7 @@ class AppThemeSettings extends ChangeNotifier {
     notifyListeners();
   }
 
-  /** Font family for the app, or null for the platform default. */
+  /// Font family for the app, or null for the platform default.
   String? get fontFamily => _fontFamily;
 
   set fontFamily(String? value) {

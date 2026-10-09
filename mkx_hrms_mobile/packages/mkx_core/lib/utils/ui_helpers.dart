@@ -79,31 +79,62 @@ class UiHelpers {
   }) {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
-    Color bgColor = AppColors.lightPrimary;
-    Color textColor = AppColors.lightPrimaryForeground;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final mediaQuery = MediaQuery.of(context);
+    final topMargin = mediaQuery.padding.top > 0
+        ? mediaQuery.padding.top + 10
+        : 36.0;
 
-    if (isError) {
-      bgColor = AppColors.error;
-      textColor = Colors.white;
-    } else if (isSuccess) {
-      bgColor = AppColors.success;
-      textColor = Colors.white;
-    }
+    final Color accentColor = isError
+        ? const Color(0xFFFF3B30)
+        : (isSuccess ? const Color(0xFF34C759) : const Color(0xFF007AFF));
+
+    final IconData icon = isError
+        ? Icons.cancel_rounded
+        : (isSuccess ? Icons.check_circle_rounded : Icons.info_rounded);
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          message,
-          style: TextStyle(
-            color: textColor,
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
+        content: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: accentColor, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.2,
+                ),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: isDark
+            ? const Color(0xFF161A26).withValues(alpha: 0.94)
+            : Colors.white.withValues(alpha: 0.96),
+        behavior: SnackBarBehavior.floating,
+        elevation: 8,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.16)
+                : Colors.black.withValues(alpha: 0.08),
+            width: 0.9,
           ),
         ),
-        backgroundColor: bgColor,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        duration: const Duration(seconds: 3),
+        margin: EdgeInsets.only(
+          bottom: mediaQuery.size.height - (topMargin + 65),
+          left: 18,
+          right: 18,
+        ),
+        duration: const Duration(milliseconds: 2800),
       ),
     );
   }

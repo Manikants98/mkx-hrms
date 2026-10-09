@@ -6,10 +6,8 @@ import '../features/auth/state/auth_provider.dart';
 import '../theme/app_theme_scope.dart';
 import '../theme/app_theme_settings.dart';
 
-/**
- * A segmented button group allowing users to toggle between Light, System, and Dark theme modes.
- * Synchronizes with both [AuthProvider] and [AppThemeSettings].
- */
+/// A segmented button group allowing users to toggle between Light, System, and Dark theme modes.
+/// Synchronizes with both [AuthProvider] and [AppThemeSettings].
 class ThemeModeSelector extends StatelessWidget {
   final Color? color;
 
@@ -37,14 +35,6 @@ class ThemeModeSelector extends StatelessWidget {
         size: M3EButtonSize.sm,
         style: M3EButtonStyle.filled,
         neighborSquish: true,
-        decoration: M3EToggleButtonDecoration(
-          backgroundColor: WidgetStateProperty.resolveWith((states) {
-            if (states.contains(WidgetState.selected)) {
-              return colorScheme.primary;
-            }
-            return color ?? colorScheme.surface;
-          }),
-        ),
         selectedIndex: modes.indexWhere((m) => m.$1 == activeMode),
         onSelectedIndexChanged: (int? index) {
           if (index != null && index >= 0 && index < modes.length) {

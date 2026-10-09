@@ -429,15 +429,19 @@ const seedWorkShifts = async (): Promise<void> => {
  * @param departmentId - Primary key identifier of Engineering department
  */
 const ensureDefaultAdminUser = async (roleId: number, departmentId: number): Promise<void> => {
-  const existingUserCount = await prisma.user.count();
-  if (existingUserCount > 0) {
-    return;
-  }
+  const hashedPassword = await hashPassword("123456");
 
-  const hashedPassword = await hashPassword("admin@123");
-
-  const adminUser = await prisma.user.create({
-    data: {
+  const adminUser = await prisma.user.upsert({
+    where: { email: "admin@mkx.monster" },
+    update: {
+      password_hash: hashedPassword,
+      role_id: roleId,
+      status: "active",
+      first_name: "Admin",
+      last_name: "MKX",
+      employee_id: "EMP001",
+    },
+    create: {
       employee_id: "EMP001",
       first_name: "Admin",
       last_name: "MKX",
@@ -449,8 +453,19 @@ const ensureDefaultAdminUser = async (roleId: number, departmentId: number): Pro
     },
   });
 
-  await prisma.employee.create({
-    data: {
+  await prisma.employee.upsert({
+    where: { employee_id: "EMP001" },
+    update: {
+      name: "Admin MKX",
+      first_name: "Admin",
+      last_name: "MKX",
+      email: "admin@mkx.monster",
+      role_id: roleId,
+      department_id: departmentId,
+      status: "Active",
+      user_id: adminUser.id,
+    },
+    create: {
       employee_id: "EMP001",
       name: "Admin MKX",
       first_name: "Admin",

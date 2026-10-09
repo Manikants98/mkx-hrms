@@ -7,9 +7,7 @@ import '../theme/app_theme_scope.dart';
 import '../theme/app_theme_settings.dart';
 import 'theme_mode_selector.dart';
 
-/**
- * A page for configuring the app's theme settings.
- */
+/// A page for configuring the app's theme settings.
 class ThemeConfigPage extends StatelessWidget {
   const ThemeConfigPage({super.key});
 
@@ -111,9 +109,12 @@ class ThemeConfigPage extends StatelessWidget {
       ),
     ];
 
-    return M3ECardList(
-      itemCount: rows.length,
-      itemBuilder: (BuildContext context, int index) => rows[index],
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: rows,
+      ),
     );
   }
 

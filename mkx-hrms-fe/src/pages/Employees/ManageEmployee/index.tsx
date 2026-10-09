@@ -429,20 +429,51 @@ export const ManageEmployee: React.FC<ManageEmployeeProps> = ({
         },
       },
       {
-        header: "Monthly Amount",
+        header: "Rate / Amount",
         width: "150px",
         cell: (row) => {
           const idx = assignedStructures.indexOf(row);
+          const master = masterSalaryStructures.find((s) => s.id === row.salary_structure_id);
+          const isPercentage = master?.calculation_type === "Percentage";
           return (
-            <Input
-              name={`amount_${idx}`}
-              type="number"
-              value={row.amount}
-              onChange={(e) => handleRowAmountChange(idx, Number(e.target.value) || 0)}
-              placeholder="0.00"
-              size="small"
-              className="w-28"
-            />
+            <div className="flex items-center gap-1.5">
+              <Input
+                name={`amount_${idx}`}
+                type="number"
+                value={row.amount}
+                onChange={(e) => handleRowAmountChange(idx, Number(e.target.value) || 0)}
+                placeholder="0.00"
+                size="small"
+                className="w-24"
+              />
+              <span className="text-xs font-semibold text-muted-foreground min-w-[12px]">
+                {isPercentage ? "%" : "₹"}
+              </span>
+            </div>
+          );
+        },
+      },
+      {
+        header: "Calculated (₹)",
+        width: "130px",
+        cell: (row) => {
+          const master = masterSalaryStructures.find((s) => s.id === row.salary_structure_id);
+          const isPercentage = master?.calculation_type === "Percentage";
+          const rawAmt = Number(row.amount) || 0;
+          const baseItem = assignedStructures.find((item) => {
+            const m = masterSalaryStructures.find((candidate) => candidate.id === item.salary_structure_id);
+            return m?.is_base_salary;
+          });
+          const baseAmt = baseItem ? Number(baseItem.amount) || 0 : 0;
+          const calculated = isPercentage ? (baseAmt * rawAmt) / 100 : rawAmt;
+          return (
+            <span className="font-semibold text-foreground text-sm">
+              ₹
+              {calculated.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </span>
           );
         },
       },
