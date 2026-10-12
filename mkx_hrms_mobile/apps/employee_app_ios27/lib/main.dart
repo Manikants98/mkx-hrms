@@ -25,9 +25,22 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
 }
 
-/// Main entry point with iOS 27 Liquid Glass shader pre-warming.
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  UiHelpers.customToastHandler = (
+    BuildContext context,
+    String message, {
+    bool isError = false,
+    bool isSuccess = false,
+  }) {
+    Ios27Toast.show(
+      context,
+      message,
+      isError: isError,
+      isSuccess: isSuccess,
+    );
+  };
 
   await LiquidGlassWidgets.initialize();
 
@@ -67,7 +80,7 @@ void main() async {
     LiquidGlassWidgets.wrap(
       brightnessResolver: (context) =>
           CupertinoTheme.of(context).brightness ?? Brightness.dark,
-      adaptiveQuality: true,
+      adaptiveQuality: false,
       child: const MkxHrmsApp(),
     ),
   );
@@ -88,7 +101,12 @@ class _MkxHrmsAppState extends State<MkxHrmsApp> {
   void initState() {
     super.initState();
     _themeSettings = AppThemeSettings();
-    _themeSettings.loadSettings();
+    _themeSettings.fontFamily = null;
+    _themeSettings.loadSettings().then((_) {
+      if (_themeSettings.fontFamily == AppThemeSettings.googleSansFlex) {
+        _themeSettings.fontFamily = null;
+      }
+    });
   }
 
   @override
@@ -129,11 +147,13 @@ class _MkxHrmsAppState extends State<MkxHrmsApp> {
                   theme: CupertinoThemeData(
                     brightness: isDark ? Brightness.dark : Brightness.light,
                     primaryColor: primaryColor,
-                    textTheme: CupertinoTextThemeData(
-                      textStyle: TextStyle(
-                        fontFamily: settings.fontFamily,
-                      ),
-                    ),
+                    textTheme: settings.fontFamily != null
+                        ? CupertinoTextThemeData(
+                            textStyle: TextStyle(
+                              fontFamily: settings.fontFamily,
+                            ),
+                          )
+                        : const CupertinoTextThemeData(),
                   ),
                   home: _buildHome(auth),
                 );

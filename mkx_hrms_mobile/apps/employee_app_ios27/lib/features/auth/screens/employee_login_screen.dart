@@ -1,12 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:mkx_core/features/auth/state/auth_provider.dart';
-import 'package:mkx_core/utils/ui_helpers.dart';
 import 'package:provider/provider.dart';
 
 import '../../../widgets/ios27_button.dart';
 import '../../../widgets/ios27_glass_surface.dart';
 import '../../../widgets/ios27_login_header.dart';
 import '../../../widgets/ios27_text_field.dart';
+import '../../../widgets/ios27_toast.dart';
 
 /**
  * Dedicated Liquid Glass Login Screen for the Employee Mobile Application
@@ -49,7 +49,7 @@ class _EmployeeLoginScreenState extends State<EmployeeLoginScreen> {
     if (!mounted) return;
 
     if (success) {
-      UiHelpers.showSnackBar(
+      Ios27Toast.show(
         context,
         'Welcome back, ${auth.currentUser?.name ?? "Employee"}!',
         isSuccess: true,
@@ -58,7 +58,7 @@ class _EmployeeLoginScreenState extends State<EmployeeLoginScreen> {
         Navigator.of(context).popUntil((route) => route.isFirst);
       }
     } else {
-      UiHelpers.showSnackBar(
+      Ios27Toast.show(
         context,
         auth.errorMessage ??
             'Authentication failed. Please verify your credentials.',

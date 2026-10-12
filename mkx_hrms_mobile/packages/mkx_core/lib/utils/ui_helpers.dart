@@ -15,14 +15,142 @@ class UiHelpers {
   static final GlobalKey<NavigatorState> rootNavigatorKey =
       GlobalKey<NavigatorState>();
 
+  /// Optional custom handler for displaying toasts or notifications in environments
+  /// without ScaffoldMessenger (such as Cupertino apps).
+  static void Function(
+    BuildContext context,
+    String message, {
+    bool isError,
+    bool isSuccess,
+  })? customToastHandler;
+
+  static OverlayEntry? _overlayFallbackEntry;
+
+  /// Fallback overlay toast when no ScaffoldMessenger is available in the widget tree.
+  static void _showOverlayFallback(
+    BuildContext context,
+    String message, {
+    bool isError = false,
+    bool isSuccess = false,
+  }) {
+    try {
+      if (_overlayFallbackEntry != null && _overlayFallbackEntry!.mounted) {
+        _overlayFallbackEntry!.remove();
+      }
+    } catch (_) {}
+    _overlayFallbackEntry = null;
+
+    final overlay = Overlay.maybeOf(context, rootOverlay: true) ??
+        Overlay.maybeOf(context) ??
+        rootNavigatorKey.currentState?.overlay;
+
+    if (overlay == null) return;
+
+    final mediaQuery = MediaQuery.maybeOf(context);
+    final topPadding = (mediaQuery?.padding.top ?? 0) > 0
+        ? (mediaQuery!.padding.top + 10)
+        : 40.0;
+
+    final Color accentColor = isError
+        ? const Color(0xFFFF3B30)
+        : (isSuccess ? const Color(0xFF34C759) : const Color(0xFF007AFF));
+
+    final IconData icon = isError
+        ? Icons.cancel_rounded
+        : (isSuccess ? Icons.check_circle_rounded : Icons.info_rounded);
+
+    late final OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (ctx) => Positioned(
+        top: topPadding,
+        left: 20,
+        right: 20,
+        child: Material(
+          type: MaterialType.transparency,
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x33000000),
+                    blurRadius: 16,
+                    offset: Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(icon, color: accentColor, size: 20),
+                  const SizedBox(width: 10),
+                  Flexible(
+                    child: Text(
+                      message,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    _overlayFallbackEntry = entry;
+    overlay.insert(entry);
+
+    Future.delayed(const Duration(milliseconds: 2800), () {
+      if (_overlayFallbackEntry == entry) {
+        try {
+          if (entry.mounted) {
+            entry.remove();
+          }
+        } catch (_) {}
+        _overlayFallbackEntry = null;
+      }
+    });
+  }
+
   /// Displays a global SnackBar toast without requiring a local BuildContext.
   static void showGlobalSnackBar(
     String message, {
     bool isError = false,
     bool isSuccess = false,
   }) {
+    if (customToastHandler != null && rootNavigatorKey.currentContext != null) {
+      customToastHandler!(
+        rootNavigatorKey.currentContext!,
+        message,
+        isError: isError,
+        isSuccess: isSuccess,
+      );
+      return;
+    }
+
     final state = rootScaffoldMessengerKey.currentState;
-    if (state == null) return;
+    if (state == null) {
+      if (rootNavigatorKey.currentContext != null) {
+        _showOverlayFallback(
+          rootNavigatorKey.currentContext!,
+          message,
+          isError: isError,
+          isSuccess: isSuccess,
+        );
+      }
+      return;
+    }
     state.hideCurrentSnackBar();
 
     Color bgColor = AppColors.lightPrimary;
@@ -71,19 +199,41 @@ class UiHelpers {
     );
   }
 
+  /// Displays a SnackBar toast within the given BuildContext or delegates to customToastHandler/overlay.
   static void showSnackBar(
     BuildContext context,
     String message, {
     bool isError = false,
     bool isSuccess = false,
   }) {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    if (customToastHandler != null) {
+      customToastHandler!(
+        context,
+        message,
+        isError: isError,
+        isSuccess: isSuccess,
+      );
+      return;
+    }
+
+    final messenger = ScaffoldMessenger.maybeOf(context) ??
+        rootScaffoldMessengerKey.currentState;
+    if (messenger == null) {
+      _showOverlayFallback(
+        context,
+        message,
+        isError: isError,
+        isSuccess: isSuccess,
+      );
+      return;
+    }
+
+    messenger.hideCurrentSnackBar();
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final mediaQuery = MediaQuery.of(context);
-    final topMargin = mediaQuery.padding.top > 0
-        ? mediaQuery.padding.top + 10
-        : 36.0;
+    final topMargin =
+        mediaQuery.padding.top > 0 ? mediaQuery.padding.top + 10 : 36.0;
 
     final Color accentColor = isError
         ? const Color(0xFFFF3B30)
@@ -93,7 +243,7 @@ class UiHelpers {
         ? Icons.cancel_rounded
         : (isSuccess ? Icons.check_circle_rounded : Icons.info_rounded);
 
-    ScaffoldMessenger.of(context).showSnackBar(
+    messenger.showSnackBar(
       SnackBar(
         content: Row(
           mainAxisSize: MainAxisSize.min,

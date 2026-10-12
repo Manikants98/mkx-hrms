@@ -63,7 +63,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -122,8 +122,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                   children: [
                     if (payroll.slips.isEmpty)
                       Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 32),
+                        padding: const EdgeInsets.only(top: 10),
                         child: Ios27GlassCard(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 24, vertical: 32),
@@ -157,7 +156,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                                   fontSize: 13,
                                   color: isDark
                                       ? CupertinoColors.white
-                                      .withValues(alpha: 0.6)
+                                          .withValues(alpha: 0.6)
                                       : const Color(0xFF6C6C70),
                                 ),
                               ),
@@ -223,8 +222,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                                                 .withValues(alpha: 0.06)
                                             : CupertinoColors.black
                                                 .withValues(alpha: 0.03),
-                                        borderRadius:
-                                            BorderRadius.circular(14),
+                                        borderRadius: BorderRadius.circular(14),
                                       ),
                                       child: Column(
                                         children: [
@@ -264,8 +262,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                                                 .withValues(alpha: 0.06)
                                             : CupertinoColors.black
                                                 .withValues(alpha: 0.03),
-                                        borderRadius:
-                                            BorderRadius.circular(14),
+                                        borderRadius: BorderRadius.circular(14),
                                       ),
                                       child: Column(
                                         children: [
@@ -303,8 +300,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
                                                 .withValues(alpha: 0.06)
                                             : CupertinoColors.black
                                                 .withValues(alpha: 0.03),
-                                        borderRadius:
-                                            BorderRadius.circular(14),
+                                        borderRadius: BorderRadius.circular(14),
                                       ),
                                       child: Column(
                                         children: [
@@ -372,91 +368,83 @@ class _PayrollScreenState extends State<PayrollScreen> {
                       ],
                       const Ios27SectionHeader(title: 'Disbursement Archive'),
                       Ios27GlassCard(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
                         child: Column(
                           children: payroll.slips.map((Payslip slip) {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              child: CupertinoButton(
-                                padding: EdgeInsets.zero,
-                                minimumSize: Size.zero,
-                                onPressed: () => _openDetailModal(slip),
-                                child: Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 4),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        width: 44,
-                                        height: 44,
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFF34C759)
-                                              .withValues(alpha: 0.14),
-                                          borderRadius:
-                                              BorderRadius.circular(14),
-                                        ),
-                                        child: const Icon(
-                                          CupertinoIcons.doc_text_fill,
-                                          color: Color(0xFF34C759),
-                                          size: 20,
-                                        ),
+                            return CupertinoButton(
+                              padding: EdgeInsets.only(bottom: 10),
+                              minimumSize: Size.zero,
+                              onPressed: () => _openDetailModal(slip),
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 4),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 44,
+                                      height: 44,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF34C759)
+                                            .withValues(alpha: 0.14),
+                                        borderRadius: BorderRadius.circular(14),
                                       ),
-                                      const SizedBox(width: 14),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              slip.monthLabel,
-                                              style: TextStyle(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.w700,
-                                                color: isDark
-                                                    ? CupertinoColors.white
-                                                    : const Color(0xFF1C1C1E),
-                                              ),
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              'Paid: ${slip.payDate}',
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color: isDark
-                                                    ? const Color(0xFF8E8E93)
-                                                    : const Color(0xFF6E6E73),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+                                      child: const Icon(
+                                        CupertinoIcons.doc_text_fill,
+                                        color: Color(0xFF34C759),
+                                        size: 20,
                                       ),
-                                      Column(
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
                                         crossAxisAlignment:
-                                            CrossAxisAlignment.end,
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            slip.formattedNetPay,
+                                            slip.monthLabel,
                                             style: TextStyle(
                                               fontSize: 15,
-                                              fontWeight: FontWeight.w800,
+                                              fontWeight: FontWeight.w700,
                                               color: isDark
                                                   ? CupertinoColors.white
                                                   : const Color(0xFF1C1C1E),
                                             ),
                                           ),
-                                          const SizedBox(height: 2),
-                                          Ios27StatusBadge(status: slip.status),
+                                          const SizedBox(height: 5),
+                                          Text(
+                                            'Paid: ${slip.payDate}',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: isDark
+                                                  ? const Color(0xFF8E8E93)
+                                                  : const Color(0xFF6E6E73),
+                                            ),
+                                          ),
                                         ],
                                       ),
-                                      const SizedBox(width: 6),
-                                      Icon(
-                                        CupertinoIcons.chevron_right,
-                                        size: 14,
-                                        color: isDark
-                                            ? const Color(0x3DFFFFFF)
-                                            : const Color(0x42000000),
-                                      ),
-                                    ],
-                                  ),
+                                    ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          slip.formattedNetPay,
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w800,
+                                            color: isDark
+                                                ? CupertinoColors.white
+                                                : const Color(0xFF1C1C1E),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 5),
+                                        Ios27StatusBadge(status: slip.status),
+                                      ],
+                                    ),
+                                  ],
                                 ),
                               ),
                             );

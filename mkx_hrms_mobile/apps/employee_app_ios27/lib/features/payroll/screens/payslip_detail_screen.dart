@@ -26,7 +26,7 @@ class PayslipDetailScreen extends StatelessWidget {
             children: [
               Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 child: Row(
                   children: [
                     GlassIconButton(
@@ -82,11 +82,8 @@ class PayslipDetailScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 10),
                       Ios27GlassCard(
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 4),
-                        quality: GlassQuality.premium,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -139,8 +136,6 @@ class PayslipDetailScreen extends StatelessWidget {
                       ),
                       const Ios27SectionHeader(title: 'Employee Details'),
                       Ios27GlassCard(
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 4),
                         child: Column(
                           children: [
                             _buildRow(
@@ -157,8 +152,6 @@ class PayslipDetailScreen extends StatelessWidget {
                       ),
                       const Ios27SectionHeader(title: 'Attendance & Calendar'),
                       Ios27GlassCard(
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 4),
                         child: Column(
                           children: [
                             _buildRow('Working Days in Month',
@@ -181,8 +174,6 @@ class PayslipDetailScreen extends StatelessWidget {
                       ),
                       const Ios27SectionHeader(title: 'Earnings & Allowances'),
                       Ios27GlassCard(
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 4),
                         child: Column(
                           children: slip.items.any(
                                   (PayslipItem i) => i.category == 'Earning')
@@ -213,8 +204,6 @@ class PayslipDetailScreen extends StatelessWidget {
                         const Ios27SectionHeader(
                             title: 'Deductions & Statutory Taxes'),
                         Ios27GlassCard(
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 4),
                           child: Column(
                             children: slip.items.any((PayslipItem i) =>
                                     i.category == 'Deduction')
@@ -243,8 +232,6 @@ class PayslipDetailScreen extends StatelessWidget {
                       ],
                       const SizedBox(height: 8),
                       Ios27GlassCard(
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 4),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [

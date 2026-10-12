@@ -1,9 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
-import 'package:mkx_core/features/auth/state/auth_provider.dart';
 import 'package:mkx_core/theme/app_theme_scope.dart';
 import 'package:mkx_core/theme/app_theme_settings.dart';
-import 'package:provider/provider.dart';
 
 import '../../../widgets/ios27_glass_surface.dart';
 import '../../../widgets/ios27_theme_mode_selector.dart';
@@ -71,17 +69,11 @@ class Ios27ThemeConfigScreen extends StatelessWidget {
               Expanded(
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      _buildTogglesSection(
-                          settings, isDark, primaryColor, context),
-                      const SizedBox(height: 24),
                       _buildSeedColorsSection(settings, isDark, primaryColor),
-                      const SizedBox(height: 24),
                       _buildFontFamilySection(settings, isDark, primaryColor),
-                      const SizedBox(height: 24),
                       _buildThemeModeSection(isDark),
                     ],
                   ),
@@ -94,171 +86,35 @@ class Ios27ThemeConfigScreen extends StatelessWidget {
     );
   }
 
-  /// Builds the grouped toggle card for auto theming and dynamic coloring.
-  Widget _buildTogglesSection(
-    AppThemeSettings settings,
-    bool isDark,
-    Color primaryColor,
-    BuildContext context,
-  ) {
-    return Ios27GlassCard(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      child: Column(
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Row(
-              children: <Widget>[
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        'Auto theming',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: isDark
-                              ? CupertinoColors.white
-                              : const Color(0xFF1C1C1E),
-                          letterSpacing: -0.3,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Follow the platform light and dark setting',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: isDark
-                              ? const Color(0xFF8E8E93)
-                              : const Color(0xFF6E6E73),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                CupertinoSwitch(
-                  value: settings.autoTheming,
-                  activeTrackColor: primaryColor,
-                  onChanged: (bool value) {
-                    settings.autoTheming = value;
-                    if (value) {
-                      context
-                          .read<AuthProvider>()
-                          .setThemeMode(ThemeMode.system);
-                    }
-                  },
-                ),
-              ],
-            ),
-          ),
-          Container(
-            height: 0.6,
-            color: isDark
-                ? CupertinoColors.white.withValues(alpha: 0.10)
-                : CupertinoColors.black.withValues(alpha: 0.08),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Row(
-              children: <Widget>[
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        'Dynamic color',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: isDark
-                              ? CupertinoColors.white
-                              : const Color(0xFF1C1C1E),
-                          letterSpacing: -0.3,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Use the device wallpaper palette where the platform supports it',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: isDark
-                              ? const Color(0xFF8E8E93)
-                              : const Color(0xFF6E6E73),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                CupertinoSwitch(
-                  value: settings.dynamicColoring,
-                  activeTrackColor: primaryColor,
-                  onChanged: (bool value) {
-                    settings.dynamicColoring = value;
-                  },
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Builds the seed color palette selection grid with liquid glass indicator rings.
+  /**
+   * Builds the seed color palette selection grid with liquid glass indicator rings.
+   */
   Widget _buildSeedColorsSection(
     AppThemeSettings settings,
     bool isDark,
     Color primaryColor,
   ) {
-    final bool enabled = !settings.dynamicColoring;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text(
-          'Seed color',
-          style: TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.4,
-            color: isDark ? CupertinoColors.white : const Color(0xFF1C1C1E),
-          ),
-        ),
-        const SizedBox(height: 3),
-        Text(
-          enabled
-              ? 'Generates the scheme for both brightnesses.'
-              : 'Turn dynamic color off to pick a seed.',
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6E6E73),
-          ),
-        ),
-        const SizedBox(height: 14),
         Ios27GlassCard(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
           child: Wrap(
-            spacing: 16,
+            spacing: 12,
             runSpacing: 18,
-            alignment: WrapAlignment.start,
+            alignment: WrapAlignment.center,
             children: <Widget>[
               for (int i = 0; i < AppThemeSettings.seedOptions.length; i++)
                 _buildSeedSwatch(
                   color: AppThemeSettings.seedOptions[i],
                   label: AppThemeSettings.seedLabels[i],
-                  selected: enabled &&
+                  selected:
                       settings.seedColor == AppThemeSettings.seedOptions[i],
-                  enabled: enabled,
+                  enabled: true,
                   isDark: isDark,
                   primaryColor: primaryColor,
-                  onTap: enabled
-                      ? () =>
-                          settings.seedColor = AppThemeSettings.seedOptions[i]
-                      : null,
+                  onTap: () =>
+                      settings.seedColor = AppThemeSettings.seedOptions[i],
                 ),
             ],
           ),
@@ -296,7 +152,9 @@ class Ios27ThemeConfigScreen extends StatelessWidget {
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: selected
-                      ? (isDark ? CupertinoColors.white : primaryColor)
+                      ? (isDark
+                          ? CupertinoColors.white.withValues(alpha: 0.60)
+                          : primaryColor.withValues(alpha: 0.30))
                       : CupertinoColors.transparent,
                   width: selected ? 2.8 : 0,
                 ),
@@ -350,39 +208,48 @@ class Ios27ThemeConfigScreen extends StatelessWidget {
     Color primaryColor,
   ) {
     final List<(String, String?)> families = <(String, String?)>[
-      ('Sans', AppThemeSettings.googleSansFlex),
-      ('System', null),
+      ('SF Pro', null),
+      ('Google Sans', AppThemeSettings.googleSansFlex),
       ('Poppins', AppThemeSettings.poppins),
     ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text(
-          'Font family',
-          style: TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.4,
-            color: isDark ? CupertinoColors.white : const Color(0xFF1C1C1E),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Font family',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.3,
+                  color:
+                      isDark ? CupertinoColors.white : const Color(0xFF1C1C1E),
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                'Applies app-wide typography styles.',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: isDark
+                      ? const Color(0xFF8E8E93)
+                      : const Color(0xFF6E6E73),
+                ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 3),
-        Text(
-          'Applies app-wide typography styles.',
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6E6E73),
-          ),
-        ),
-        const SizedBox(height: 14),
         Ios27GlassCard(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Row(
             children: families.map(((String, String?) item) {
               final bool isSelected = settings.fontFamily == item.$2;
-
               return Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -470,26 +337,41 @@ class Ios27ThemeConfigScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text(
-          'Theme mode',
-          style: TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.4,
-            color: isDark ? CupertinoColors.white : const Color(0xFF1C1C1E),
-          ),
-        ),
-        const SizedBox(height: 3),
-        Text(
-          'Choose between system, light, and dark appearance.',
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: isDark ? const Color(0xFF8E8E93) : const Color(0xFF6E6E73),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Theme mode',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.3,
+                  color:
+                      isDark ? CupertinoColors.white : const Color(0xFF1C1C1E),
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                'Choose between system, light, and dark appearance.',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: isDark
+                      ? const Color(0xFF8E8E93)
+                      : const Color(0xFF6E6E73),
+                ),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 14),
-        const Ios27ThemeModeSelector(),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: const Ios27ThemeModeSelector(),
+        ),
+        const SizedBox(height: 30),
       ],
     );
   }

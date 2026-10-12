@@ -42,7 +42,7 @@ class AppThemeSettings extends ChangeNotifier {
   bool _autoTheming = true;
   bool _dynamicColoring = true;
   Color _seedColor = seedOptions.first;
-  String? _fontFamily = googleSansFlex;
+  String? _fontFamily;
 
   /// Restores persisted theme settings from local preferences.
   Future<void> loadSettings() async {

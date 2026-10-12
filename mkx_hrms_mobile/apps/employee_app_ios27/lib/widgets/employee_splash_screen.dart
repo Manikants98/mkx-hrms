@@ -1,4 +1,4 @@
-import 'dart:ui';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:flutter/cupertino.dart';
 
 import 'ios27_glass_surface.dart';
@@ -90,60 +90,39 @@ class _EmployeeSplashScreenState extends State<EmployeeSplashScreen>
                                   ),
                                 ),
                               ),
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(32),
-                                child: BackdropFilter(
-                                  filter: ImageFilter.blur(
-                                    sigmaX: 24,
-                                    sigmaY: 24,
-                                  ),
-                                  child: Container(
-                                    width: 104,
-                                    height: 104,
-                                    decoration: BoxDecoration(
-                                      color: isDark
-                                          ? const Color(0xFF181E30)
-                                              .withValues(alpha: 0.85)
-                                          : CupertinoColors.white
-                                              .withValues(alpha: 0.88),
-                                      borderRadius: BorderRadius.circular(32),
-                                      border: Border.all(
-                                        color: isDark
-                                            ? CupertinoColors.white
-                                                .withValues(alpha: 0.25)
-                                            : CupertinoColors.white
-                                                .withValues(alpha: 0.95),
-                                        width: 1.2,
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: primary.withValues(
-                                            alpha: isDark ? 0.38 : 0.24,
-                                          ),
-                                          blurRadius: 28,
-                                          offset: const Offset(0, 10),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Center(
-                                      child: ShaderMask(
-                                        shaderCallback: (bounds) {
-                                          return LinearGradient(
-                                            colors: [
-                                              primary,
-                                              const Color(0xFF8B5CF6),
-                                              const Color(0xFF06B6D4),
-                                            ],
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                          ).createShader(bounds);
-                                        },
-                                        child: const Icon(
-                                          CupertinoIcons.shield_lefthalf_fill,
-                                          size: 54,
-                                          color: CupertinoColors.white,
-                                        ),
-                                      ),
+                              GlassCard(
+                                width: 104,
+                                height: 104,
+                                padding: EdgeInsets.zero,
+                                shape: const LiquidRoundedSuperellipse(
+                                  borderRadius: 32,
+                                ),
+                                useOwnLayer: true,
+                                settings: LiquidGlassSettings(
+                                  thickness: 20,
+                                  blur: 20,
+                                  refractiveIndex: 1.18,
+                                  lightIntensity: isDark ? 0.50 : 0.65,
+                                  fresnelStrength: isDark ? 0.35 : 0.45,
+                                  chromaticAberration: 0.05,
+                                ),
+                                child: Center(
+                                  child: ShaderMask(
+                                    shaderCallback: (bounds) {
+                                      return LinearGradient(
+                                        colors: [
+                                          primary,
+                                          const Color(0xFF8B5CF6),
+                                          const Color(0xFF06B6D4),
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ).createShader(bounds);
+                                    },
+                                    child: const Icon(
+                                      CupertinoIcons.shield_lefthalf_fill,
+                                      size: 54,
+                                      color: CupertinoColors.white,
                                     ),
                                   ),
                                 ),

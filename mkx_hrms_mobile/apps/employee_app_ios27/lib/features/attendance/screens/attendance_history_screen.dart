@@ -99,6 +99,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
         return StatefulBuilder(
           builder: (BuildContext ctx, StateSetter setSheetState) {
             return GlassCard(
+              width: double.infinity,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(22, 16, 22, 34),
                 child: Column(
@@ -253,7 +254,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -332,9 +333,9 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                   },
                   padding: const EdgeInsets.only(bottom: 120),
                   children: [
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: Ios27SegmentedControl(
                         segments: _filters,
                         selectedIndex: _selectedFilterIndex,
@@ -345,7 +346,6 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                         },
                       ),
                     ),
-                    const SizedBox(height: 16),
                     const Ios27SectionHeader(title: 'Shift Timings & Logs'),
                     if (filtered.isEmpty)
                       Padding(
@@ -394,6 +394,8 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                       )
                     else
                       Ios27GlassCard(
+                        padding: EdgeInsetsGeometry.symmetric(
+                            horizontal: 16, vertical: 8),
                         child: Column(
                           children: filtered.map((AttendanceRecord item) {
                             String displayWorkHours = item.workHours;
@@ -427,8 +429,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                             }
 
                             return Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 8),
+                              padding: const EdgeInsets.symmetric(vertical: 8),
                               child: Row(
                                 children: [
                                   Container(
@@ -440,8 +441,7 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                                               .withValues(alpha: 0.08)
                                           : CupertinoColors.black
                                               .withValues(alpha: 0.04),
-                                      borderRadius:
-                                          BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Column(
                                       mainAxisAlignment:

@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
@@ -205,8 +203,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark =
-        CupertinoTheme.of(context).brightness == Brightness.dark;
+    final isDark = CupertinoTheme.of(context).brightness == Brightness.dark;
     final primaryColor = CupertinoTheme.of(context).primaryColor;
     final auth = context.watch<AuthProvider>();
     final attendance = context.watch<AttendanceProvider>();
@@ -352,6 +349,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   onRefresh: _loadData,
                   padding: const EdgeInsets.only(bottom: 140),
                   children: [
+                    const SizedBox(height: 10),
                     PunchCard(
                       currentTime: attendance.currentTime,
                       record: attendance.todayRecord,
@@ -362,22 +360,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     if (_celebrations.isNotEmpty) ...[
                       const Ios27SectionHeader(title: 'Celebrations Today'),
                       Ios27GlassCard(
+                        padding: EdgeInsetsGeometry.all(12),
                         child: Column(
                           children: _celebrations.map((celeb) {
-                            final bool isBirthday =
-                                celeb['type'] == 'Birthday';
+                            final bool isBirthday = celeb['type'] == 'Birthday';
                             final bool isNewJoiner =
                                 celeb['type'] == 'New Joiner';
                             final bool hasAvatar = celeb['avatar'] != null &&
                                 celeb['avatar'].toString().trim().isNotEmpty;
 
                             return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              padding: const EdgeInsets.symmetric(vertical: 0),
                               child: Row(
                                 children: [
                                   Container(
-                                    width: 44,
-                                    height: 44,
+                                    width: 45,
+                                    height: 45,
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(14),
                                       color: isBirthday
@@ -386,8 +384,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           : isNewJoiner
                                               ? const Color(0xFF34C759)
                                                   .withValues(alpha: 0.18)
-                                              : primaryColor
-                                                  .withValues(alpha: 0.18),
+                                              : primaryColor.withValues(
+                                                  alpha: 0.18),
                                       image: hasAvatar
                                           ? DecorationImage(
                                               image: NetworkImage(
@@ -458,8 +456,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                                     ? const Color(0xFF34C759)
                                                     : primaryColor)
                                             .withValues(alpha: 0.16),
-                                        borderRadius:
-                                            BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: Icon(
                                         CupertinoIcons.paperplane_fill,
@@ -481,7 +478,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ],
                     const Ios27SectionHeader(title: 'Monthly Overview'),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: Column(
                         children: [
                           Row(
@@ -496,7 +493,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   isDark: isDark,
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 10),
                               Expanded(
                                 child: _buildMetricTile(
                                   title: 'Late Days',
@@ -509,7 +506,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 10),
                           Row(
                             children: [
                               Expanded(
@@ -529,7 +526,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   },
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 10),
                               Expanded(
                                 child: _buildMetricTile(
                                   title: 'Pending Leaves',
@@ -551,175 +548,155 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       _buildAiInsightsSection(_smartInsights!, isDark: isDark),
                     const Ios27SectionHeader(title: 'Recent Activity'),
                     if (attendance.history.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Ios27GlassCard(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 28),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                CupertinoIcons.calendar,
-                                size: 40,
+                      Ios27GlassCard(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              CupertinoIcons.calendar,
+                              size: 40,
+                              color: isDark
+                                  ? CupertinoColors.white.withValues(alpha: 0.4)
+                                  : const Color(0xFF8E8E93),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'No attendance records yet',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
                                 color: isDark
                                     ? CupertinoColors.white
-                                        .withValues(alpha: 0.4)
-                                    : const Color(0xFF8E8E93),
+                                    : const Color(0xFF1C1C1E),
                               ),
-                              const SizedBox(height: 12),
-                              Text(
-                                'No attendance records yet',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: isDark
-                                      ? CupertinoColors.white
-                                      : const Color(0xFF1C1C1E),
-                                ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Your shift logs will appear here after clocking in.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: isDark
+                                    ? CupertinoColors.white
+                                        .withValues(alpha: 0.6)
+                                    : const Color(0xFF6C6C70),
                               ),
-                              const SizedBox(height: 6),
-                              Text(
-                                'Your shift logs will appear here after clocking in.',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: isDark
-                                      ? CupertinoColors.white
-                                          .withValues(alpha: 0.6)
-                                      : const Color(0xFF6C6C70),
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       )
                     else
                       Ios27GlassCard(
+                        padding: EdgeInsetsGeometry.symmetric(
+                            horizontal: 12, vertical: 5),
                         child: Column(
-                          children: attendance.history
-                              .where((item) {
-                                final date = DateTime.tryParse(item.date);
-                                if (date == null) return false;
-                                final now = DateTime.now();
-                                final startOfWeek =
-                                    DateTime(now.year, now.month, now.day)
-                                        .subtract(
-                                            Duration(days: now.weekday - 1));
-                                return date.weekday != DateTime.sunday &&
-                                    !date.isBefore(startOfWeek);
-                              })
-                              .take(6)
-                              .map((item) {
-                                String displayWorkHours = item.workHours;
-                                if (item.hasCheckedIn && !item.hasCheckedOut) {
-                                  try {
-                                    final now = attendance.currentTime;
-                                    final recordDate =
-                                        DateTime.parse(item.date).toLocal();
-                                    if (recordDate.year == now.year &&
-                                        recordDate.month == now.month &&
-                                        recordDate.day == now.day) {
-                                      final format = DateFormat('hh:mm a');
-                                      final checkInTime =
-                                          format.parse(item.checkIn);
-                                      final checkInDateTime = DateTime(
-                                          now.year,
-                                          now.month,
-                                          now.day,
-                                          checkInTime.hour,
-                                          checkInTime.minute);
-                                      final diff =
-                                          now.difference(checkInDateTime);
-                                      if (!diff.isNegative) {
-                                        final h = diff.inHours;
-                                        final m = diff.inMinutes % 60;
-                                        displayWorkHours = '${h}h ${m}m';
-                                      }
-                                    }
-                                  } catch (_) {}
+                          children: attendance.history.take(5).map((item) {
+                            String displayWorkHours = item.workHours;
+                            if (item.hasCheckedIn && !item.hasCheckedOut) {
+                              try {
+                                final now = attendance.currentTime;
+                                final recordDate =
+                                    DateTime.parse(item.date).toLocal();
+                                if (recordDate.year == now.year &&
+                                    recordDate.month == now.month &&
+                                    recordDate.day == now.day) {
+                                  final format = DateFormat('hh:mm a');
+                                  final checkInTime =
+                                      format.parse(item.checkIn);
+                                  final checkInDateTime = DateTime(
+                                      now.year,
+                                      now.month,
+                                      now.day,
+                                      checkInTime.hour,
+                                      checkInTime.minute);
+                                  final diff = now.difference(checkInDateTime);
+                                  if (!diff.isNegative) {
+                                    final h = diff.inHours;
+                                    final m = diff.inMinutes % 60;
+                                    displayWorkHours = '${h}h ${m}m';
+                                  }
                                 }
+                              } catch (_) {}
+                            }
 
-                                return Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 8),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        width: 44,
-                                        height: 44,
-                                        decoration: BoxDecoration(
-                                          color: isDark
-                                              ? CupertinoColors.white
-                                                  .withValues(alpha: 0.08)
-                                              : CupertinoColors.black
-                                                  .withValues(alpha: 0.04),
-                                          borderRadius:
-                                              BorderRadius.circular(12),
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 44,
+                                    height: 44,
+                                    decoration: BoxDecoration(
+                                      color: isDark
+                                          ? CupertinoColors.white
+                                              .withValues(alpha: 0.08)
+                                          : CupertinoColors.black
+                                              .withValues(alpha: 0.04),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          AppDateUtils.formatDate(item.date)
+                                              .split(' ')[0],
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600,
+                                            color: isDark
+                                                ? const Color(0xFF8E8E93)
+                                                : const Color(0xFF6E6E73),
+                                          ),
                                         ),
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Text(
-                                              AppDateUtils.formatDate(item.date)
-                                                  .split(' ')[0],
-                                              style: TextStyle(
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.w600,
-                                                color: isDark
-                                                    ? const Color(0xFF8E8E93)
-                                                    : const Color(0xFF6E6E73),
-                                              ),
-                                            ),
-                                            Text(
-                                              item.date.split('-').last,
-                                              style: TextStyle(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.w800,
-                                                color: isDark
-                                                    ? CupertinoColors.white
-                                                    : const Color(0xFF1C1C1E),
-                                              ),
-                                            ),
-                                          ],
+                                        Text(
+                                          item.date.split('-').last,
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w800,
+                                            color: isDark
+                                                ? CupertinoColors.white
+                                                : const Color(0xFF1C1C1E),
+                                          ),
                                         ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              '${item.checkIn} - ${item.checkOut}',
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w600,
-                                                color: isDark
-                                                    ? CupertinoColors.white
-                                                    : const Color(0xFF1C1C1E),
-                                              ),
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              '$displayWorkHours • ${item.location}',
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color: isDark
-                                                    ? const Color(0xFF8E8E93)
-                                                    : const Color(0xFF6E6E73),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Ios27StatusBadge(status: item.status),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                );
-                              })
-                              .toList(),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '${item.checkIn} - ${item.checkOut}',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            color: isDark
+                                                ? CupertinoColors.white
+                                                : const Color(0xFF1C1C1E),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          '$displayWorkHours • ${item.location}',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: isDark
+                                                ? const Color(0xFF8E8E93)
+                                                : const Color(0xFF6E6E73),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Ios27StatusBadge(status: item.status),
+                                ],
+                              ),
+                            );
+                          }).toList(),
                         ),
                       ),
                   ],
@@ -742,99 +719,99 @@ class _DashboardScreenState extends State<DashboardScreen> {
     required bool isDark,
     VoidCallback? onTap,
   }) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: CupertinoButton(
-          padding: EdgeInsets.zero,
-          minimumSize: Size.zero,
-          onPressed: onTap,
-          child: Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? const Color(0xFF151926).withValues(alpha: 0.72)
-                  : CupertinoColors.white.withValues(alpha: 0.80),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: isDark
-                    ? CupertinoColors.white.withValues(alpha: 0.14)
-                    : CupertinoColors.white.withValues(alpha: 0.75),
-                width: 0.8,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: isDark
-                      ? CupertinoColors.black.withValues(alpha: 0.35)
-                      : const Color(0x12000000),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: isDark
-                              ? const Color(0xFF8E8E93)
-                              : const Color(0xFF6E6E73),
-                        ),
-                      ),
-                    ),
-                    Container(
-                      width: 28,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        color: color.withValues(alpha: isDark ? 0.20 : 0.12),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(icon, size: 15, color: color),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.5,
-                    color: isDark
-                        ? CupertinoColors.white
-                        : const Color(0xFF1C1C1E),
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  subtext,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: isDark
-                        ? const Color(0xFF636366)
-                        : const Color(0xFF8E8E93),
-                  ),
-                ),
-              ],
-            ),
+    return Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isDark
+                ? CupertinoColors.white.withValues(alpha: 0.12)
+                : CupertinoColors.white.withValues(alpha: 0.45),
+            width: 0.8,
           ),
         ),
-      ),
-    );
+        child: GlassCard(
+          width: double.infinity,
+          padding: EdgeInsets.zero,
+          margin: EdgeInsets.zero,
+          shape: const LiquidRoundedSuperellipse(borderRadius: 20),
+          useOwnLayer: true,
+          clipBehavior: Clip.antiAlias,
+          settings: LiquidGlassSettings(
+            thickness: 16,
+            blur: 16,
+            refractiveIndex: 1.16,
+            lightIntensity: isDark ? 0.45 : 0.60,
+            fresnelStrength: isDark ? 0.35 : 0.45,
+            chromaticAberration: 0.04,
+          ),
+          child: SizedBox(
+            width: double.infinity,
+            child: CupertinoButton(
+              padding: const EdgeInsets.all(14),
+              minimumSize: Size.zero,
+              onPressed: onTap,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: isDark
+                                ? const Color(0xFF8E8E93)
+                                : const Color(0xFF6E6E73),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color: color.withValues(alpha: isDark ? 0.20 : 0.12),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(icon, size: 15, color: color),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    value,
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
+                      color: isDark
+                          ? CupertinoColors.white
+                          : const Color(0xFF1C1C1E),
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    subtext,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isDark
+                          ? const Color(0xFF636366)
+                          : const Color(0xFF8E8E93),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ));
   }
 
   /// Builds the iOS 27 AI Smart Insights glass section.

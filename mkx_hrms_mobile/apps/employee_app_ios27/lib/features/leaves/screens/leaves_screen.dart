@@ -1,4 +1,4 @@
-import 'dart:ui';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:mkx_core/features/auth/state/auth_provider.dart';
@@ -74,7 +74,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -136,11 +136,11 @@ class _LeavesScreenState extends State<LeavesScreen> {
                   onRefresh: _loadData,
                   padding: const EdgeInsets.only(bottom: 120),
                   children: [
-                    const Ios27SectionHeader(title: 'Annual Allowances'),
+                    const SizedBox(height: 10),
                     _buildDynamicQuotaCards(context, leaves, isDark),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: Ios27SegmentedControl(
                         segments: _filterOptions,
                         selectedIndex: safeFilterIdx,
@@ -151,58 +151,52 @@ class _LeavesScreenState extends State<LeavesScreen> {
                         },
                       ),
                     ),
-                    const SizedBox(height: 14),
                     const Ios27SectionHeader(title: 'Application History'),
                     if (leaves.filteredHistory.isEmpty)
-                      Padding(
+                      Ios27GlassCard(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 20),
-                        child: Ios27GlassCard(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 32),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                CupertinoIcons.calendar_badge_plus,
-                                size: 48,
+                            horizontal: 24, vertical: 32),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              CupertinoIcons.calendar_badge_plus,
+                              size: 48,
+                              color: isDark
+                                  ? CupertinoColors.white.withValues(alpha: 0.4)
+                                  : const Color(0xFF8E8E93),
+                            ),
+                            const SizedBox(height: 14),
+                            Text(
+                              'No leave records found',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
                                 color: isDark
                                     ? CupertinoColors.white
-                                        .withValues(alpha: 0.4)
-                                    : const Color(0xFF8E8E93),
+                                    : const Color(0xFF1C1C1E),
                               ),
-                              const SizedBox(height: 14),
-                              Text(
-                                'No leave records found',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: isDark
-                                      ? CupertinoColors.white
-                                      : const Color(0xFF1C1C1E),
-                                ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Tap "+ Apply" in the top bar to request time off.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: isDark
+                                    ? CupertinoColors.white
+                                        .withValues(alpha: 0.6)
+                                    : const Color(0xFF6C6C70),
                               ),
-                              const SizedBox(height: 6),
-                              Text(
-                                'Tap "+ Apply" in the top bar to request time off.',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: isDark
-                                      ? CupertinoColors.white
-                                          .withValues(alpha: 0.6)
-                                      : const Color(0xFF6C6C70),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              CupertinoButton.filled(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 20, vertical: 10),
-                                onPressed: _openApplyModal,
-                                child: const Text('Apply for Leave'),
-                              ),
-                            ],
-                          ),
+                            ),
+                            const SizedBox(height: 16),
+                            CupertinoButton.filled(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 10),
+                              onPressed: _openApplyModal,
+                              child: const Text('Apply for Leave'),
+                            ),
+                          ],
                         ),
                       )
                     else
@@ -216,30 +210,85 @@ class _LeavesScreenState extends State<LeavesScreen> {
                                     ? const Color(0xFFFF9500)
                                     : const Color(0xFFFF3B30));
 
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Container(
+                                          width: 8,
+                                          height: 8,
+                                          decoration: BoxDecoration(
+                                            color: statusColor,
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          item.leaveType,
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w700,
+                                            color: isDark
+                                                ? CupertinoColors.white
+                                                : const Color(0xFF1C1C1E),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Ios27StatusBadge(status: item.status),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: isDark
+                                        ? CupertinoColors.white
+                                            .withValues(alpha: 0.06)
+                                        : CupertinoColors.black
+                                            .withValues(alpha: 0.03),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Container(
-                                            width: 8,
-                                            height: 8,
-                                            decoration: BoxDecoration(
-                                              color: statusColor,
-                                              shape: BoxShape.circle,
-                                            ),
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                CupertinoIcons.calendar,
+                                                size: 13,
+                                                color: isDark
+                                                    ? const Color(0xFF8E8E93)
+                                                    : const Color(0xFF6E6E73),
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Text(
+                                                '${AppDateUtils.formatDate(item.startDate)} - ${AppDateUtils.formatDate(item.endDate)}',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: isDark
+                                                      ? const Color(0xFFD1D1D6)
+                                                      : const Color(0xFF3A3A3C),
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                          const SizedBox(width: 8),
                                           Text(
-                                            item.leaveType,
+                                            '${item.daysCount} ${item.daysCount == 1 ? "day" : "days"}',
                                             style: TextStyle(
-                                              fontSize: 15,
+                                              fontSize: 12,
                                               fontWeight: FontWeight.w700,
                                               color: isDark
                                                   ? CupertinoColors.white
@@ -248,110 +297,50 @@ class _LeavesScreenState extends State<LeavesScreen> {
                                           ),
                                         ],
                                       ),
-                                      Ios27StatusBadge(status: item.status),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 8),
-                                    decoration: BoxDecoration(
-                                      color: isDark
-                                          ? CupertinoColors.white
-                                              .withValues(alpha: 0.06)
-                                          : CupertinoColors.black
-                                              .withValues(alpha: 0.03),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Icon(
-                                                  CupertinoIcons.calendar,
-                                                  size: 13,
-                                                  color: isDark
-                                                      ? const Color(0xFF8E8E93)
-                                                      : const Color(0xFF6E6E73),
-                                                ),
-                                                const SizedBox(width: 6),
-                                                Text(
-                                                  '${AppDateUtils.formatDate(item.startDate)} - ${AppDateUtils.formatDate(item.endDate)}',
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: isDark
-                                                        ? const Color(
-                                                            0xFFD1D1D6)
-                                                        : const Color(
-                                                            0xFF3A3A3C),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            Text(
-                                              '${item.daysCount} ${item.daysCount == 1 ? "day" : "days"}',
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w700,
-                                                color: isDark
-                                                    ? CupertinoColors.white
-                                                    : const Color(0xFF1C1C1E),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        if (item.reason.isNotEmpty) ...[
-                                          const SizedBox(height: 6),
-                                          Text(
-                                            item.reason,
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: isDark
-                                                  ? const Color(0xFF8E8E93)
-                                                  : const Color(0xFF6E6E73),
-                                            ),
+                                      if (item.reason.isNotEmpty) ...[
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          item.reason,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: isDark
+                                                ? const Color(0xFF8E8E93)
+                                                : const Color(0xFF6E6E73),
                                           ),
-                                        ],
+                                        ),
                                       ],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        item.leaveCode,
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w600,
-                                          color: isDark
-                                              ? const Color(0xFF636366)
-                                              : const Color(0xFF8E8E93),
-                                        ),
-                                      ),
-                                      Text(
-                                        'Applied: ${AppDateUtils.formatDate(item.appliedOn)}',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: isDark
-                                              ? const Color(0xFF636366)
-                                              : const Color(0xFF8E8E93),
-                                        ),
-                                      ),
                                     ],
                                   ),
-                                ],
-                              ),
+                                ),
+                                const SizedBox(height: 6),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      item.leaveCode,
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: isDark
+                                            ? const Color(0xFF636366)
+                                            : const Color(0xFF8E8E93),
+                                      ),
+                                    ),
+                                    Text(
+                                      'Applied: ${AppDateUtils.formatDate(item.appliedOn)}',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: isDark
+                                            ? const Color(0xFF636366)
+                                            : const Color(0xFF8E8E93),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             );
                           }).toList(),
                         ),
@@ -398,7 +387,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
       child: Row(
         children: displayQuotas
             .asMap()
@@ -416,114 +405,99 @@ class _LeavesScreenState extends State<LeavesScreen> {
           );
 
           return Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(22),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                child: Container(
-                  constraints: const BoxConstraints(minWidth: 150),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF151926).withValues(alpha: 0.72)
-                        : CupertinoColors.white.withValues(alpha: 0.82),
-                    borderRadius: BorderRadius.circular(22),
-                    border: Border.all(
-                      color: isDark
-                          ? CupertinoColors.white.withValues(alpha: 0.14)
-                          : CupertinoColors.white.withValues(alpha: 0.75),
-                      width: 0.8,
+            padding: const EdgeInsets.only(right: 10),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minWidth: 150),
+              child: GlassCard(
+                padding: const EdgeInsets.all(16),
+                margin: EdgeInsets.zero,
+                shape: const LiquidRoundedSuperellipse(borderRadius: 22),
+                useOwnLayer: true,
+                settings: LiquidGlassSettings(
+                  thickness: 16,
+                  blur: 16,
+                  refractiveIndex: 1.16,
+                  lightIntensity: isDark ? 0.45 : 0.60,
+                  fresnelStrength: isDark ? 0.35 : 0.45,
+                  chromaticAberration: 0.04,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: isDark ? 0.20 : 0.12),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: color.withValues(alpha: isDark ? 0.35 : 0.25),
+                          width: 0.8,
+                        ),
+                      ),
+                      child: Text(
+                        '${quota.remaining}',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.6,
+                          color: color,
+                          height: 1,
+                        ),
+                      ),
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: isDark
-                            ? CupertinoColors.black.withValues(alpha: 0.35)
-                            : const Color(0x10000000),
-                        blurRadius: 16,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: color.withValues(alpha: isDark ? 0.20 : 0.12),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                            color:
-                                color.withValues(alpha: isDark ? 0.35 : 0.25),
-                            width: 0.8,
-                          ),
-                        ),
-                        child: Text(
-                          '${quota.remaining}',
+                    const SizedBox(width: 12),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          quota.name ?? quota.code ?? 'Leave',
                           style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.6,
-                            color: color,
-                            height: 1,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.2,
+                            color: isDark
+                                ? CupertinoColors.white
+                                : const Color(0xFF1C1C1E),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            quota.name ?? quota.code ?? 'Leave',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: -0.2,
-                              color: isDark
-                                  ? CupertinoColors.white
-                                  : const Color(0xFF1C1C1E),
+                        const SizedBox(height: 5),
+                        Row(
+                          children: [
+                            Text(
+                              '${quota.used} / ${quota.total} days',
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w500,
+                                color: isDark
+                                    ? const Color(0xFF8E8E93)
+                                    : const Color(0xFF6E6E73),
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 5),
-                          Row(
-                            children: [
-                              Text(
-                                '${quota.used} / ${quota.total} days',
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: color.withValues(
+                                    alpha: isDark ? 0.22 : 0.14),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                quota.isPaid == false ? 'Unpaid' : 'Paid',
                                 style: TextStyle(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w500,
-                                  color: isDark
-                                      ? const Color(0xFF8E8E93)
-                                      : const Color(0xFF6E6E73),
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: color,
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: color.withValues(
-                                      alpha: isDark ? 0.22 : 0.14),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  quota.isPaid == false ? 'Unpaid' : 'Paid',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                    color: color,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ),

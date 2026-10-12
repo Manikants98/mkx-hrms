@@ -1,4 +1,4 @@
-import 'dart:ui';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:flutter/cupertino.dart';
 
 /**
@@ -50,51 +50,37 @@ class Ios27LoginHeader extends StatelessWidget {
                 ),
               ),
             ),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(24),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                child: Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF1E2438).withValues(alpha: 0.82)
-                        : CupertinoColors.white.withValues(alpha: 0.85),
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(
-                      color: isDark
-                          ? CupertinoColors.white.withValues(alpha: 0.25)
-                          : CupertinoColors.white.withValues(alpha: 0.90),
-                      width: 1.2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: primary.withValues(alpha: isDark ? 0.35 : 0.22),
-                        blurRadius: 22,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: ShaderMask(
-                      shaderCallback: (bounds) {
-                        return LinearGradient(
-                          colors: [
-                            primary,
-                            const Color(0xFF8B5CF6),
-                            const Color(0xFF06B6D4),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ).createShader(bounds);
-                      },
-                      child: const Icon(
-                        CupertinoIcons.shield_lefthalf_fill,
-                        size: 38,
-                        color: CupertinoColors.white,
-                      ),
-                    ),
+            GlassCard(
+              width: 72,
+              height: 72,
+              padding: EdgeInsets.zero,
+              shape: const LiquidRoundedSuperellipse(borderRadius: 24),
+              useOwnLayer: true,
+              settings: LiquidGlassSettings(
+                thickness: 18,
+                blur: 18,
+                refractiveIndex: 1.18,
+                lightIntensity: isDark ? 0.50 : 0.65,
+                fresnelStrength: isDark ? 0.35 : 0.45,
+                chromaticAberration: 0.05,
+              ),
+              child: Center(
+                child: ShaderMask(
+                  shaderCallback: (bounds) {
+                    return LinearGradient(
+                      colors: [
+                        primary,
+                        const Color(0xFF8B5CF6),
+                        const Color(0xFF06B6D4),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ).createShader(bounds);
+                  },
+                  child: const Icon(
+                    CupertinoIcons.shield_lefthalf_fill,
+                    size: 38,
+                    color: CupertinoColors.white,
                   ),
                 ),
               ),

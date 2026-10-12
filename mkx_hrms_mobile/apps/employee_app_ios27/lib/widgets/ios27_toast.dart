@@ -1,5 +1,6 @@
-import 'dart:ui';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:mkx_core/utils/ui_helpers.dart';
 
 /**
  * Authentic iOS Dynamic Island frosted glass pill HUD toast notification
@@ -23,24 +24,41 @@ class Ios27Toast {
     bool isSuccess = false,
     Duration duration = const Duration(milliseconds: 2800),
   }) {
-    _currentEntry?.remove();
+    try {
+      if (_currentEntry != null && _currentEntry!.mounted) {
+        _currentEntry!.remove();
+      }
+    } catch (_) {}
     _currentEntry = null;
 
-    final overlay = Overlay.of(context, rootOverlay: true);
+    final overlay = Overlay.maybeOf(context, rootOverlay: true) ??
+        Overlay.maybeOf(context) ??
+        UiHelpers.rootNavigatorKey.currentState?.overlay;
+
+    if (overlay == null) return;
+
+    final directionality = Directionality.maybeOf(context) ?? TextDirection.ltr;
 
     late final OverlayEntry entry;
     entry = OverlayEntry(
-      builder: (ctx) => _IosToastWidget(
-        message: message,
-        isError: isError,
-        isSuccess: isSuccess,
-        duration: duration,
-        onDismissed: () {
-          if (_currentEntry == entry) {
-            entry.remove();
-            _currentEntry = null;
-          }
-        },
+      builder: (ctx) => Directionality(
+        textDirection: directionality,
+        child: _IosToastWidget(
+          message: message,
+          isError: isError,
+          isSuccess: isSuccess,
+          duration: duration,
+          onDismissed: () {
+            if (_currentEntry == entry) {
+              try {
+                if (entry.mounted) {
+                  entry.remove();
+                }
+              } catch (_) {}
+              _currentEntry = null;
+            }
+          },
+        ),
       ),
     );
 
@@ -139,8 +157,7 @@ class _IosToastWidgetState extends State<_IosToastWidget>
     final mediaQuery = MediaQuery.of(context);
     final topPadding =
         mediaQuery.padding.top > 0 ? mediaQuery.padding.top + 8 : 24.0;
-    final isDark =
-        CupertinoTheme.of(context).brightness == Brightness.dark;
+    final isDark = CupertinoTheme.of(context).brightness == Brightness.dark;
 
     final Color accentColor = widget.isError
         ? CupertinoColors.systemRed
@@ -183,79 +200,57 @@ class _IosToastWidgetState extends State<_IosToastWidget>
             alignment: Alignment.topCenter,
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 420),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(28),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 11,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0xFF161A26).withValues(alpha: 0.88)
-                          : CupertinoColors.white.withValues(alpha: 0.90),
-                      borderRadius: BorderRadius.circular(28),
-                      border: Border.all(
-                        color: isDark
-                            ? CupertinoColors.white.withValues(alpha: 0.16)
-                            : CupertinoColors.white.withValues(alpha: 0.85),
-                        width: 0.9,
+              child: GlassCard(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 11,
+                ),
+                shape: const LiquidRoundedSuperellipse(borderRadius: 28),
+                useOwnLayer: true,
+                settings: LiquidGlassSettings(
+                  thickness: 16,
+                  blur: 20,
+                  refractiveIndex: 1.16,
+                  lightIntensity: isDark ? 0.45 : 0.60,
+                  fresnelStrength: isDark ? 0.35 : 0.45,
+                  chromaticAberration: 0.04,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color:
+                            accentColor.withValues(alpha: isDark ? 0.20 : 0.12),
                       ),
-                      boxShadow: [
-                        BoxShadow(
+                      child: Icon(
+                        icon,
+                        size: 18,
+                        color: accentColor,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Flexible(
+                      child: Text(
+                        widget.message,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.2,
                           color: isDark
-                              ? CupertinoColors.black.withValues(alpha: 0.45)
-                              : const Color(0x18000000),
-                          blurRadius: 22,
-                          offset: const Offset(0, 8),
+                              ? CupertinoColors.white
+                              : const Color(0xFF0F172A),
+                          decoration: TextDecoration.none,
                         ),
-                        BoxShadow(
-                          color:
-                              accentColor.withValues(alpha: isDark ? 0.22 : 0.12),
-                          blurRadius: 16,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+                      ),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 28,
-                          height: 28,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: accentColor
-                                .withValues(alpha: isDark ? 0.20 : 0.12),
-                          ),
-                          child: Icon(
-                            icon,
-                            size: 18,
-                            color: accentColor,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Flexible(
-                          child: Text(
-                            widget.message,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: -0.2,
-                              color: isDark
-                                  ? CupertinoColors.white
-                                  : const Color(0xFF0F172A),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                      ],
-                    ),
-                  ),
+                    const SizedBox(width: 4),
+                  ],
                 ),
               ),
             ),

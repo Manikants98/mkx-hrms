@@ -10,7 +10,6 @@ import '../../leaves/screens/leaves_screen.dart';
 import '../../payroll/screens/payroll_screen.dart';
 import '../../profile/screens/profile_screen.dart';
 
-
 /// iOS 27 Liquid Glass Main Navigation Shell.
 /// Uses [GlassScaffold] with a continuous refractive bottom bar [GlassTabBar.bottom],
 /// ambient mesh background, and a liquid action button for AI smart features.
@@ -59,29 +58,29 @@ class _MainShellScreenState extends State<MainShellScreen> {
 
   static const List<GlassTab> _tabs = [
     GlassTab(
-      label: 'Home',
-      icon: Icon(CupertinoIcons.square_grid_2x2, size: 22),
-      activeIcon: Icon(CupertinoIcons.square_grid_2x2_fill, size: 22),
+      // label: 'Home',
+      icon: Icon(CupertinoIcons.square_grid_2x2, size: 28),
+      activeIcon: Icon(CupertinoIcons.square_grid_2x2_fill, size: 28),
     ),
     GlassTab(
-      label: 'Leaves',
-      icon: Icon(CupertinoIcons.calendar, size: 22),
-      activeIcon: Icon(CupertinoIcons.calendar_today, size: 22),
+      // label: 'Leaves',
+      icon: Icon(CupertinoIcons.calendar, size: 28),
+      activeIcon: Icon(CupertinoIcons.calendar_today, size: 28),
     ),
     GlassTab(
-      label: 'Time',
-      icon: Icon(CupertinoIcons.clock, size: 22),
-      activeIcon: Icon(CupertinoIcons.clock_fill, size: 22),
+      // label: 'Time',
+      icon: Icon(CupertinoIcons.clock, size: 28),
+      activeIcon: Icon(CupertinoIcons.clock_fill, size: 28),
     ),
     GlassTab(
-      label: 'Payslips',
-      icon: Icon(CupertinoIcons.doc_text, size: 22),
-      activeIcon: Icon(CupertinoIcons.doc_text_fill, size: 22),
+      // label: 'Payslips',
+      icon: Icon(CupertinoIcons.doc_text, size: 28),
+      activeIcon: Icon(CupertinoIcons.doc_text_fill, size: 28),
     ),
     GlassTab(
-      label: 'Profile',
-      icon: Icon(CupertinoIcons.person_crop_circle, size: 22),
-      activeIcon: Icon(CupertinoIcons.person_crop_circle_fill, size: 22),
+      // label: 'Profile',
+      icon: Icon(CupertinoIcons.person_crop_circle, size: 28),
+      activeIcon: Icon(CupertinoIcons.person_crop_circle_fill, size: 28),
     ),
   ];
 

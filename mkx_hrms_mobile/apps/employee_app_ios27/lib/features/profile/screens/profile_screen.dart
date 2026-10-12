@@ -46,7 +46,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         title: const Text('Sign Out'),
         content: const Padding(
           padding: EdgeInsets.only(top: 6),
-          child: Text('Are you sure you want to sign out of your employee account?'),
+          child: Text(
+              'Are you sure you want to sign out of your employee account?'),
         ),
         actions: [
           CupertinoDialogAction(
@@ -87,7 +88,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -139,12 +140,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 isLoading: auth.isLoading,
                 message: 'Loading Profile...',
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.only(bottom: 120),
+                  padding: const EdgeInsets.only(bottom: 120,top:10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+
                       Ios27GlassCard(
-                        quality: GlassQuality.premium,
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
@@ -153,6 +154,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               imageUrl: user?.avatar,
                               size: 68,
                               borderRadius: 20,
+                              backgroundColor: CupertinoTheme.of(context)
+                                  .primaryColor
+                                  .withValues(alpha: 0.14),
+                              foregroundColor:
+                                  CupertinoTheme.of(context).primaryColor,
                             ),
                             const SizedBox(width: 16),
                             Expanded(

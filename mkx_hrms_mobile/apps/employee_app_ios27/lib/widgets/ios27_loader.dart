@@ -1,4 +1,4 @@
-import 'dart:ui';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:flutter/cupertino.dart';
 
 /**
@@ -80,61 +80,44 @@ class _Ios27GlassLoaderState extends State<Ios27GlassLoader>
             child: child,
           );
         },
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(24),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 26,
-                vertical: 20,
+        child: GlassCard(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 26,
+            vertical: 20,
+          ),
+          shape: const LiquidRoundedSuperellipse(borderRadius: 24),
+          useOwnLayer: true,
+          settings: LiquidGlassSettings(
+            thickness: 16,
+            blur: 18,
+            refractiveIndex: 1.16,
+            lightIntensity: isDark ? 0.45 : 0.60,
+            fresnelStrength: isDark ? 0.35 : 0.45,
+            chromaticAberration: 0.04,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CupertinoActivityIndicator(
+                radius: widget.radius,
               ),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? const Color(0xFF151926).withValues(alpha: 0.72)
-                    : CupertinoColors.white.withValues(alpha: 0.82),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: isDark
-                      ? CupertinoColors.white.withValues(alpha: 0.16)
-                      : CupertinoColors.white.withValues(alpha: 0.85),
-                  width: 0.8,
-                ),
-                boxShadow: [
-                  BoxShadow(
+              if (widget.message != null && widget.message!.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Text(
+                  widget.message!,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.2,
                     color: isDark
-                        ? CupertinoColors.black.withValues(alpha: 0.35)
-                        : const Color(0x12000000),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
+                        ? CupertinoColors.white
+                        : const Color(0xFF1C1C1E),
                   ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CupertinoActivityIndicator(
-                    radius: widget.radius,
-                  ),
-                  if (widget.message != null && widget.message!.isNotEmpty) ...[
-                    const SizedBox(height: 12),
-                    Text(
-                      widget.message!,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: -0.2,
-                        color: isDark
-                            ? CupertinoColors.white
-                            : const Color(0xFF1C1C1E),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
+                ),
+              ],
+            ],
           ),
         ),
       ),

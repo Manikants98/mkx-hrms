@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
@@ -150,14 +149,18 @@ class Ios27GlassCard extends StatelessWidget {
   /// Quality tier for glass shader compilation.
   final GlassQuality quality;
 
+  /// Width of the glass card platter. Defaults to [double.infinity] to span full available width.
+  final double? width;
+
   /// Creates a premium iOS 27 glass platter card.
   const Ios27GlassCard({
     super.key,
     required this.child,
     this.padding = const EdgeInsets.all(18),
-    this.margin = const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    this.margin = const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
     this.borderRadius = 24.0,
     this.quality = GlassQuality.standard,
+    this.width = double.infinity,
   });
 
   @override
@@ -165,38 +168,39 @@ class Ios27GlassCard extends StatelessWidget {
     final bool isDark =
         CupertinoTheme.of(context).brightness == Brightness.dark;
 
-    return Padding(
-      padding: margin,
-      child: ClipRRect(
+    return Container(
+      width: width,
+      margin: margin,
+      decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(borderRadius),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: Container(
-            padding: padding,
-            decoration: BoxDecoration(
-              color: isDark
-                  ? const Color(0xFF151926).withValues(alpha: 0.72)
-                  : CupertinoColors.white.withValues(alpha: 0.78),
-              borderRadius: BorderRadius.circular(borderRadius),
-              border: Border.all(
-                color: isDark
-                    ? CupertinoColors.white.withValues(alpha: 0.14)
-                    : CupertinoColors.white.withValues(alpha: 0.75),
-                width: 0.8,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: isDark
-                      ? CupertinoColors.black.withValues(alpha: 0.35)
-                      : const Color(0x12000000),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: child,
-          ),
+        border: Border.all(
+          color: isDark
+              ? CupertinoColors.white.withValues(alpha: 0.12)
+              : CupertinoColors.white.withValues(alpha: 0.45),
+          width: 0.8,
         ),
+      ),
+      child: GlassCard(
+        width: width,
+        padding: padding,
+        margin: EdgeInsets.zero,
+        shape: LiquidRoundedSuperellipse(borderRadius: borderRadius),
+        useOwnLayer: true,
+        quality: quality,
+        settings: LiquidGlassSettings(
+          thickness: 16,
+          blur: 18,
+          refractiveIndex: 1.16,
+          lightIntensity: isDark ? 0.45 : 0.60,
+          fresnelStrength: isDark ? 0.35 : 0.45,
+          chromaticAberration: 0.04,
+        ),
+        child: width == double.infinity
+            ? SizedBox(
+                width: double.infinity,
+                child: child,
+              )
+            : child,
       ),
     );
   }
@@ -219,11 +223,10 @@ class Ios27SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark =
-        CupertinoTheme.of(context).brightness == Brightness.dark;
+    final isDark = CupertinoTheme.of(context).brightness == Brightness.dark;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -271,31 +274,24 @@ class Ios27GlassButton extends StatelessWidget {
     final bool isDark =
         CupertinoTheme.of(context).brightness == Brightness.dark;
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(borderRadius),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-        child: CupertinoButton(
-          padding: EdgeInsets.zero,
-          minimumSize: Size.zero,
-          onPressed: onPressed,
-          child: Container(
-            padding: padding,
-            decoration: BoxDecoration(
-              color: isDark
-                  ? CupertinoColors.white.withValues(alpha: 0.08)
-                  : CupertinoColors.white.withValues(alpha: 0.60),
-              borderRadius: BorderRadius.circular(borderRadius),
-              border: Border.all(
-                color: isDark
-                    ? CupertinoColors.white.withValues(alpha: 0.16)
-                    : CupertinoColors.white.withValues(alpha: 0.65),
-                width: 0.8,
-              ),
-            ),
-            child: child,
-          ),
-        ),
+    return GlassCard(
+      padding: padding,
+      shape: LiquidRoundedSuperellipse(borderRadius: borderRadius),
+      useOwnLayer: true,
+      clipBehavior: Clip.antiAlias,
+      settings: LiquidGlassSettings(
+        thickness: 14,
+        blur: 16,
+        refractiveIndex: 1.16,
+        lightIntensity: isDark ? 0.45 : 0.60,
+        fresnelStrength: isDark ? 0.35 : 0.45,
+        chromaticAberration: 0.04,
+      ),
+      child: CupertinoButton(
+        padding: EdgeInsets.zero,
+        minimumSize: Size.zero,
+        onPressed: onPressed,
+        child: child,
       ),
     );
   }
