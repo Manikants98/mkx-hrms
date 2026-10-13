@@ -1,17 +1,17 @@
 import 'package:flutter/cupertino.dart';
-import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:mkx_core/features/auth/state/auth_provider.dart';
 import 'package:mkx_core/utils/date_utils.dart';
 import 'package:mkx_core/widgets/app_avatar.dart';
-import '../../../widgets/ios27_status_badge.dart';
-import '../../../widgets/ios27_theme_mode_selector.dart';
-import 'ios27_theme_config_screen.dart';
 import 'package:provider/provider.dart';
 
+import '../../../widgets/ios27_app_bar.dart';
 import '../../../widgets/ios27_glass_surface.dart';
 import '../../../widgets/ios27_loader.dart';
+import '../../../widgets/ios27_status_badge.dart';
+import '../../../widgets/ios27_theme_mode_selector.dart';
 import '../../leaves/models/leave_model.dart';
 import '../../leaves/state/leaves_provider.dart';
+import 'ios27_theme_config_screen.dart';
 
 /// Personal Employee Profile, Settings, Theme Mode, and Logout Screen with iOS 27 Liquid Glass aesthetic.
 class ProfileScreen extends StatefulWidget {
@@ -87,52 +87,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
         bottom: false,
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Account & Preferences',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: isDark
-                              ? const Color(0xFF8E8E93)
-                              : const Color(0xFF6E6E73),
-                          letterSpacing: -0.2,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Profile',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.6,
-                          color: isDark
-                              ? CupertinoColors.white
-                              : const Color(0xFF1C1C1E),
-                        ),
-                      ),
-                    ],
-                  ),
-                  GlassIconButton(
-                    icon: Icon(
-                      CupertinoIcons.paintbrush_fill,
-                      size: 19,
-                      color: isDark
-                          ? CupertinoColors.white
-                          : const Color(0xFF1C1C1E),
-                    ),
-                    onPressed: () => Ios27ThemeConfigScreen.push(context),
-                  ),
-                ],
+            Ios27AppBar(
+              title: 'Profile',
+              subtitle: 'Account & Preferences',
+              trailing: Ios27GlassIconButton(
+                icon: Icon(
+                  CupertinoIcons.paintbrush_fill,
+                  size: 19,
+                  color:
+                      isDark ? CupertinoColors.white : const Color(0xFF1C1C1E),
+                ),
+                onPressed: () => Ios27ThemeConfigScreen.push(context),
               ),
             ),
             Expanded(
@@ -140,11 +105,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 isLoading: auth.isLoading,
                 message: 'Loading Profile...',
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.only(bottom: 120,top:10),
+                  padding: const EdgeInsets.only(bottom: 120, top: 10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-
                       Ios27GlassCard(
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.center,

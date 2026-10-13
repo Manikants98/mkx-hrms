@@ -3,11 +3,11 @@ import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:mkx_core/features/auth/state/auth_provider.dart';
 import 'package:mkx_core/utils/ui_helpers.dart';
 import 'package:provider/provider.dart';
 
+import '../../../widgets/ios27_app_bar.dart';
 import '../../../widgets/ios27_glass_surface.dart';
 import '../models/ai_chat_model.dart';
 import '../state/ai_provider.dart';
@@ -121,8 +121,7 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
     final auth = context.watch<AuthProvider>();
     final firstName = (auth.currentUser?.name ?? 'Employee').split(' ').first;
     final ai = context.watch<AiProvider>();
-    final isDark =
-        CupertinoTheme.of(context).brightness == Brightness.dark;
+    final isDark = CupertinoTheme.of(context).brightness == Brightness.dark;
     final primary = CupertinoTheme.of(context).primaryColor;
 
     final theme = AssistantTheme(
@@ -175,74 +174,51 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
     );
   }
 
-  /// Liquid header with navigation, live voice shortcut, and clear history action.
-  Widget _buildLiquidHeader(
-      AiProvider ai, AssistantTheme theme, bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      child: Row(
+  /**
+   * Liquid header with navigation, live voice shortcut, and clear history action.
+   */
+  Widget _buildLiquidHeader(AiProvider ai, AssistantTheme theme, bool isDark) {
+    return Ios27AppBar(
+      showBackButton: true,
+      titleWidget: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          GlassIconButton(
-            icon: Icon(
-              CupertinoIcons.chevron_left,
+          Text(
+            'Smart Assistant',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.3,
               color: isDark ? CupertinoColors.white : const Color(0xFF1C1C1E),
-              size: 20,
-            ),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      'Smart Assistant',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.3,
-                        color: isDark
-                            ? CupertinoColors.white
-                            : const Color(0xFF1C1C1E),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: theme.primary.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        'AI',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w800,
-                          color: theme.primary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                Text(
-                  'Connected • HR Concierge',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: isDark
-                        ? CupertinoColors.white.withValues(alpha: 0.6)
-                        : const Color(0xFF8E8E93),
-                  ),
-                ),
-              ],
             ),
           ),
-          GlassIconButton(
+          const SizedBox(width: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 6,
+              vertical: 2,
+            ),
+            decoration: BoxDecoration(
+              color: theme.primary.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              'AI',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+                color: theme.primary,
+              ),
+            ),
+          ),
+        ],
+      ),
+      subtitle: 'Connected • HR Concierge',
+      subtitleBelow: true,
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Ios27GlassIconButton(
             icon: Icon(
               CupertinoIcons.mic_fill,
               color: theme.primary,
@@ -252,7 +228,7 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
           ),
           if (ai.hasMessages) ...[
             const SizedBox(width: 8),
-            GlassIconButton(
+            Ios27GlassIconButton(
               icon: Icon(
                 CupertinoIcons.trash,
                 size: 18,
@@ -591,8 +567,7 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
       padding: const EdgeInsets.fromLTRB(14, 16, 14, 12),
       itemCount: ai.messages.length,
       itemBuilder: (BuildContext context, int index) {
-        final ChatMessage message =
-            ai.messages[ai.messages.length - 1 - index];
+        final ChatMessage message = ai.messages[ai.messages.length - 1 - index];
         return _buildMessageItem(message, theme, isDark);
       },
     );
@@ -744,8 +719,7 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
                             ? theme.primary
                             : theme.onSurfaceVariant,
                         onTap: () => setState(
-                          () => msg.isLiked =
-                              msg.isLiked == true ? null : true,
+                          () => msg.isLiked = msg.isLiked == true ? null : true,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -757,8 +731,8 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
                             ? theme.error
                             : theme.onSurfaceVariant,
                         onTap: () => setState(
-                          () => msg.isLiked =
-                              msg.isLiked == false ? null : false,
+                          () =>
+                              msg.isLiked = msg.isLiked == false ? null : false,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -871,7 +845,8 @@ class _SmartAssistantScreenState extends State<SmartAssistantScreen> {
           ),
           boxShadow: [
             BoxShadow(
-              color: CupertinoColors.black.withValues(alpha: isDark ? 0.25 : 0.06),
+              color:
+                  CupertinoColors.black.withValues(alpha: isDark ? 0.25 : 0.06),
               blurRadius: 16,
               offset: const Offset(0, 4),
             ),

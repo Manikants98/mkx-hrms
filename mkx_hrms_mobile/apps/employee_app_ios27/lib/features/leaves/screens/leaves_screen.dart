@@ -7,6 +7,7 @@ import 'package:mkx_core/utils/ui_helpers.dart';
 import '../../../widgets/ios27_status_badge.dart';
 import 'package:provider/provider.dart';
 
+import '../../../widgets/ios27_app_bar.dart';
 import '../../../widgets/ios27_glass_surface.dart';
 import '../../../widgets/ios27_loader.dart';
 import '../../../widgets/ios27_pull_to_refresh.dart';
@@ -73,59 +74,25 @@ class _LeavesScreenState extends State<LeavesScreen> {
         bottom: false,
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Time Off & Balances',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: isDark
-                              ? const Color(0xFF8E8E93)
-                              : const Color(0xFF6E6E73),
-                          letterSpacing: -0.2,
-                        ),
+            Ios27AppBar(
+              title: 'Leaves',
+              subtitle: 'Time Off & Balances',
+              trailing: Ios27GlassButton(
+                onPressed: _openApplyModal,
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(CupertinoIcons.plus, size: 16),
+                    SizedBox(width: 4),
+                    Text(
+                      'Apply',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Leaves',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.6,
-                          color: isDark
-                              ? CupertinoColors.white
-                              : const Color(0xFF1C1C1E),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Ios27GlassButton(
-                    onPressed: _openApplyModal,
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(CupertinoIcons.plus, size: 16),
-                        SizedBox(width: 4),
-                        Text(
-                          'Apply',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             Expanded(
@@ -154,8 +121,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
                     const Ios27SectionHeader(title: 'Application History'),
                     if (leaves.filteredHistory.isEmpty)
                       Ios27GlassCard(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 32),
+                        padding: const EdgeInsets.all(24),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [

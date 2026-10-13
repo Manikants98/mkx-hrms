@@ -1,11 +1,16 @@
 import 'package:dio/dio.dart';
+import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
 import '../constants/api_endpoints.dart';
 import '../storage/token_storage.dart';
 import '../utils/ui_helpers.dart';
 import 'api_exception.dart';
 import 'api_interceptor.dart';
 
-/// Dio networking service managing the HTTP client instance and request dispatching
+export 'package:dio_cache_interceptor/dio_cache_interceptor.dart'
+    show CachePolicy, CacheOptions, CachePriority;
+
+/// Dio networking service managing the HTTP client instance, request dispatching,
+/// in-memory caching, and offline response resilience.
 class DioClient {
   DioClient._() {
     _dio = Dio(
@@ -17,13 +22,38 @@ class DioClient {
       ),
     );
 
+    _cacheStore = MemCacheStore(
+      maxSize: 10485760,
+      maxEntrySize: 1048576,
+    );
+
+    _cacheOptions = CacheOptions(
+      store: _cacheStore,
+      policy: CachePolicy.request,
+      hitCacheOnNetworkFailure: true,
+      hitCacheOnErrorCodes: const <int>[500, 502, 503, 504],
+      priority: CachePriority.normal,
+      maxStale: const Duration(days: 7),
+      allowPostMethod: false,
+    );
+
+    _dio.interceptors.add(DioCacheInterceptor(options: _cacheOptions));
     _dio.interceptors.add(ApiInterceptor());
   }
 
   static final DioClient instance = DioClient._();
   late final Dio _dio;
+  late final CacheStore _cacheStore;
+  late final CacheOptions _cacheOptions;
 
+  /// Underlying Dio HTTP client instance.
   Dio get dio => _dio;
+
+  /// In-memory cache storage instance.
+  CacheStore get cacheStore => _cacheStore;
+
+  /// Global cache configuration options.
+  CacheOptions get cacheOptions => _cacheOptions;
 
   /// Global callback invoked on 401 Unauthorized errors to handle session termination.
   static void Function()? onUnauthorized;
@@ -46,33 +76,54 @@ class DioClient {
 
     UiHelpers.showGlobalSnackBar('Session Expired', isError: true);
     onUnauthorized?.call();
-    UiHelpers.rootNavigatorKey.currentState
-        ?.popUntil((route) => route.isFirst);
+    UiHelpers.rootNavigatorKey.currentState?.popUntil((route) => route.isFirst);
   }
 
-  // Future<void> _initCustomBaseUrl() async {
-  //   final customUrl = await TokenStorage.instance.getBaseUrl();
-  //   if (customUrl != null && customUrl.isNotEmpty) {
-  //     _dio.options.baseUrl = customUrl;
-  //   }
-  // }
-
+  /// Updates and persists the base API URL.
   void updateBaseUrl(String newUrl) {
     _dio.options.baseUrl = newUrl;
     TokenStorage.instance.saveBaseUrl(newUrl);
   }
 
-  /// Perform a GET request
+  /// Clears all entries from the in-memory cache store.
+  Future<void> clearCache() async {
+    await _cacheStore.clean();
+  }
+
+  /// Invalidates a specific cached resource path.
+  Future<void> deleteCache(String path) async {
+    await _cacheStore.delete(path);
+  }
+
+  /// Perform a GET request with optional cache policy override and force-refresh support.
   Future<dynamic> get(
     String path, {
     Map<String, dynamic>? queryParameters,
     Options? options,
+    CachePolicy? cachePolicy,
+    bool forceRefresh = false,
   }) async {
     try {
+      Options requestOptions;
+      if (forceRefresh || cachePolicy != null) {
+        final policy = forceRefresh ? CachePolicy.refresh : cachePolicy!;
+        final customOptions = _cacheOptions.copyWith(policy: policy);
+        final Map<String, dynamic> mergedExtra = <String, dynamic>{
+          ...?options?.extra,
+          ...customOptions.toExtra(),
+        };
+
+        requestOptions = (options ?? Options()).copyWith(
+          extra: mergedExtra,
+        );
+      } else {
+        requestOptions = options ?? Options();
+      }
+
       final response = await _dio.get(
         path,
         queryParameters: queryParameters,
-        options: options,
+        options: requestOptions,
       );
       return _extractData(response);
     } on DioException catch (e) {

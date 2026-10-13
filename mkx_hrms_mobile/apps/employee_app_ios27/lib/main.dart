@@ -101,10 +101,11 @@ class _MkxHrmsAppState extends State<MkxHrmsApp> {
   void initState() {
     super.initState();
     _themeSettings = AppThemeSettings();
-    _themeSettings.fontFamily = null;
+    _themeSettings.fontFamily = AppThemeSettings.sfPro;
     _themeSettings.loadSettings().then((_) {
-      if (_themeSettings.fontFamily == AppThemeSettings.googleSansFlex) {
-        _themeSettings.fontFamily = null;
+      if (_themeSettings.fontFamily == null ||
+          _themeSettings.fontFamily == AppThemeSettings.googleSansFlex) {
+        _themeSettings.fontFamily = AppThemeSettings.sfPro;
       }
     });
   }
@@ -147,13 +148,27 @@ class _MkxHrmsAppState extends State<MkxHrmsApp> {
                   theme: CupertinoThemeData(
                     brightness: isDark ? Brightness.dark : Brightness.light,
                     primaryColor: primaryColor,
-                    textTheme: settings.fontFamily != null
-                        ? CupertinoTextThemeData(
-                            textStyle: TextStyle(
-                              fontFamily: settings.fontFamily,
-                            ),
-                          )
-                        : const CupertinoTextThemeData(),
+                    textTheme: CupertinoTextThemeData(
+                      textStyle: TextStyle(
+                        fontFamily:
+                            settings.fontFamily ?? AppThemeSettings.sfPro,
+                      ),
+                      actionTextStyle: TextStyle(
+                        fontFamily:
+                            settings.fontFamily ?? AppThemeSettings.sfPro,
+                        color: primaryColor,
+                      ),
+                      navTitleTextStyle: TextStyle(
+                        fontFamily:
+                            settings.fontFamily ?? AppThemeSettings.sfPro,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      navLargeTitleTextStyle: TextStyle(
+                        fontFamily:
+                            settings.fontFamily ?? AppThemeSettings.sfPro,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
                   home: _buildHome(auth),
                 );

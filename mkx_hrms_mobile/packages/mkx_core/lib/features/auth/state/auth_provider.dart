@@ -76,6 +76,7 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> logout() async {
     await _repo.logout();
+    await DioClient.instance.clearCache();
     _currentUser = null;
     notifyListeners();
   }

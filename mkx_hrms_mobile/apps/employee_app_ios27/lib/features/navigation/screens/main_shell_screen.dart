@@ -58,29 +58,29 @@ class _MainShellScreenState extends State<MainShellScreen> {
 
   static const List<GlassTab> _tabs = [
     GlassTab(
-      // label: 'Home',
-      icon: Icon(CupertinoIcons.square_grid_2x2, size: 28),
-      activeIcon: Icon(CupertinoIcons.square_grid_2x2_fill, size: 28),
+      label: 'Home',
+      icon: Icon(CupertinoIcons.square_grid_2x2),
+      activeIcon: Icon(CupertinoIcons.square_grid_2x2_fill),
     ),
     GlassTab(
-      // label: 'Leaves',
-      icon: Icon(CupertinoIcons.calendar, size: 28),
-      activeIcon: Icon(CupertinoIcons.calendar_today, size: 28),
+      label: 'Leaves',
+      icon: Icon(CupertinoIcons.calendar),
+      activeIcon: Icon(CupertinoIcons.calendar_today),
     ),
     GlassTab(
-      // label: 'Time',
-      icon: Icon(CupertinoIcons.clock, size: 28),
-      activeIcon: Icon(CupertinoIcons.clock_fill, size: 28),
+      label: 'Attendance',
+      icon: Icon(CupertinoIcons.clock),
+      activeIcon: Icon(CupertinoIcons.clock_fill),
     ),
     GlassTab(
-      // label: 'Payslips',
-      icon: Icon(CupertinoIcons.doc_text, size: 28),
-      activeIcon: Icon(CupertinoIcons.doc_text_fill, size: 28),
+      label: 'Payslips',
+      icon: Icon(CupertinoIcons.doc_text),
+      activeIcon: Icon(CupertinoIcons.doc_text_fill),
     ),
     GlassTab(
-      // label: 'Profile',
-      icon: Icon(CupertinoIcons.person_crop_circle, size: 28),
-      activeIcon: Icon(CupertinoIcons.person_crop_circle_fill, size: 28),
+      label: 'Profile',
+      icon: Icon(CupertinoIcons.person_crop_circle),
+      activeIcon: Icon(CupertinoIcons.person_crop_circle_fill),
     ),
   ];
 
@@ -97,8 +97,23 @@ class _MainShellScreenState extends State<MainShellScreen> {
       ),
       bottomBar: GlassTabBar.bottom(
         selectedIndex: _currentIndex,
-        onTabSelected: (index) => setState(() => _currentIndex = index),
+        onTabSelected: (int index) => setState(() => _currentIndex = index),
         tabs: _tabs,
+        barHeight: 66,
+        iconSize: 22,
+        labelFontSize: 10.5,
+        iconLabelSpacing: 3,
+        showIndicator: true,
+        selectedLabelStyle: const TextStyle(
+          fontSize: 10.5,
+          fontWeight: FontWeight.w600,
+          letterSpacing: -0.2,
+        ),
+        unselectedLabelStyle: const TextStyle(
+          fontSize: 10.5,
+          fontWeight: FontWeight.w500,
+          letterSpacing: -0.2,
+        ),
       ),
     );
   }

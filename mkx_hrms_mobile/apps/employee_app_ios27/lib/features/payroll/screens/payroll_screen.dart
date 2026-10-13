@@ -1,12 +1,12 @@
 import 'package:flutter/cupertino.dart';
-import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:mkx_core/features/auth/state/auth_provider.dart';
-import '../../../widgets/ios27_status_badge.dart';
 import 'package:provider/provider.dart';
 
+import '../../../widgets/ios27_app_bar.dart';
 import '../../../widgets/ios27_glass_surface.dart';
 import '../../../widgets/ios27_loader.dart';
 import '../../../widgets/ios27_pull_to_refresh.dart';
+import '../../../widgets/ios27_status_badge.dart';
 import '../models/payslip_model.dart';
 import '../state/payroll_provider.dart';
 import 'payslip_detail_screen.dart';
@@ -62,54 +62,19 @@ class _PayrollScreenState extends State<PayrollScreen> {
         bottom: false,
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Compensation & Earnings',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: isDark
-                              ? const Color(0xFF8E8E93)
-                              : const Color(0xFF6E6E73),
-                          letterSpacing: -0.2,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Payslips',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.6,
-                          color: isDark
-                              ? CupertinoColors.white
-                              : const Color(0xFF1C1C1E),
-                        ),
-                      ),
-                    ],
-                  ),
-                  GlassIconButton(
-                    icon: Icon(
-                      CupertinoIcons.doc_text_viewfinder,
-                      size: 19,
-                      color: isDark
-                          ? CupertinoColors.white
-                          : const Color(0xFF1C1C1E),
-                    ),
-                    onPressed: () {
-                      if (latest != null) _openDetailModal(latest);
-                    },
-                  ),
-                ],
+            Ios27AppBar(
+              title: 'Payslips',
+              subtitle: 'Compensation & Earnings',
+              trailing: Ios27GlassIconButton(
+                icon: Icon(
+                  CupertinoIcons.doc_text_viewfinder,
+                  size: 19,
+                  color:
+                      isDark ? CupertinoColors.white : const Color(0xFF1C1C1E),
+                ),
+                onPressed: () {
+                  if (latest != null) _openDetailModal(latest);
+                },
               ),
             ),
             Expanded(

@@ -8,27 +8,47 @@ class AppThemeSettings extends ChangeNotifier {
   /// Seed choices offered when dynamic color is off.
   static const List<Color> seedOptions = <Color>[
     Color(0xFF6750A4),
+    Color(0xFF007AFF),
     Color(0xFF00658F),
+    Color(0xFF002F6C),
     Color(0xFF006D3D),
+    Color(0xFF00695C),
+    Color(0xFF00838F),
+    Color(0xFF2E7D32),
+    Color(0xFF558B2F),
     Color(0xFF8F4C00),
+    Color(0xFFE65100),
+    Color(0xFFD84315),
     Color(0xFFA1003C),
-    Color(0xFF002F6C), // Midnight
-    Color(0xFF00695C), // Teal
-    Color(0xFFE65100), // Orange
-    Color(0xFF757575), // Gray
-    Color(0xFF000000), // Black
+    Color(0xFFB3261E),
+    Color(0xFF880E4F),
+    Color(0xFF7B1FA2),
+    Color(0xFF3949AB),
+    Color(0xFF374151),
+    Color(0xFF757575),
+    Color(0xFF000000),
   ];
 
   /// Labels shown under each entry in [seedOptions].
   static const List<String> seedLabels = <String>[
     'Default',
+    'iOS Blue',
     'Ocean',
-    'Forest',
-    'Amber',
-    'Rose',
     'Midnight',
+    'Forest',
     'Teal',
+    'Cyan',
+    'Mint',
+    'Olive',
+    'Amber',
     'Orange',
+    'Coral',
+    'Rose',
+    'Crimson',
+    'Berry',
+    'Amethyst',
+    'Indigo',
+    'Graphite',
     'Gray',
     'Black',
   ];
@@ -39,10 +59,13 @@ class AppThemeSettings extends ChangeNotifier {
   /// Family name registered for Poppins.
   static const String poppins = 'Poppins';
 
+  /// Family name registered for SF Pro.
+  static const String sfPro = 'SF Pro';
+
   bool _autoTheming = true;
   bool _dynamicColoring = true;
   Color _seedColor = seedOptions.first;
-  String? _fontFamily;
+  String? _fontFamily = sfPro;
 
   /// Restores persisted theme settings from local preferences.
   Future<void> loadSettings() async {

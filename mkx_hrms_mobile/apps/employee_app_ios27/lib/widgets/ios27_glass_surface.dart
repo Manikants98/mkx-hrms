@@ -296,3 +296,78 @@ class Ios27GlassButton extends StatelessWidget {
     );
   }
 }
+
+/**
+ * Standalone iOS 27 glass circular icon button with backdrop blur and specular rim.
+ * Operates reliably across all Android and iOS graphic backends without shader crashes.
+ */
+class Ios27GlassIconButton extends StatelessWidget {
+  /**
+   * Icon or child widget displayed within the glass platter.
+   */
+  final Widget icon;
+
+  /**
+   * Callback executed on tap.
+   */
+  final VoidCallback? onPressed;
+
+  /**
+   * Dimension of the square button container.
+   */
+  final double size;
+
+  /**
+   * Corner radius for the continuous squircle boundary.
+   */
+  final double radius;
+
+  /**
+   * Constructs an iOS 27 glass icon button.
+   */
+  const Ios27GlassIconButton({
+    super.key,
+    required this.icon,
+    required this.onPressed,
+    this.size = 38.0,
+    this.radius = 19.0,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isDark =
+        CupertinoTheme.of(context).brightness == Brightness.dark;
+
+    return CupertinoButton(
+      padding: EdgeInsets.zero,
+      minimumSize: Size(size, size),
+      onPressed: onPressed,
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: isDark
+              ? CupertinoColors.white.withValues(alpha: 0.10)
+              : CupertinoColors.white.withValues(alpha: 0.70),
+          borderRadius: BorderRadius.circular(radius),
+          border: Border.all(
+            color: isDark
+                ? CupertinoColors.white.withValues(alpha: 0.20)
+                : CupertinoColors.white.withValues(alpha: 0.85),
+            width: 0.8,
+          ),
+          boxShadow: <BoxShadow>[
+            BoxShadow(
+              color: CupertinoColors.black
+                  .withValues(alpha: isDark ? 0.25 : 0.06),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Center(child: icon),
+      ),
+    );
+  }
+}
+

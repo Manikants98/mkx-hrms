@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
-import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:mkx_core/theme/app_theme_scope.dart';
 import 'package:mkx_core/theme/app_theme_settings.dart';
 
+import '../../../widgets/ios27_app_bar.dart';
 import '../../../widgets/ios27_glass_surface.dart';
 import '../../../widgets/ios27_theme_mode_selector.dart';
 
@@ -36,35 +36,10 @@ class Ios27ThemeConfigScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Row(
-                  children: <Widget>[
-                    GlassIconButton(
-                      icon: Icon(
-                        CupertinoIcons.chevron_back,
-                        size: 20,
-                        color: isDark
-                            ? CupertinoColors.white
-                            : const Color(0xFF1C1C1E),
-                      ),
-                      onPressed: () => Navigator.of(context).maybePop(),
-                    ),
-                    const SizedBox(width: 14),
-                    Text(
-                      'Theme',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.6,
-                        color: isDark
-                            ? CupertinoColors.white
-                            : const Color(0xFF1C1C1E),
-                      ),
-                    ),
-                  ],
-                ),
+              const Ios27AppBar(
+                title: 'Theme',
+                subtitle: 'Appearance & Style',
+                showBackButton: true,
               ),
               Expanded(
                 child: SingleChildScrollView(
@@ -72,6 +47,7 @@ class Ios27ThemeConfigScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
+                      const SizedBox(height: 10),
                       _buildSeedColorsSection(settings, isDark, primaryColor),
                       _buildFontFamilySection(settings, isDark, primaryColor),
                       _buildThemeModeSection(isDark),
@@ -208,7 +184,7 @@ class Ios27ThemeConfigScreen extends StatelessWidget {
     Color primaryColor,
   ) {
     final List<(String, String?)> families = <(String, String?)>[
-      ('SF Pro', null),
+      ('SF Pro', AppThemeSettings.sfPro),
       ('Google Sans', AppThemeSettings.googleSansFlex),
       ('Poppins', AppThemeSettings.poppins),
     ];
@@ -216,8 +192,9 @@ class Ios27ThemeConfigScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
+        const SizedBox(height: 10),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -245,6 +222,7 @@ class Ios27ThemeConfigScreen extends StatelessWidget {
             ],
           ),
         ),
+        const SizedBox(height: 10),
         Ios27GlassCard(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           child: Row(
@@ -337,8 +315,9 @@ class Ios27ThemeConfigScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
+        const SizedBox(height: 10),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -366,7 +345,7 @@ class Ios27ThemeConfigScreen extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 10),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: const Ios27ThemeModeSelector(),

@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
-import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
-import '../../../widgets/ios27_status_badge.dart';
+
+import '../../../widgets/ios27_app_bar.dart';
 import '../../../widgets/ios27_glass_surface.dart';
+import '../../../widgets/ios27_status_badge.dart';
 import '../models/payslip_model.dart';
 
 /// Detailed itemized salary slip screen with iOS 27 Liquid Glass design.
@@ -24,57 +25,11 @@ class PayslipDetailScreen extends StatelessWidget {
           bottom: false,
           child: Column(
             children: [
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                child: Row(
-                  children: [
-                    GlassIconButton(
-                      icon: Icon(
-                        CupertinoIcons.chevron_back,
-                        size: 20,
-                        color: isDark
-                            ? CupertinoColors.white
-                            : const Color(0xFF1C1C1E),
-                      ),
-                      onPressed: () => Navigator.of(context).maybePop(),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Payslip Summary',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: isDark
-                                  ? const Color(0xFF8E8E93)
-                                  : const Color(0xFF6E6E73),
-                              letterSpacing: -0.2,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            slip.monthLabel,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.5,
-                              color: isDark
-                                  ? CupertinoColors.white
-                                  : const Color(0xFF1C1C1E),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Ios27StatusBadge(status: slip.status),
-                  ],
-                ),
+              Ios27AppBar(
+                title: slip.monthLabel,
+                subtitle: 'Payslip Summary',
+                showBackButton: true,
+                trailing: Ios27StatusBadge(status: slip.status),
               ),
               Expanded(
                 child: SingleChildScrollView(

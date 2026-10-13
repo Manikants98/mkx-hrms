@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
-import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:provider/provider.dart';
+
+import '../../../widgets/ios27_app_bar.dart';
 import '../../../widgets/ios27_glass_surface.dart';
 import '../../../widgets/ios27_loader.dart';
 import '../models/notification_model.dart';
@@ -80,8 +81,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark =
-        CupertinoTheme.of(context).brightness == Brightness.dark;
+    final isDark = CupertinoTheme.of(context).brightness == Brightness.dark;
     final provider = context.watch<NotificationsProvider>();
     final unreadCount = provider.unreadCount;
     final notifications = provider.notifications;
@@ -149,57 +149,23 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  /// Builds top header with navigation and liquid glass action button.
+  /**
+   * Builds top header with navigation and liquid glass action button.
+   */
   Widget _buildLiquidHeader(
     BuildContext context,
     bool isDark,
     int unreadCount,
     NotificationsProvider provider,
   ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        children: [
-          GlassIconButton(
-            icon: Icon(
-              CupertinoIcons.chevron_back,
-              color: isDark ? CupertinoColors.white : const Color(0xFF1C1C1E),
-              size: 22,
-            ),
-            onPressed: () => Navigator.of(context).maybePop(),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Notifications',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.4,
-                    color: isDark ? CupertinoColors.white : const Color(0xFF1C1C1E),
-                  ),
-                ),
-                Text(
-                  unreadCount > 0
-                      ? '$unreadCount unread updates'
-                      : 'All caught up',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: isDark
-                        ? CupertinoColors.white.withValues(alpha: 0.6)
-                        : const Color(0xFF6C6C70),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (unreadCount > 0)
-            Ios27GlassButton(
+    return Ios27AppBar(
+      title: 'Notifications',
+      subtitle:
+          unreadCount > 0 ? '$unreadCount unread updates' : 'All caught up',
+      subtitleBelow: true,
+      showBackButton: true,
+      trailing: unreadCount > 0
+          ? Ios27GlassButton(
               onPressed: () => provider.markAllAsRead(),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -215,14 +181,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: isDark ? CupertinoColors.white : const Color(0xFF007AFF),
+                      color: isDark
+                          ? CupertinoColors.white
+                          : const Color(0xFF007AFF),
                     ),
                   ),
                 ],
               ),
-            ),
-        ],
-      ),
+            )
+          : null,
     );
   }
 
@@ -274,9 +241,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           item.title,
                           style: TextStyle(
                             fontSize: 15,
-                            fontWeight: isRead ? FontWeight.w500 : FontWeight.w700,
+                            fontWeight:
+                                isRead ? FontWeight.w500 : FontWeight.w700,
                             letterSpacing: -0.2,
-                            color: isDark ? CupertinoColors.white : const Color(0xFF1C1C1E),
+                            color: isDark
+                                ? CupertinoColors.white
+                                : const Color(0xFF1C1C1E),
                           ),
                         ),
                       ),

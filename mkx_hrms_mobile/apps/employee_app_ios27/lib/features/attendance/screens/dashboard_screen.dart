@@ -8,6 +8,7 @@ import 'package:mkx_core/utils/ui_helpers.dart';
 import '../../../widgets/ios27_status_badge.dart';
 import 'package:provider/provider.dart';
 
+import '../../../widgets/ios27_app_bar.dart';
 import '../../../widgets/ios27_glass_surface.dart';
 import '../../../widgets/ios27_loader.dart';
 import '../../../widgets/ios27_pull_to_refresh.dart';
@@ -234,108 +235,75 @@ class _DashboardScreenState extends State<DashboardScreen> {
         bottom: false,
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Ios27AppBar(
+              title: 'Dashboard',
+              subtitle:
+                  'Good ${_greeting()}, ${user?.name.split(" ").first ?? "Employee"}',
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Good ${_greeting()}, ${user?.name.split(" ").first ?? "Employee"}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: isDark
-                              ? const Color(0xFF8E8E93)
-                              : const Color(0xFF6E6E73),
-                          letterSpacing: -0.2,
+                  Ios27GlassIconButton(
+                    icon: Icon(
+                      CupertinoIcons.sparkles,
+                      size: 20,
+                      color: isDark
+                          ? const Color(0xFF64D2FF)
+                          : const Color(0xFF007AFF),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        CupertinoPageRoute<void>(
+                          builder: (context) =>
+                              const SmartAssistantScreen(),
                         ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Dashboard',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.6,
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Ios27GlassIconButton(
+                        icon: Icon(
+                          CupertinoIcons.bell,
+                          size: 20,
                           color: isDark
                               ? CupertinoColors.white
                               : const Color(0xFF1C1C1E),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      GlassIconButton(
-                        icon: Icon(
-                          CupertinoIcons.sparkles,
-                          size: 20,
-                          color: isDark
-                              ? const Color(0xFF64D2FF)
-                              : const Color(0xFF007AFF),
                         ),
                         onPressed: () {
                           Navigator.of(context).push(
                             CupertinoPageRoute<void>(
                               builder: (context) =>
-                                  const SmartAssistantScreen(),
+                                  const NotificationsScreen(),
                             ),
                           );
                         },
                       ),
-                      const SizedBox(width: 8),
-                      Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          GlassIconButton(
-                            icon: Icon(
-                              CupertinoIcons.bell,
-                              size: 20,
-                              color: isDark
-                                  ? CupertinoColors.white
-                                  : const Color(0xFF1C1C1E),
+                      if (notifications.unreadCount > 0)
+                        Positioned(
+                          top: -2,
+                          right: -2,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 5, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFF3B30),
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                            onPressed: () {
-                              Navigator.of(context).push(
-                                CupertinoPageRoute<void>(
-                                  builder: (context) =>
-                                      const NotificationsScreen(),
-                                ),
-                              );
-                            },
-                          ),
-                          if (notifications.unreadCount > 0)
-                            Positioned(
-                              top: -2,
-                              right: -2,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 5, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFF3B30),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                constraints: const BoxConstraints(
-                                    minWidth: 16, minHeight: 16),
-                                child: Text(
-                                  notifications.unreadCount.toString(),
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    color: CupertinoColors.white,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
+                            constraints: const BoxConstraints(
+                                minWidth: 16, minHeight: 16),
+                            child: Text(
+                              notifications.unreadCount.toString(),
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: CupertinoColors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
-                        ],
-                      ),
+                          ),
+                        ),
                     ],
                   ),
                 ],

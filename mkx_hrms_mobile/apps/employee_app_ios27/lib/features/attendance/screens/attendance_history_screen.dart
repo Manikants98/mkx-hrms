@@ -1,11 +1,14 @@
+import 'dart:ui';
+
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
-import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:mkx_core/features/auth/state/auth_provider.dart';
 import 'package:mkx_core/utils/date_utils.dart';
+import '../../../widgets/ios27_button.dart';
 import '../../../widgets/ios27_status_badge.dart';
 import 'package:provider/provider.dart';
 
+import '../../../widgets/ios27_app_bar.dart';
 import '../../../widgets/ios27_glass_surface.dart';
 import '../../../widgets/ios27_loader.dart';
 import '../../../widgets/ios27_pull_to_refresh.dart';
@@ -82,154 +85,22 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
     return DateTime(year, month);
   }
 
-  /// Presents an iOS 27 glass-styled modal sheet for month selection.
+  /**
+   * Presents the iOS 27 Liquid Glass Segmented Calendar / Wheel picker modal.
+   */
   Future<void> _showMonthPicker() async {
-    final DateTime now = DateTime.now();
     final DateTime? joinDate = _parseJoinDate(
       context.read<AuthProvider>().currentUser?.joinDate,
     );
-    int pickerYear = _selectedMonth?.year ?? now.year;
 
     await showCupertinoModalPopup<void>(
       context: context,
       builder: (BuildContext ctx) {
-        final bool isDark =
-            CupertinoTheme.of(ctx).brightness == Brightness.dark;
-
-        return StatefulBuilder(
-          builder: (BuildContext ctx, StateSetter setSheetState) {
-            return GlassCard(
-              width: double.infinity,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(22, 16, 22, 34),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 4,
-                      margin: const EdgeInsets.only(bottom: 18),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? CupertinoColors.white.withValues(alpha: 0.24)
-                            : CupertinoColors.black.withValues(alpha: 0.26),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        CupertinoButton(
-                          padding: EdgeInsets.zero,
-                          onPressed:
-                              (joinDate != null && pickerYear <= joinDate.year)
-                                  ? null
-                                  : () => setSheetState(() => pickerYear--),
-                          child:
-                              const Icon(CupertinoIcons.chevron_left, size: 20),
-                        ),
-                        Text(
-                          '$pickerYear',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: -0.3,
-                            color: isDark
-                                ? CupertinoColors.white
-                                : const Color(0xFF1C1C1E),
-                          ),
-                        ),
-                        CupertinoButton(
-                          padding: EdgeInsets.zero,
-                          onPressed: pickerYear >= now.year
-                              ? null
-                              : () => setSheetState(() => pickerYear++),
-                          child: const Icon(CupertinoIcons.chevron_right,
-                              size: 20),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    GridView.count(
-                      crossAxisCount: 4,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      mainAxisSpacing: 10,
-                      crossAxisSpacing: 10,
-                      childAspectRatio: 2.1,
-                      children: List.generate(12, (int i) {
-                        final int month = i + 1;
-                        final bool isFuture =
-                            pickerYear == now.year && month > now.month;
-                        final bool isBeforeJoin = joinDate != null &&
-                            (pickerYear < joinDate.year ||
-                                (pickerYear == joinDate.year &&
-                                    month < joinDate.month));
-                        final bool isSelected =
-                            _selectedMonth?.year == pickerYear &&
-                                _selectedMonth?.month == month;
-
-                        return GestureDetector(
-                          onTap: (isFuture || isBeforeJoin)
-                              ? null
-                              : () {
-                                  setState(
-                                    () => _selectedMonth =
-                                        DateTime(pickerYear, month),
-                                  );
-                                  Navigator.of(ctx).pop();
-                                },
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 180),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? const Color(0xFF007AFF)
-                                  : (isDark
-                                      ? CupertinoColors.white
-                                          .withValues(alpha: 0.08)
-                                      : CupertinoColors.black
-                                          .withValues(alpha: 0.05)),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              _monthNames[i],
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: (isFuture || isBeforeJoin)
-                                    ? (isDark
-                                        ? CupertinoColors.white
-                                            .withValues(alpha: 0.24)
-                                        : CupertinoColors.black
-                                            .withValues(alpha: 0.26))
-                                    : (isSelected
-                                        ? CupertinoColors.white
-                                        : (isDark
-                                            ? CupertinoColors.white
-                                                .withValues(alpha: 0.70)
-                                            : const Color(0xFF1C1C1E))),
-                              ),
-                            ),
-                          ),
-                        );
-                      }),
-                    ),
-                    if (_selectedMonth != null) ...[
-                      const SizedBox(height: 16),
-                      CupertinoButton(
-                        onPressed: () {
-                          setState(() => _selectedMonth = null);
-                          Navigator.of(ctx).pop();
-                        },
-                        child: const Text('Clear Filter',
-                            style: TextStyle(color: Color(0xFFFF3B30))),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            );
+        return _Ios27MonthPickerSheet(
+          initialMonth: _selectedMonth,
+          joinDate: joinDate,
+          onSelected: (DateTime? picked) {
+            setState(() => _selectedMonth = picked);
           },
         );
       },
@@ -253,74 +124,40 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
         bottom: false,
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Punch Records',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: isDark
-                              ? const Color(0xFF8E8E93)
-                              : const Color(0xFF6E6E73),
-                          letterSpacing: -0.2,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Attendance',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.6,
-                          color: isDark
+            Ios27AppBar(
+              title: 'Attendance',
+              subtitle: 'Punch Records',
+              trailing: Ios27GlassButton(
+                onPressed: _showMonthPicker,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      CupertinoIcons.calendar,
+                      size: 15,
+                      color: _selectedMonth != null
+                          ? const Color(0xFF007AFF)
+                          : (isDark
                               ? CupertinoColors.white
-                              : const Color(0xFF1C1C1E),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Ios27GlassButton(
-                    onPressed: _showMonthPicker,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          CupertinoIcons.calendar,
-                          size: 15,
-                          color: _selectedMonth != null
-                              ? const Color(0xFF007AFF)
-                              : (isDark
-                                  ? CupertinoColors.white
-                                      .withValues(alpha: 0.70)
-                                  : const Color(0xFF3A3A3C)),
-                        ),
-                        const SizedBox(width: 5),
-                        Text(
-                          monthLabel,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: _selectedMonth != null
-                                ? const Color(0xFF007AFF)
-                                : (isDark
-                                    ? CupertinoColors.white
-                                        .withValues(alpha: 0.70)
-                                    : const Color(0xFF3A3A3C)),
-                          ),
-                        ),
-                      ],
+                                  .withValues(alpha: 0.70)
+                              : const Color(0xFF3A3A3C)),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 5),
+                    Text(
+                      monthLabel,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: _selectedMonth != null
+                            ? const Color(0xFF007AFF)
+                            : (isDark
+                                ? CupertinoColors.white
+                                    .withValues(alpha: 0.70)
+                                : const Color(0xFF3A3A3C)),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             Expanded(
@@ -348,48 +185,43 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
                     ),
                     const Ios27SectionHeader(title: 'Shift Timings & Logs'),
                     if (filtered.isEmpty)
-                      Padding(
+                      Ios27GlassCard(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 24),
-                        child: Ios27GlassCard(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 32),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                CupertinoIcons.clock,
-                                size: 44,
+                            horizontal: 24, vertical: 32),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              CupertinoIcons.clock,
+                              size: 44,
+                              color: isDark
+                                  ? CupertinoColors.white.withValues(alpha: 0.4)
+                                  : const Color(0xFF8E8E93),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'No attendance records',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
                                 color: isDark
                                     ? CupertinoColors.white
-                                        .withValues(alpha: 0.4)
-                                    : const Color(0xFF8E8E93),
+                                    : const Color(0xFF1C1C1E),
                               ),
-                              const SizedBox(height: 12),
-                              Text(
-                                'No attendance records',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: isDark
-                                      ? CupertinoColors.white
-                                      : const Color(0xFF1C1C1E),
-                                ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'No punch logs match the selected filter criteria.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: isDark
+                                    ? CupertinoColors.white
+                                        .withValues(alpha: 0.6)
+                                    : const Color(0xFF6C6C70),
                               ),
-                              const SizedBox(height: 6),
-                              Text(
-                                'No punch logs match the selected filter criteria.',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: isDark
-                                      ? CupertinoColors.white
-                                          .withValues(alpha: 0.6)
-                                      : const Color(0xFF6C6C70),
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       )
                     else
@@ -518,3 +350,699 @@ class _AttendanceHistoryScreenState extends State<AttendanceHistoryScreen> {
     );
   }
 }
+
+/**
+ * iOS 27 Liquid Glass Segmented Calendar / Wheel month selector modal sheet.
+ * Features specular glass highlight bars in wheel mode and interactive glass tiles in calendar mode.
+ */
+class _Ios27MonthPickerSheet extends StatefulWidget {
+  /**
+   * Currently active selected filter date if one is active.
+   */
+  final DateTime? initialMonth;
+
+  /**
+   * Optional employee joining date threshold to disallow pre-employment dates.
+   */
+  final DateTime? joinDate;
+
+  /**
+   * Callback invoked when a date period is confirmed or cleared.
+   */
+  final ValueChanged<DateTime?> onSelected;
+
+  /**
+   * Constructs the iOS 27 month picker sheet.
+   */
+  const _Ios27MonthPickerSheet({
+    required this.initialMonth,
+    required this.joinDate,
+    required this.onSelected,
+  });
+
+  @override
+  State<_Ios27MonthPickerSheet> createState() => _Ios27MonthPickerSheetState();
+}
+
+class _Ios27MonthPickerSheetState extends State<_Ios27MonthPickerSheet> {
+  int _segmentedIndex = 0;
+  late int _selectedYear;
+  late int _selectedMonth;
+  late final List<int> _years;
+  late final FixedExtentScrollController _monthWheelController;
+  late final FixedExtentScrollController _yearWheelController;
+
+  static const List<String> _monthNames = <String>[
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
+  static const List<String> _fullMonthNames = <String>[
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    final DateTime now = DateTime.now();
+    _selectedYear = widget.initialMonth?.year ?? now.year;
+    _selectedMonth = widget.initialMonth?.month ?? now.month;
+
+    final int minYear = widget.joinDate?.year ?? (now.year - 4);
+    final int startYear = minYear <= now.year ? minYear : now.year - 4;
+    _years = List<int>.generate(
+      now.year - startYear + 1,
+      (int i) => startYear + i,
+    );
+
+    final int initialYearIndex =
+        _years.indexOf(_selectedYear).clamp(0, _years.length - 1);
+    _monthWheelController =
+        FixedExtentScrollController(initialItem: _selectedMonth - 1);
+    _yearWheelController =
+        FixedExtentScrollController(initialItem: initialYearIndex);
+  }
+
+  @override
+  void dispose() {
+    _monthWheelController.dispose();
+    _yearWheelController.dispose();
+    super.dispose();
+  }
+
+  bool _isDateDisabled(int year, int month) {
+    final DateTime now = DateTime.now();
+    if (year > now.year || (year == now.year && month > now.month)) {
+      return true;
+    }
+    if (widget.joinDate != null) {
+      if (year < widget.joinDate!.year ||
+          (year == widget.joinDate!.year && month < widget.joinDate!.month)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Dual wheel roller view with centered specular glass highlight bar.
+   */
+  Widget _buildWheelRoller(
+    BuildContext context,
+    bool isDark,
+    Color primaryColor,
+  ) {
+    return SizedBox(
+      height: 200,
+      child: Stack(
+        alignment: Alignment.center,
+        children: <Widget>[
+          IgnorePointer(
+            child: Container(
+              height: 44,
+              margin: const EdgeInsets.symmetric(horizontal: 14),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: isDark
+                      ? <Color>[
+                          primaryColor.withValues(alpha: 0.22),
+                          primaryColor.withValues(alpha: 0.10),
+                        ]
+                      : <Color>[
+                          primaryColor.withValues(alpha: 0.16),
+                          primaryColor.withValues(alpha: 0.08),
+                        ],
+                ),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: isDark
+                      ? CupertinoColors.white.withValues(alpha: 0.30)
+                      : primaryColor.withValues(alpha: 0.45),
+                  width: 1.0,
+                ),
+                boxShadow: <BoxShadow>[
+                  BoxShadow(
+                    color: primaryColor.withValues(alpha: isDark ? 0.25 : 0.15),
+                    blurRadius: 16,
+                    spreadRadius: 1,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Row(
+            children: <Widget>[
+              Expanded(
+                flex: 3,
+                child: CupertinoPicker(
+                  scrollController: _monthWheelController,
+                  itemExtent: 44,
+                  magnification: 1.15,
+                  useMagnifier: true,
+                  squeeze: 1.25,
+                  selectionOverlay: const SizedBox.shrink(),
+                  onSelectedItemChanged: (int index) {
+                    setState(() {
+                      _selectedMonth = index + 1;
+                    });
+                  },
+                  children: List<Widget>.generate(12, (int index) {
+                    final int month = index + 1;
+                    final bool disabled =
+                        _isDateDisabled(_selectedYear, month);
+                    final bool selected = _selectedMonth == month;
+                    return Center(
+                      child: Text(
+                        _fullMonthNames[index],
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight:
+                              selected ? FontWeight.w700 : FontWeight.w500,
+                          color: disabled
+                              ? (isDark
+                                  ? CupertinoColors.white.withValues(alpha: 0.24)
+                                  : CupertinoColors.black.withValues(alpha: 0.26))
+                              : (selected
+                                  ? (isDark
+                                      ? CupertinoColors.white
+                                      : primaryColor)
+                                  : (isDark
+                                      ? CupertinoColors.white
+                                          .withValues(alpha: 0.65)
+                                      : const Color(0xFF6C6C70))),
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              ),
+              Expanded(
+                flex: 2,
+                child: CupertinoPicker(
+                  scrollController: _yearWheelController,
+                  itemExtent: 44,
+                  magnification: 1.15,
+                  useMagnifier: true,
+                  squeeze: 1.25,
+                  selectionOverlay: const SizedBox.shrink(),
+                  onSelectedItemChanged: (int index) {
+                    setState(() {
+                      _selectedYear = _years[index];
+                    });
+                  },
+                  children: _years.map((int year) {
+                    final bool selected = _selectedYear == year;
+                    return Center(
+                      child: Text(
+                        '$year',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight:
+                              selected ? FontWeight.w700 : FontWeight.w500,
+                          color: selected
+                              ? (isDark
+                                  ? CupertinoColors.white
+                                  : primaryColor)
+                              : (isDark
+                                  ? CupertinoColors.white.withValues(alpha: 0.65)
+                                  : const Color(0xFF6C6C70)),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /**
+   * Calendar grid view with year stepping controls and 12-month glass capsules.
+   */
+  Widget _buildCalendarGrid(
+    BuildContext context,
+    bool isDark,
+    Color primaryColor,
+  ) {
+    final DateTime now = DateTime.now();
+    final bool canGoBack =
+        widget.joinDate == null || _selectedYear > widget.joinDate!.year;
+    final bool canGoForward = _selectedYear < now.year;
+
+    return Column(
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              CupertinoButton(
+                padding: EdgeInsets.zero,
+                minimumSize: const Size(36, 36),
+                onPressed: canGoBack
+                    ? () {
+                        setState(() {
+                          _selectedYear--;
+                          final int idx = _years.indexOf(_selectedYear);
+                          if (idx >= 0) _yearWheelController.jumpToItem(idx);
+                        });
+                      }
+                    : null,
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? CupertinoColors.white.withValues(alpha: 0.08)
+                        : CupertinoColors.black.withValues(alpha: 0.05),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isDark
+                          ? CupertinoColors.white.withValues(alpha: 0.16)
+                          : CupertinoColors.black.withValues(alpha: 0.08),
+                      width: 0.8,
+                    ),
+                  ),
+                  child: Icon(
+                    CupertinoIcons.chevron_left,
+                    size: 16,
+                    color: canGoBack
+                        ? (isDark
+                            ? CupertinoColors.white
+                            : const Color(0xFF1C1C1E))
+                        : CupertinoColors.inactiveGray,
+                  ),
+                ),
+              ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? CupertinoColors.white.withValues(alpha: 0.08)
+                      : CupertinoColors.black.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isDark
+                        ? CupertinoColors.white.withValues(alpha: 0.16)
+                        : CupertinoColors.black.withValues(alpha: 0.08),
+                    width: 0.8,
+                  ),
+                ),
+                child: Text(
+                  '$_selectedYear',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.3,
+                    color:
+                        isDark ? CupertinoColors.white : const Color(0xFF1C1C1E),
+                  ),
+                ),
+              ),
+              CupertinoButton(
+                padding: EdgeInsets.zero,
+                minimumSize: const Size(36, 36),
+                onPressed: canGoForward
+                    ? () {
+                        setState(() {
+                          _selectedYear++;
+                          final int idx = _years.indexOf(_selectedYear);
+                          if (idx >= 0) _yearWheelController.jumpToItem(idx);
+                        });
+                      }
+                    : null,
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? CupertinoColors.white.withValues(alpha: 0.08)
+                        : CupertinoColors.black.withValues(alpha: 0.05),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isDark
+                          ? CupertinoColors.white.withValues(alpha: 0.16)
+                          : CupertinoColors.black.withValues(alpha: 0.08),
+                      width: 0.8,
+                    ),
+                  ),
+                  child: Icon(
+                    CupertinoIcons.chevron_right,
+                    size: 16,
+                    color: canGoForward
+                        ? (isDark
+                            ? CupertinoColors.white
+                            : const Color(0xFF1C1C1E))
+                        : CupertinoColors.inactiveGray,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        GridView.count(
+          crossAxisCount: 4,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          mainAxisSpacing: 10,
+          crossAxisSpacing: 10,
+          childAspectRatio: 2.1,
+          children: List<Widget>.generate(12, (int i) {
+            final int month = i + 1;
+            final bool disabled = _isDateDisabled(_selectedYear, month);
+            final bool selected = _selectedMonth == month;
+            final bool isCurrentMonth =
+                _selectedYear == now.year && month == now.month;
+
+            return GestureDetector(
+              onTap: disabled
+                  ? null
+                  : () {
+                      setState(() {
+                        _selectedMonth = month;
+                        _monthWheelController.jumpToItem(month - 1);
+                      });
+                    },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                decoration: BoxDecoration(
+                  gradient: selected
+                      ? LinearGradient(
+                          colors: <Color>[
+                            primaryColor,
+                            primaryColor.withValues(alpha: 0.85),
+                          ],
+                        )
+                      : null,
+                  color: selected
+                      ? null
+                      : (isDark
+                          ? CupertinoColors.white.withValues(alpha: 0.06)
+                          : CupertinoColors.black.withValues(alpha: 0.04)),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: selected
+                        ? primaryColor
+                        : (isCurrentMonth
+                            ? primaryColor.withValues(alpha: 0.50)
+                            : (isDark
+                                ? CupertinoColors.white.withValues(alpha: 0.10)
+                                : CupertinoColors.black.withValues(alpha: 0.06))),
+                    width: selected || isCurrentMonth ? 1.4 : 0.8,
+                  ),
+                  boxShadow: selected
+                      ? <BoxShadow>[
+                          BoxShadow(
+                            color: primaryColor.withValues(alpha: 0.35),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  _monthNames[i],
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight:
+                        selected ? FontWeight.w700 : FontWeight.w600,
+                    color: disabled
+                        ? (isDark
+                            ? CupertinoColors.white.withValues(alpha: 0.22)
+                            : CupertinoColors.black.withValues(alpha: 0.24))
+                        : (selected
+                            ? CupertinoColors.white
+                            : (isDark
+                                ? CupertinoColors.white
+                                : const Color(0xFF1C1C1E))),
+                  ),
+                ),
+              ),
+            );
+          }),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isDark =
+        CupertinoTheme.of(context).brightness == Brightness.dark;
+    final Color primaryColor = CupertinoTheme.of(context).primaryColor;
+
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 32, sigmaY: 32),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: isDark
+                  ? <Color>[
+                      const Color(0xF2121722),
+                      const Color(0xFA0B0F17),
+                    ]
+                  : <Color>[
+                      const Color(0xF7FFFFFF),
+                      const Color(0xFCF2F5FB),
+                    ],
+            ),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+            border: Border.all(
+              color: isDark
+                  ? CupertinoColors.white.withValues(alpha: 0.18)
+                  : CupertinoColors.white.withValues(alpha: 0.85),
+              width: 1.0,
+            ),
+            boxShadow: <BoxShadow>[
+              BoxShadow(
+                color: CupertinoColors.black
+                    .withValues(alpha: isDark ? 0.60 : 0.18),
+                blurRadius: 40,
+                offset: const Offset(0, -10),
+              ),
+            ],
+          ),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Center(
+                    child: Container(
+                      width: 42,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? CupertinoColors.white.withValues(alpha: 0.28)
+                            : CupertinoColors.black.withValues(alpha: 0.20),
+                        borderRadius: BorderRadius.circular(2.5),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            'Select Period',
+                            style: TextStyle(
+                              fontSize: 19,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.4,
+                              color: isDark
+                                  ? CupertinoColors.white
+                                  : const Color(0xFF1C1C1E),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '${_monthNames[_selectedMonth - 1]} $_selectedYear',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: primaryColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                      CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        minimumSize: const Size(32, 32),
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? CupertinoColors.white.withValues(alpha: 0.12)
+                                : CupertinoColors.black.withValues(alpha: 0.06),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isDark
+                                  ? CupertinoColors.white.withValues(alpha: 0.20)
+                                  : CupertinoColors.black.withValues(alpha: 0.08),
+                              width: 0.8,
+                            ),
+                          ),
+                          child: Icon(
+                            CupertinoIcons.xmark,
+                            size: 15,
+                            color: isDark
+                                ? CupertinoColors.white
+                                : const Color(0xFF1C1C1E),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Ios27SegmentedControl(
+                    segments: const <String>['Wheel Roller', 'Calendar Grid'],
+                    selectedIndex: _segmentedIndex,
+                    onSegmentSelected: (int idx) {
+                      setState(() => _segmentedIndex = idx);
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  AnimatedCrossFade(
+                    duration: const Duration(milliseconds: 240),
+                    firstCurve: Curves.easeOutCubic,
+                    secondCurve: Curves.easeOutCubic,
+                    crossFadeState: _segmentedIndex == 0
+                        ? CrossFadeState.showFirst
+                        : CrossFadeState.showSecond,
+                    firstChild:
+                        _buildWheelRoller(context, isDark, primaryColor),
+                    secondChild:
+                        _buildCalendarGrid(context, isDark, primaryColor),
+                  ),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: <Widget>[
+                      if (widget.initialMonth != null) ...<Widget>[
+                        CupertinoButton(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          minimumSize: const Size(0, 44),
+                          onPressed: () {
+                            widget.onSelected(null);
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text(
+                            'Clear',
+                            style: TextStyle(
+                              color: Color(0xFFFF3B30),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                      Expanded(
+                        child: CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          minimumSize: const Size(0, 44),
+                          onPressed: () {
+                            final DateTime now = DateTime.now();
+                            setState(() {
+                              _selectedYear = now.year;
+                              _selectedMonth = now.month;
+                              final int idx = _years.indexOf(now.year);
+                              if (idx >= 0) {
+                                _yearWheelController.jumpToItem(idx);
+                              }
+                              _monthWheelController.jumpToItem(now.month - 1);
+                            });
+                          },
+                          child: Container(
+                            height: 44,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? CupertinoColors.white.withValues(alpha: 0.08)
+                                  : CupertinoColors.black.withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: isDark
+                                    ? CupertinoColors.white.withValues(alpha: 0.16)
+                                    : CupertinoColors.black.withValues(alpha: 0.08),
+                                width: 0.8,
+                              ),
+                            ),
+                            child: Text(
+                              'This Month',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: isDark
+                                    ? CupertinoColors.white
+                                    : const Color(0xFF1C1C1E),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Ios27Button(
+                          label: 'Apply',
+                          height: 44,
+                          borderRadius: 14,
+                          onPressed: () {
+                            widget.onSelected(
+                              DateTime(_selectedYear, _selectedMonth),
+                            );
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
