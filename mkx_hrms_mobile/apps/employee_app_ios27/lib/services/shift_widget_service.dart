@@ -50,6 +50,50 @@ class ShiftWidgetService {
     }
   }
 
+  /// Computes epoch timestamp in milliseconds from clock-in time string.
+  ///
+  /// @param checkIn Clock-in time string formatted like 'hh:mm a' or 'HH:mm:ss'
+  /// @param recordDate Optional date string of the attendance record
+  static int? computeCheckInEpoch(String? checkIn, String? recordDate) {
+    if (checkIn == null || checkIn.isEmpty || checkIn == '--:--') return null;
+    try {
+      DateTime? parsedDate;
+      if (recordDate != null && recordDate.isNotEmpty) {
+        parsedDate = DateTime.tryParse(recordDate);
+      }
+      final today = parsedDate ?? DateTime.now();
+
+      final formats = [
+        DateFormat('hh:mm a'),
+        DateFormat('h:mm a'),
+        DateFormat('HH:mm:ss'),
+        DateFormat('HH:mm'),
+        DateFormat('hh:mm:ss a'),
+      ];
+
+      DateTime? timeOnly;
+      for (final f in formats) {
+        try {
+          timeOnly = f.parse(checkIn.trim());
+          break;
+        } catch (_) {}
+      }
+
+      if (timeOnly != null) {
+        final fullDateTime = DateTime(
+          today.year,
+          today.month,
+          today.day,
+          timeOnly.hour,
+          timeOnly.minute,
+          timeOnly.second,
+        );
+        return fullDateTime.millisecondsSinceEpoch;
+      }
+    } catch (_) {}
+    return null;
+  }
+
   /// Updates the home screen widget with the latest shift and attendance metrics.
   ///
   /// @param record Current daily attendance record
@@ -70,11 +114,14 @@ class ShiftWidgetService {
       String status = 'Not Clocked In';
       String workHours = '0h 00m';
       String checkInTime = '--:--';
+      int checkInEpoch = 0;
 
       if (hasCheckedIn && !hasCheckedOut) {
         status = 'Punched In';
         checkInTime = record!.checkIn;
         workHours = computeLiveHours(record.checkIn, now);
+        checkInEpoch = computeCheckInEpoch(record.checkIn, record.date) ??
+            now.millisecondsSinceEpoch;
       } else if (hasCheckedOut) {
         status = 'Punched Out';
         checkInTime = record!.checkIn;
@@ -92,6 +139,9 @@ class ShiftWidgetService {
           'shift_name', shiftName ?? 'General Shift');
       await HomeWidget.saveWidgetData<String>('check_in_time', checkInTime);
       await HomeWidget.saveWidgetData<String>('work_hours', workHours);
+      await HomeWidget.saveWidgetData<int>('check_in_epoch', checkInEpoch);
+      await HomeWidget.saveWidgetData<String>(
+          'check_in_epoch_str', checkInEpoch.toString());
       await HomeWidget.saveWidgetData<String>(
           'employee_name', employeeName ?? 'Employee');
       await HomeWidget.saveWidgetData<String>('shift_date', dateStr);

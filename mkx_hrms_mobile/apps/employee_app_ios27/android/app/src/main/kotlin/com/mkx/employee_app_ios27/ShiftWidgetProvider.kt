@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.net.Uri
+import android.os.SystemClock
+import android.view.View
 import android.widget.RemoteViews
 import es.antonborri.home_widget.HomeWidgetLaunchIntent
 import es.antonborri.home_widget.HomeWidgetProvider
@@ -57,10 +59,37 @@ class ShiftWidgetProvider : HomeWidgetProvider() {
 
                 setTextViewText(R.id.widget_shift_name, shiftName)
                 setTextViewText(R.id.widget_check_in, "Clocked In: $checkInTime")
-                setTextViewText(R.id.widget_work_hours, workHours)
                 setTextViewText(R.id.widget_employee_name, employeeName)
                 if (date.isNotEmpty()) {
                     setTextViewText(R.id.widget_date, date)
+                }
+
+                /**
+                 * When clocked in, use Android's native Chronometer to tick live continuously
+                 * on the home screen even when the app is completely closed.
+                 */
+                val checkInEpoch = try {
+                    val epochLong = widgetData.getLong("check_in_epoch", 0L)
+                    if (epochLong > 0L) epochLong
+                    else widgetData.getString("check_in_epoch_str", null)?.toLongOrNull() ?: 0L
+                } catch (e: Exception) {
+                    widgetData.getString("check_in_epoch_str", null)?.toLongOrNull() ?: 0L
+                }
+
+                val nowWall = System.currentTimeMillis()
+                val nowElapsed = SystemClock.elapsedRealtime()
+
+                if (isCheckedIn && checkInEpoch > 0L && checkInEpoch <= nowWall) {
+                    val elapsedSinceCheckIn = nowWall - checkInEpoch
+                    val chronometerBase = nowElapsed - elapsedSinceCheckIn
+                    setChronometer(R.id.widget_chronometer, chronometerBase, null, true)
+                    setViewVisibility(R.id.widget_chronometer, View.VISIBLE)
+                    setViewVisibility(R.id.widget_work_hours, View.GONE)
+                } else {
+                    setChronometer(R.id.widget_chronometer, 0L, null, false)
+                    setViewVisibility(R.id.widget_chronometer, View.GONE)
+                    setViewVisibility(R.id.widget_work_hours, View.VISIBLE)
+                    setTextViewText(R.id.widget_work_hours, workHours)
                 }
             }
             appWidgetManager.updateAppWidget(widgetId, views)

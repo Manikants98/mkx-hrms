@@ -31,3 +31,6 @@ flutter:
     - assets/illustrations/onboarding_company.svg
     - assets/illustrations/onboarding_employee.svg
     - assets/illustrations/onboarding_collaboration.svg
+    - assets/illustrations/hr_onboarding_growth.svg
+    - assets/illustrations/hr_onboarding_collaboration.svg
+    - assets/illustrations/hr_onboarding_governance.svg

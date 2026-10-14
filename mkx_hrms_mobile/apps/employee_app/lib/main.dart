@@ -7,9 +7,11 @@ import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/features/auth/screens/login_screen.dart';
 import 'package:mkx_core/features/auth/state/auth_provider.dart';
 import 'package:mkx_core/features/onboarding/screens/onboarding_screen.dart';
+import 'package:mkx_core/network/dio_client.dart';
 import 'package:mkx_core/theme/app_theme.dart';
 import 'package:mkx_core/theme/app_theme_scope.dart';
 import 'package:mkx_core/theme/app_theme_settings.dart';
+import 'package:mkx_core/widgets/session_restore_sheet.dart';
 import 'package:mkx_core/widgets/splash_screen.dart';
 import 'package:mkx_core/utils/ui_helpers.dart';
 import 'package:provider/provider.dart';
@@ -42,6 +44,27 @@ void main() async {
       }
     },
   );
+
+  DioClient.onUnauthorized = () {
+    SessionRestoreSheet.show(
+      onRestored: () {
+        final context = navigatorKey.currentContext;
+        if (context != null && context.mounted) {
+          final auth = context.read<AuthProvider>();
+          final user = auth.currentUser;
+          context.read<AttendanceProvider>().loadAttendance(
+            employeeId: user?.employeeDbId,
+            employeeCode: user?.employeeId,
+          );
+          context.read<LeavesProvider>().loadLeaves(
+            employeeId: user?.employeeDbId,
+            employeeCode: user?.employeeId,
+          );
+          context.read<NotificationsProvider>().fetchNotifications();
+        }
+      },
+    );
+  };
 
   try {
     await Firebase.initializeApp();

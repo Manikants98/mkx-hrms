@@ -14,6 +14,7 @@ class TokenStorage {
   static const String _keySeedColor = 'theme_seed_color';
   static const String _keyFontFamily = 'theme_font_family';
   static const String _keyHasSeenOnboarding = 'has_seen_onboarding';
+  static const String _keyHasSeenHrOnboarding = 'has_seen_hr_onboarding';
 
   SharedPreferences? _prefs;
 
@@ -122,5 +123,17 @@ class TokenStorage {
   Future<bool> getHasSeenOnboarding() async {
     final p = await _asyncPrefs;
     return p.getBool(_keyHasSeenOnboarding) ?? false;
+  }
+
+  /// Persists whether the user has already completed or skipped the first-launch HR onboarding.
+  Future<void> setHasSeenHrOnboarding(bool value) async {
+    final p = await _asyncPrefs;
+    await p.setBool(_keyHasSeenHrOnboarding, value);
+  }
+
+  /// Checks whether the user has previously completed or skipped the first-launch HR onboarding.
+  Future<bool> getHasSeenHrOnboarding() async {
+    final p = await _asyncPrefs;
+    return p.getBool(_keyHasSeenHrOnboarding) ?? false;
   }
 }

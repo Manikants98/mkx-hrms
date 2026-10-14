@@ -95,6 +95,19 @@
                 android:textSize="9.5sp"
                 android:textStyle="bold" />
 
+            <Chronometer
+                android:id="@+id/widget_chronometer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:fontFamily="sans-serif-medium"
+                android:includeFontPadding="false"
+                android:letterSpacing="-0.02"
+                android:textColor="#FFFFFF"
+                android:textSize="30sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
             <TextView
                 android:id="@+id/widget_work_hours"
                 android:layout_width="wrap_content"

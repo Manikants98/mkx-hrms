@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
 import 'package:mkx_core/features/auth/state/auth_provider.dart';
+import 'package:mkx_core/widgets/splash_screen.dart' show AppType;
 
 /// Data model representing an individual onboarding slide item.
 class OnboardingSlide {
@@ -36,17 +37,25 @@ class OnboardingSlide {
   });
 }
 
-/// First-launch onboarding screen for the employee application.
+/// First-launch onboarding screen for employee and HR applications.
 ///
 /// Features Storyset vector illustrations, interactive page sliding,
 /// animated indicators, and persistent state transition.
 class OnboardingScreen extends StatefulWidget {
+  /// Defines which app variant onboarding flow to present.
+  final AppType appType;
+
+  /// Optional custom slide list override.
+  final List<OnboardingSlide>? customSlides;
+
   /// Optional callback invoked when the onboarding is finished or skipped.
   final VoidCallback? onComplete;
 
   /// Creates a new [OnboardingScreen] instance.
   const OnboardingScreen({
     super.key,
+    this.appType = AppType.employee,
+    this.customSlides,
     this.onComplete,
   });
 
@@ -58,7 +67,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentIndex = 0;
 
-  static const List<OnboardingSlide> _slides = [
+  static const List<OnboardingSlide> _employeeSlides = [
     OnboardingSlide(
       assetPath: 'assets/illustrations/onboarding_company.svg',
       categoryBadge: 'DIGITAL WORKSPACE',
@@ -85,6 +94,40 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     ),
   ];
 
+  static const List<OnboardingSlide> _hrSlides = [
+    OnboardingSlide(
+      assetPath: 'assets/illustrations/hr_onboarding_growth.svg',
+      categoryBadge: 'EXECUTIVE ANALYTICS',
+      badgeIcon: Icons.trending_up_rounded,
+      title: 'Real-Time Workforce Growth',
+      description:
+          'Track live headcount statistics, analyze attendance pulses, monitor daily present ratios, and drive organizational insights from a unified dashboard.',
+    ),
+    OnboardingSlide(
+      assetPath: 'assets/illustrations/hr_onboarding_collaboration.svg',
+      categoryBadge: 'TALENT & DIRECTORY',
+      badgeIcon: Icons.groups_rounded,
+      title: 'Connected People Directory',
+      description:
+          'Explore comprehensive employee profiles, supervise departmental hierarchies, manage emergency details, and foster organizational synergy.',
+    ),
+    OnboardingSlide(
+      assetPath: 'assets/illustrations/hr_onboarding_governance.svg',
+      categoryBadge: 'GOVERNANCE & PAYROLL',
+      badgeIcon: Icons.verified_rounded,
+      title: 'Streamlined HR Operations',
+      description:
+          'Review leave requests with single-tap supervisor approvals, ensure shift policy compliance, and supervise payroll distributions effortlessly.',
+    ),
+  ];
+
+  List<OnboardingSlide> get _slides {
+    if (widget.customSlides != null && widget.customSlides!.isNotEmpty) {
+      return widget.customSlides!;
+    }
+    return widget.appType == AppType.hr ? _hrSlides : _employeeSlides;
+  }
+
   @override
   void dispose() {
     _pageController.dispose();
@@ -100,7 +143,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Future<void> _handleFinish() async {
     HapticFeedback.mediumImpact();
     final auth = context.read<AuthProvider>();
-    await auth.completeOnboarding();
+    if (widget.appType == AppType.hr) {
+      await auth.completeHrOnboarding();
+    } else {
+      await auth.completeOnboarding();
+    }
     if (widget.onComplete != null) {
       widget.onComplete!();
     }
@@ -162,7 +209,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'MKX HRMS',
+                          widget.appType == AppType.hr
+                              ? 'MKX HR SUITE'
+                              : 'MKX HRMS',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,

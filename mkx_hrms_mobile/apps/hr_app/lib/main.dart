@@ -4,9 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:mkx_core/features/auth/screens/login_screen.dart';
 import 'package:mkx_core/features/auth/state/auth_provider.dart';
+import 'package:mkx_core/features/onboarding/screens/onboarding_screen.dart';
+import 'package:mkx_core/network/dio_client.dart';
 import 'package:mkx_core/theme/app_theme.dart';
 import 'package:mkx_core/theme/app_theme_scope.dart';
 import 'package:mkx_core/theme/app_theme_settings.dart';
+import 'package:mkx_core/widgets/session_restore_sheet.dart';
 import 'package:mkx_core/widgets/splash_screen.dart';
 import 'package:mkx_core/utils/ui_helpers.dart';
 import 'package:provider/provider.dart';
@@ -30,6 +33,22 @@ import 'services/hr_widget_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+
+  DioClient.onUnauthorized = () {
+    SessionRestoreSheet.show(
+      onRestored: () {
+        final context = UiHelpers.rootNavigatorKey.currentContext;
+        if (context != null && context.mounted) {
+          context.read<DashboardProvider>().loadStats();
+          context.read<HrAttendanceProvider>().loadAttendance();
+          context.read<HrLeavesProvider>().loadLeaves();
+          context.read<EmployeesProvider>().loadEmployees();
+          context.read<NotificationsProvider>().fetchNotifications();
+        }
+      },
+    );
+  };
+
   runApp(const HrApp());
 }
 
@@ -58,30 +77,42 @@ class _HrAppState extends State<HrApp> {
       redirect: (context, state) {
         final auth = _authProvider;
         final isSplash = state.matchedLocation == '/splash';
+        final isOnboarding = state.matchedLocation == '/onboarding';
         final isLogin = state.matchedLocation == '/login';
 
-        // 1. App is initializing, show splash screen
+        /// 1. App is initializing, show splash screen
         if (auth.isInitializing) {
           return isSplash ? null : '/splash';
         }
 
-        // 2. App initialized, not authenticated, go to login
+        /// 2. First-time launch, present HR onboarding flow
+        if (!auth.hasSeenHrOnboarding) {
+          return isOnboarding ? null : '/onboarding';
+        }
+
+        /// 3. App initialized and onboarding completed, not authenticated, go to login
         if (!auth.isAuthenticated) {
           return isLogin ? null : '/login';
         }
 
-        // 3. App initialized, authenticated, but trying to see login or splash, go to dashboard
-        if (isLogin || isSplash) {
+        /// 4. Authenticated, redirect away from splash, onboarding, or login
+        if (isLogin || isSplash || isOnboarding) {
           return '/';
         }
 
-        // 4. Otherwise, let them go where they wanted
+        /// 5. Proceed to destination
         return null;
       },
       routes: [
         GoRoute(
           path: '/splash',
           builder: (context, state) => const AppSplashScreen(
+            appType: AppType.hr,
+          ),
+        ),
+        GoRoute(
+          path: '/onboarding',
+          builder: (context, state) => const OnboardingScreen(
             appType: AppType.hr,
           ),
         ),
