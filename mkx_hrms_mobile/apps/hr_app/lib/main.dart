@@ -26,6 +26,7 @@ import 'features/notifications/state/notifications_provider.dart';
 import 'features/payroll/screens/hr_payroll_screen.dart';
 import 'features/payroll/state/hr_payroll_provider.dart';
 import 'features/profile/screens/hr_profile_screen.dart';
+import 'services/hr_widget_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -130,6 +131,18 @@ class _HrAppState extends State<HrApp> {
           ],
         ),
       ],
+    );
+
+    HrWidgetService.initialize(
+      onWidgetLaunch: (Uri? uri) {
+        if (uri == null) return;
+        final uriStr = uri.toString();
+        if (uriStr.contains('attendance')) {
+          _router.go('/attendance');
+        } else if (uriStr.contains('leaves')) {
+          _router.go('/leaves');
+        }
+      },
     );
   }
 

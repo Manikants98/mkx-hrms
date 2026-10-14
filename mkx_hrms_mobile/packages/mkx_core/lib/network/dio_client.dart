@@ -8,6 +8,7 @@ import 'api_interceptor.dart';
 
 export 'package:dio_cache_interceptor/dio_cache_interceptor.dart'
     show CachePolicy, CacheOptions, CachePriority;
+export '../utils/app_logger.dart';
 
 /// Dio networking service managing the HTTP client instance, request dispatching,
 /// in-memory caching, and offline response resilience.
@@ -58,8 +59,8 @@ class DioClient {
   /// Global callback invoked on 401 Unauthorized errors to handle session termination.
   static void Function()? onUnauthorized;
 
-  /// When true, bypasses automatic 401 logout for dashboard UI preview and testing.
-  static bool bypassUnauthorized = true;
+  /// When true, bypasses automatic 401 handler for preview and testing.
+  static bool bypassUnauthorized = false;
 
   static DateTime? _lastUnauthorizedTime;
 
@@ -74,9 +75,13 @@ class DioClient {
     }
     _lastUnauthorizedTime = now;
 
-    UiHelpers.showGlobalSnackBar('Session Expired', isError: true);
-    onUnauthorized?.call();
-    UiHelpers.rootNavigatorKey.currentState?.popUntil((route) => route.isFirst);
+    if (onUnauthorized != null) {
+      onUnauthorized?.call();
+    } else {
+      UiHelpers.showGlobalSnackBar('Session Expired', isError: true);
+      UiHelpers.rootNavigatorKey.currentState
+          ?.popUntil((route) => route.isFirst);
+    }
   }
 
   /// Updates and persists the base API URL.

@@ -2,21 +2,25 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
-import 'features/auth/screens/employee_login_screen.dart';
 import 'package:mkx_core/features/auth/state/auth_provider.dart';
+import 'package:mkx_core/features/onboarding/screens/onboarding_screen.dart';
+import 'package:mkx_core/network/dio_client.dart';
 import 'package:mkx_core/theme/app_theme_scope.dart';
 import 'package:mkx_core/theme/app_theme_settings.dart';
 import 'package:mkx_core/utils/ui_helpers.dart';
-import 'widgets/employee_splash_screen.dart';
-import 'widgets/ios27_toast.dart';
 import 'package:provider/provider.dart';
 
 import 'features/ai_assistant/state/ai_provider.dart';
 import 'features/attendance/state/attendance_provider.dart';
+import 'features/auth/screens/employee_login_screen.dart';
 import 'features/leaves/state/leaves_provider.dart';
 import 'features/navigation/screens/main_shell_screen.dart';
 import 'features/notifications/state/notifications_provider.dart';
 import 'features/payroll/state/payroll_provider.dart';
+import 'services/shift_widget_service.dart';
+import 'widgets/employee_splash_screen.dart';
+import 'widgets/ios27_session_restore_sheet.dart';
+import 'widgets/ios27_toast.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = UiHelpers.rootNavigatorKey;
 
@@ -27,6 +31,18 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await ShiftWidgetService.initialize(
+    onWidgetLaunch: (Uri? uri) {
+      if (uri == null) return;
+      final uriString = uri.toString();
+      if (uriString.contains('apply_leave')) {
+        MainShellScreen.switchTab(1);
+      } else if (uriString.contains('shift_tracker')) {
+        MainShellScreen.switchTab(0);
+      }
+    },
+  );
 
   UiHelpers.customToastHandler = (
     BuildContext context,
@@ -40,6 +56,10 @@ void main() async {
       isError: isError,
       isSuccess: isSuccess,
     );
+  };
+
+  DioClient.onUnauthorized = () {
+    Ios27SessionRestoreSheet.show();
   };
 
   await LiquidGlassWidgets.initialize();
@@ -183,6 +203,7 @@ class _MkxHrmsAppState extends State<MkxHrmsApp> {
   Widget _buildHome(AuthProvider auth) {
     if (auth.isInitializing) return const EmployeeSplashScreen();
     if (auth.isAuthenticated) return const MainShellScreen();
+    if (!auth.hasSeenOnboarding) return const OnboardingScreen();
     return const EmployeeLoginScreen();
   }
 }

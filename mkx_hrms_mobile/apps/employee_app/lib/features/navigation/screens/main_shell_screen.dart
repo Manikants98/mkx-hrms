@@ -15,14 +15,26 @@ import '../../ai_assistant/screens/smart_assistant_screen.dart';
 /// no top border/divider, and a soft elevation shadow — matching Gmail's
 /// bottom nav look and feel.
 class MainShellScreen extends StatefulWidget {
+  static final GlobalKey<MainShellScreenState> shellKey =
+      GlobalKey<MainShellScreenState>();
+
   const MainShellScreen({super.key});
 
   @override
-  State<MainShellScreen> createState() => _MainShellScreenState();
+  State<MainShellScreen> createState() => MainShellScreenState();
 }
 
-class _MainShellScreenState extends State<MainShellScreen> {
+class MainShellScreenState extends State<MainShellScreen> {
   int _currentIndex = 0;
+
+  /// Switches the active shell tab by index.
+  void switchTab(int index) {
+    if (mounted && index >= 0 && index < _screens.length) {
+      setState(() {
+        _currentIndex = index;
+      });
+    }
+  }
 
   @override
   void initState() {

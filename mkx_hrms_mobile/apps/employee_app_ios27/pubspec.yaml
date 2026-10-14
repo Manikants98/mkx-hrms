@@ -51,6 +51,8 @@ dependencies:
   device_info_plus: ^13.2.0
   firebase_core: ^4.15.0
   firebase_messaging: ^16.7.0
+  home_widget: ^0.10.0
+  logger: ^2.8.0
 
 dev_dependencies:
   flutter_test:

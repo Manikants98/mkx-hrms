@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:mkx_core/network/dio_client.dart';
+import 'package:mkx_core/theme/app_theme_scope.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
@@ -424,9 +425,22 @@ class _SmartAssistantLiveScreenState extends State<SmartAssistantLiveScreen>
 
   @override
   Widget build(BuildContext context) {
-    final isDark =
+    final bool isDark =
         CupertinoTheme.of(context).brightness == Brightness.dark;
-    final colors = _LiveTheme(
+
+    final Color themePrimary = () {
+      try {
+        return AppThemeScope.of(context).seedColor;
+      } catch (_) {
+        return CupertinoTheme.of(context).primaryColor;
+      }
+    }();
+
+    final Color onPrimaryColor = themePrimary.computeLuminance() > 0.55
+        ? const Color(0xFF000000)
+        : const Color(0xFFFFFFFF);
+
+    final _LiveTheme colors = _LiveTheme(
       surface: isDark ? const Color(0xFF10121A) : const Color(0xFFF2F2F7),
       surfaceContainerLow:
           isDark ? const Color(0xFF161922) : const Color(0xFFE5E5EA),
@@ -434,8 +448,8 @@ class _SmartAssistantLiveScreenState extends State<SmartAssistantLiveScreen>
           isDark ? const Color(0xFF1E2230) : const Color(0xFFDCDCE2),
       outlineVariant:
           isDark ? const Color(0xFF2E3346) : const Color(0xFFC7C7CC),
-      primary: const Color(0xFFFFD60A),
-      onPrimary: const Color(0xFF000000),
+      primary: themePrimary,
+      onPrimary: onPrimaryColor,
       onSurface: isDark ? CupertinoColors.white : const Color(0xFF1C1C1E),
       onSurfaceVariant:
           isDark ? const Color(0xFF8E8E93) : const Color(0xFF6E6E73),

@@ -26,7 +26,7 @@ class UiHelpers {
 
   static OverlayEntry? _overlayFallbackEntry;
 
-  /// Fallback overlay toast when no ScaffoldMessenger is available in the widget tree.
+  /// Top-anchored overlay toast HUD used for alert notifications.
   static void _showOverlayFallback(
     BuildContext context,
     String message, {
@@ -44,12 +44,56 @@ class UiHelpers {
         Overlay.maybeOf(context) ??
         rootNavigatorKey.currentState?.overlay;
 
-    if (overlay == null) return;
+    if (overlay == null) {
+      final messenger = ScaffoldMessenger.maybeOf(context) ??
+          rootScaffoldMessengerKey.currentState;
+      if (messenger != null) {
+        messenger.hideCurrentSnackBar();
+        messenger.showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(
+                  isError
+                      ? Icons.error_outline_rounded
+                      : (isSuccess
+                          ? Icons.check_circle_outline_rounded
+                          : Icons.info_outline_rounded),
+                  color: Colors.white,
+                  size: 20,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    message,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: isError
+                ? AppColors.error
+                : (isSuccess ? AppColors.success : const Color(0xFF1E293B)),
+            behavior: SnackBarBehavior.fixed,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+      return;
+    }
 
     final mediaQuery = MediaQuery.maybeOf(context);
     final topPadding = (mediaQuery?.padding.top ?? 0) > 0
         ? (mediaQuery!.padding.top + 10)
         : 40.0;
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final Color accentColor = isError
         ? const Color(0xFFFF3B30)
@@ -59,48 +103,64 @@ class UiHelpers {
         ? Icons.cancel_rounded
         : (isSuccess ? Icons.check_circle_rounded : Icons.info_rounded);
 
+    final directionality = Directionality.maybeOf(context) ?? TextDirection.ltr;
+
     late final OverlayEntry entry;
     entry = OverlayEntry(
-      builder: (ctx) => Positioned(
-        top: topPadding,
-        left: 20,
-        right: 20,
-        child: Material(
-          type: MaterialType.transparency,
-          child: Align(
-            alignment: Alignment.topCenter,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1E293B),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x33000000),
-                    blurRadius: 16,
-                    offset: Offset(0, 8),
+      builder: (ctx) => Directionality(
+        textDirection: directionality,
+        child: Positioned(
+          top: topPadding,
+          left: 20,
+          right: 20,
+          child: Material(
+            type: MaterialType.transparency,
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? const Color(0xFF161A26).withValues(alpha: 0.94)
+                      : Colors.white.withValues(alpha: 0.96),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.16)
+                        : Colors.black.withValues(alpha: 0.08),
+                    width: 0.9,
                   ),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(icon, color: accentColor, size: 20),
-                  const SizedBox(width: 10),
-                  Flexible(
-                    child: Text(
-                      message,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        decoration: TextDecoration.none,
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x33000000),
+                      blurRadius: 16,
+                      offset: Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(icon, color: accentColor, size: 20),
+                    const SizedBox(width: 10),
+                    Flexible(
+                      child: Text(
+                        message,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color:
+                              isDark ? Colors.white : const Color(0xFF0F172A),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.2,
+                          decoration: TextDecoration.none,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -123,7 +183,11 @@ class UiHelpers {
     });
   }
 
-  /// Displays a global SnackBar toast without requiring a local BuildContext.
+  /// Displays a global toast without requiring a local BuildContext.
+  ///
+  /// @param message Text message to display
+  /// @param isError Denotes whether message is an error alert
+  /// @param isSuccess Denotes whether message is a success alert
   static void showGlobalSnackBar(
     String message, {
     bool isError = false,
@@ -139,18 +203,18 @@ class UiHelpers {
       return;
     }
 
-    final state = rootScaffoldMessengerKey.currentState;
-    if (state == null) {
-      if (rootNavigatorKey.currentContext != null) {
-        _showOverlayFallback(
-          rootNavigatorKey.currentContext!,
-          message,
-          isError: isError,
-          isSuccess: isSuccess,
-        );
-      }
+    if (rootNavigatorKey.currentContext != null) {
+      _showOverlayFallback(
+        rootNavigatorKey.currentContext!,
+        message,
+        isError: isError,
+        isSuccess: isSuccess,
+      );
       return;
     }
+
+    final state = rootScaffoldMessengerKey.currentState;
+    if (state == null) return;
     state.hideCurrentSnackBar();
 
     Color bgColor = AppColors.lightPrimary;
@@ -191,15 +255,18 @@ class UiHelpers {
           ],
         ),
         backgroundColor: bgColor,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        behavior: SnackBarBehavior.fixed,
         duration: const Duration(seconds: 3),
       ),
     );
   }
 
-  /// Displays a SnackBar toast within the given BuildContext or delegates to customToastHandler/overlay.
+  /// Displays a toast notification within the given BuildContext or delegates to customToastHandler/overlay.
+  ///
+  /// @param context BuildContext used to locate Overlay/Theme/Directionality
+  /// @param message Text message to present
+  /// @param isError Displays red error accent icon
+  /// @param isSuccess Displays green success accent icon
   static void showSnackBar(
     BuildContext context,
     String message, {
@@ -216,76 +283,11 @@ class UiHelpers {
       return;
     }
 
-    final messenger = ScaffoldMessenger.maybeOf(context) ??
-        rootScaffoldMessengerKey.currentState;
-    if (messenger == null) {
-      _showOverlayFallback(
-        context,
-        message,
-        isError: isError,
-        isSuccess: isSuccess,
-      );
-      return;
-    }
-
-    messenger.hideCurrentSnackBar();
-
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final mediaQuery = MediaQuery.of(context);
-    final topMargin =
-        mediaQuery.padding.top > 0 ? mediaQuery.padding.top + 10 : 36.0;
-
-    final Color accentColor = isError
-        ? const Color(0xFFFF3B30)
-        : (isSuccess ? const Color(0xFF34C759) : const Color(0xFF007AFF));
-
-    final IconData icon = isError
-        ? Icons.cancel_rounded
-        : (isSuccess ? Icons.check_circle_rounded : Icons.info_rounded);
-
-    messenger.showSnackBar(
-      SnackBar(
-        content: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: accentColor, size: 20),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                message,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: isDark ? Colors.white : const Color(0xFF0F172A),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: -0.2,
-                ),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: isDark
-            ? const Color(0xFF161A26).withValues(alpha: 0.94)
-            : Colors.white.withValues(alpha: 0.96),
-        behavior: SnackBarBehavior.floating,
-        elevation: 8,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-          side: BorderSide(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.16)
-                : Colors.black.withValues(alpha: 0.08),
-            width: 0.9,
-          ),
-        ),
-        margin: EdgeInsets.only(
-          bottom: mediaQuery.size.height - (topMargin + 65),
-          left: 18,
-          right: 18,
-        ),
-        duration: const Duration(milliseconds: 2800),
-      ),
+    _showOverlayFallback(
+      context,
+      message,
+      isError: isError,
+      isSuccess: isSuccess,
     );
   }
 

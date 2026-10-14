@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../data/leaves_repository.dart';
 import '../models/leave_model.dart';
+import '../../../services/leave_widget_service.dart';
 
 /// State management for leave requests, quotas, and filtering
 class LeavesProvider extends ChangeNotifier {
@@ -72,6 +73,7 @@ class LeavesProvider extends ChangeNotifier {
       if (types.isNotEmpty) {
         _masterLeaveTypes = types;
       }
+      LeaveWidgetService.updateLeaveData(balances: _balances);
       _isLoading = false;
       notifyListeners();
     } catch (e) {

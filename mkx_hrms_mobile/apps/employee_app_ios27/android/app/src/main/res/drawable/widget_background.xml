@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Outer Specular Glass Refraction Border -->
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="28dp" />
+            <stroke
+                android:width="1.2dp"
+                android:color="#33FFFFFF" />
+            <gradient
+                android:angle="270"
+                android:startColor="#F0182438"
+                android:centerColor="#F50E1626"
+                android:endColor="#FA080D18"
+                android:type="linear" />
+        </shape>
+    </item>
+
+    <!-- Top-edge Specular Sheen (iOS Liquid Glass reflection) -->
+    <item
+        android:top="1.2dp"
+        android:left="1.2dp"
+        android:right="1.2dp"
+        android:bottom="85dp">
+        <shape android:shape="rectangle">
+            <corners
+                android:topLeftRadius="27dp"
+                android:topRightRadius="27dp"
+                android:bottomLeftRadius="0dp"
+                android:bottomRightRadius="0dp" />
+            <gradient
+                android:angle="270"
+                android:startColor="#26FFFFFF"
+                android:endColor="#00FFFFFF"
+                android:type="linear" />
+        </shape>
+    </item>
+</layer-list>

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../data/hr_attendance_repository.dart';
 import '../models/hr_attendance_model.dart';
+import '../../../services/hr_widget_service.dart';
 
 /// State provider for HR all-employee attendance view
 class HrAttendanceProvider extends ChangeNotifier {
@@ -38,6 +39,14 @@ class HrAttendanceProvider extends ChangeNotifier {
         department: _departmentFilter,
         status: _statusFilter,
       );
+      if (_records.isNotEmpty) {
+        HrWidgetService.updateAttendancePulse(
+          present: presentCount,
+          late: lateCount,
+          onLeave: absentCount,
+          totalStaff: _records.length,
+        );
+      }
     } catch (e) {
       _errorMessage = e.toString().replaceAll('Exception: ', '');
     } finally {

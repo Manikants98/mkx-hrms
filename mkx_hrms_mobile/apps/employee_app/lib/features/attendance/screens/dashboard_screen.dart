@@ -19,6 +19,8 @@ import '../../leaves/state/leaves_provider.dart';
 import '../../leaves/widgets/apply_leave_bottom_sheet.dart';
 import '../../notifications/screens/notifications_screen.dart';
 import '../../notifications/state/notifications_provider.dart';
+import '../../../services/shift_widget_service.dart';
+import '../../../services/leave_widget_service.dart';
 import '../state/attendance_provider.dart';
 import '../widgets/punch_card.dart';
 
@@ -70,6 +72,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
         debugPrint('Failed to load dashboard overview: $e');
       }),
     ]);
+
+    _syncShiftWidget();
+    _syncLeaveWidget();
+  }
+
+  /// Synchronizes leave balances to native home screen widget.
+  void _syncLeaveWidget() {
+    if (!mounted) return;
+    final auth = context.read<AuthProvider>();
+    final leaves = context.read<LeavesProvider>();
+    LeaveWidgetService.updateLeaveData(
+      balances: leaves.balances,
+      employeeName: auth.currentUser?.name,
+    );
+  }
+
+  /// Synchronizes current daily attendance and shift state to native home screen widget.
+  void _syncShiftWidget() {
+    if (!mounted) return;
+    final auth = context.read<AuthProvider>();
+    final attendance = context.read<AttendanceProvider>();
+    ShiftWidgetService.updateShiftData(
+      record: attendance.todayRecord,
+      employeeName: auth.currentUser?.name,
+      shiftName: auth.currentUser?.shiftName,
+    );
   }
 
   Future<void> _handlePunchIn() async {
@@ -82,6 +110,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     if (!mounted) return;
     if (ok) {
+      _syncShiftWidget();
       UiHelpers.showSnackBar(
         context,
         'Successfully punched in at ${attendance.todayRecord?.checkIn}',
@@ -116,6 +145,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     if (!mounted) return;
     if (ok) {
+      _syncShiftWidget();
       UiHelpers.showSnackBar(
         context,
         'Shift completed! Punched out at ${attendance.todayRecord?.checkOut}',
@@ -250,23 +280,162 @@ class _DashboardScreenState extends State<DashboardScreen> {
           onRefresh: _loadData,
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              PunchCard(
-                currentTime: attendance.currentTime,
-                record: attendance.todayRecord,
-                isPunching: attendance.isPunching,
-                onPunchIn: _handlePunchIn,
-                onPunchOut: _handlePunchOut,
-              ),
-              const SizedBox(height: 10),
-              if (_celebrations.isNotEmpty) ...[
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                PunchCard(
+                  currentTime: attendance.currentTime,
+                  record: attendance.todayRecord,
+                  isPunching: attendance.isPunching,
+                  onPunchIn: _handlePunchIn,
+                  onPunchOut: _handlePunchOut,
+                ),
+                const SizedBox(height: 10),
+                if (_celebrations.isNotEmpty) ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Text(
+                      'CELEBRATIONS TODAY',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.3,
+                        color:
+                            M3ETheme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  SectionCard(
+                    isDark: isDark,
+                    children: _celebrations.map((celeb) {
+                      final isBirthday = celeb['type'] == 'Birthday';
+                      final isNewJoiner = celeb['type'] == 'New Joiner';
+                      final hasAvatar = celeb['avatar'] != null &&
+                          celeb['avatar'].toString().trim().isNotEmpty;
+
+                      return Row(
+                        children: [
+                          Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              color: isBirthday
+                                  ? AppColors.warning.withValues(alpha: 0.15)
+                                  : isNewJoiner
+                                      ? AppColors.success
+                                          .withValues(alpha: 0.15)
+                                      : AppColors.info.withValues(alpha: 0.15),
+                              image: hasAvatar
+                                  ? DecorationImage(
+                                      image: NetworkImage(celeb['avatar']),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : null,
+                            ),
+                            child: hasAvatar
+                                ? null
+                                : Icon(
+                                    isBirthday
+                                        ? Icons.cake_rounded
+                                        : isNewJoiner
+                                            ? Icons.celebration_rounded
+                                            : Icons.work_history_rounded,
+                                    color: isBirthday
+                                        ? AppColors.warning
+                                        : isNewJoiner
+                                            ? AppColors.success
+                                            : AppColors.info,
+                                    size: 24,
+                                  ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  celeb['name'] ?? '',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  isBirthday
+                                      ? 'Happy Birthday!'
+                                      : isNewJoiner
+                                          ? 'Welcome to the team!'
+                                          : '${celeb['years']} Years Anniversary!',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: M3ETheme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () => _sendWish(celeb),
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                width: 36,
+                                height: 36,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: (isBirthday
+                                          ? AppColors.warning
+                                          : isNewJoiner
+                                              ? AppColors.success
+                                              : M3ETheme.of(context)
+                                                  .colorScheme
+                                                  .primary)
+                                      .withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                      right: 2.0, bottom: 2.0),
+                                  child: Transform.rotate(
+                                    angle: -0.785398,
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 4, top: 3),
+                                      child: Icon(
+                                        M3EIcons.send_outlined,
+                                        color: isBirthday
+                                            ? AppColors.warning
+                                            : isNewJoiner
+                                                ? AppColors.success
+                                                : M3ETheme.of(context)
+                                                    .colorScheme
+                                                    .primary,
+                                        size: 18,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 16),
+                ],
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   child: Text(
-                    'CELEBRATIONS TODAY',
+                    'MONTHLY ATTENDANCE',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
@@ -276,391 +445,256 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                SectionCard(
-                  isDark: isDark,
-                  children: _celebrations.map((celeb) {
-                    final isBirthday = celeb['type'] == 'Birthday';
-                    final isNewJoiner = celeb['type'] == 'New Joiner';
-                    final hasAvatar = celeb['avatar'] != null &&
-                        celeb['avatar'].toString().trim().isNotEmpty;
-
-                    return Row(
+                Row(
+                  children: [
+                    Expanded(
+                      child: MetricCard(
+                        title: 'Present Days',
+                        value: '${attendance.stats?.presentDays ?? 0}',
+                        subtext: 'This month',
+                        icon: Icons.check_circle_outline_rounded,
+                        iconColor: AppColors.success,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(14),
+                          topRight: Radius.circular(3),
+                          bottomLeft: Radius.circular(3),
+                          bottomRight: Radius.circular(3),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: MetricCard(
+                        title: 'Late Punches',
+                        value: '${attendance.stats?.lateDays ?? 0}',
+                        subtext: 'After 10:00 AM',
+                        icon: Icons.access_time_rounded,
+                        iconColor: AppColors.warning,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(3),
+                          topRight: Radius.circular(14),
+                          bottomLeft: Radius.circular(3),
+                          bottomRight: Radius.circular(3),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Expanded(
+                      child: MetricCard(
+                        title: 'Leave Balance',
+                        value: '$totalRemainingLeaves',
+                        subtext: 'Available days',
+                        icon: Icons.beach_access_rounded,
+                        iconColor: AppColors.info,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(3),
+                          topRight: Radius.circular(3),
+                          bottomLeft: Radius.circular(14),
+                          bottomRight: Radius.circular(3),
+                        ),
+                        onTap: () {
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (_) => const ApplyLeaveBottomSheet(),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: MetricCard(
+                        title: 'Pending Leaves',
+                        value: '$pendingLeaveRequests',
+                        subtext: pendingLeaveRequests == 1
+                            ? '1 awaiting review'
+                            : '$pendingLeaveRequests awaiting review',
+                        icon: Icons.hourglass_top_rounded,
+                        iconColor: const Color(0xffa855f7),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(3),
+                          topRight: Radius.circular(3),
+                          bottomLeft: Radius.circular(3),
+                          bottomRight: Radius.circular(14),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                if (_smartInsights != null)
+                  _buildAiInsightsSection(_smartInsights!,
+                      colorScheme: M3ETheme.of(context).colorScheme,
+                      isDark: isDark),
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: double.infinity,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            color: isBirthday
-                                ? AppColors.warning.withValues(alpha: 0.15)
-                                : isNewJoiner
-                                    ? AppColors.success.withValues(alpha: 0.15)
-                                    : AppColors.info.withValues(alpha: 0.15),
-                            image: hasAvatar
-                                ? DecorationImage(
-                                    image: NetworkImage(celeb['avatar']),
-                                    fit: BoxFit.cover,
-                                  )
-                                : null,
-                          ),
-                          child: hasAvatar
-                              ? null
-                              : Icon(
-                                  isBirthday
-                                      ? Icons.cake_rounded
-                                      : isNewJoiner
-                                          ? Icons.celebration_rounded
-                                          : Icons.work_history_rounded,
-                                  color: isBirthday
-                                      ? AppColors.warning
-                                      : isNewJoiner
-                                          ? AppColors.success
-                                          : AppColors.info,
-                                  size: 24,
-                                ),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                celeb['name'] ?? '',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                isBirthday
-                                    ? 'Happy Birthday!'
-                                    : isNewJoiner
-                                        ? 'Welcome to the team!'
-                                        : '${celeb['years']} Years Anniversary!',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: M3ETheme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant,
-                                ),
-                              ),
-                            ],
+                        Text(
+                          'RECENT ACTIVITY',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.3,
+                            color: M3ETheme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant,
                           ),
                         ),
-                        Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () => _sendWish(celeb),
-                            borderRadius: BorderRadius.circular(8),
-                            child: Container(
-                              width: 36,
-                              height: 36,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: (isBirthday
-                                        ? AppColors.warning
-                                        : isNewJoiner
-                                            ? AppColors.success
-                                            : M3ETheme.of(context)
-                                                .colorScheme
-                                                .primary)
-                                    .withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.only(
-                                    right: 2.0, bottom: 2.0),
-                                child: Transform.rotate(
-                                  angle: -0.785398,
-                                  child: Padding(
-                                    padding:
-                                        const EdgeInsets.only(left: 4, top: 3),
-                                    child: Icon(
-                                      M3EIcons.send_outlined,
-                                      color: isBirthday
-                                          ? AppColors.warning
-                                          : isNewJoiner
-                                              ? AppColors.success
-                                              : M3ETheme.of(context)
-                                                  .colorScheme
-                                                  .primary,
-                                      size: 18,
-                                    ),
-                                  ),
-                                ),
+                        Row(
+                          children: [
+                            Text(
+                              'THIS WEEK',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                letterSpacing: 0.3,
+                                color: M3ETheme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
                               ),
                             ),
-                          ),
+                          ],
                         ),
                       ],
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 16),
-              ],
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: Text(
-                  'MONTHLY ATTENDANCE',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.3,
-                    color: M3ETheme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: MetricCard(
-                      title: 'Present Days',
-                      value: '${attendance.stats?.presentDays ?? 0}',
-                      subtext: 'This month',
-                      icon: Icons.check_circle_outline_rounded,
-                      iconColor: AppColors.success,
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(14),
-                        topRight: Radius.circular(3),
-                        bottomLeft: Radius.circular(3),
-                        bottomRight: Radius.circular(3),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: MetricCard(
-                      title: 'Late Punches',
-                      value: '${attendance.stats?.lateDays ?? 0}',
-                      subtext: 'After 10:00 AM',
-                      icon: Icons.access_time_rounded,
-                      iconColor: AppColors.warning,
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(3),
-                        topRight: Radius.circular(14),
-                        bottomLeft: Radius.circular(3),
-                        bottomRight: Radius.circular(3),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Expanded(
-                    child: MetricCard(
-                      title: 'Leave Balance',
-                      value: '$totalRemainingLeaves',
-                      subtext: 'Available days',
-                      icon: Icons.beach_access_rounded,
-                      iconColor: AppColors.info,
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(3),
-                        topRight: Radius.circular(3),
-                        bottomLeft: Radius.circular(14),
-                        bottomRight: Radius.circular(3),
-                      ),
-                      onTap: () {
-                        showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          backgroundColor: Colors.transparent,
-                          builder: (_) => const ApplyLeaveBottomSheet(),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: MetricCard(
-                      title: 'Pending Leaves',
-                      value: '$pendingLeaveRequests',
-                      subtext: pendingLeaveRequests == 1
-                          ? '1 awaiting review'
-                          : '$pendingLeaveRequests awaiting review',
-                      icon: Icons.hourglass_top_rounded,
-                      iconColor: const Color(0xffa855f7),
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(3),
-                        topRight: Radius.circular(3),
-                        bottomLeft: Radius.circular(3),
-                        bottomRight: Radius.circular(14),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              if (_smartInsights != null)
-                _buildAiInsightsSection(_smartInsights!,
-                    colorScheme: M3ETheme.of(context).colorScheme,
-                    isDark: isDark),
-              const SizedBox(height: 10),
-              SizedBox(
-                width: double.infinity,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'RECENT ACTIVITY',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.3,
-                          color:
-                              M3ETheme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          Text(
-                            'THIS WEEK',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              letterSpacing: 0.3,
-                              color: M3ETheme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              if (attendance.history.isEmpty)
-                const EmptyState(
-                  icon: Icons.event_busy_outlined,
-                  title: 'No attendance records yet',
-                  description:
-                      'Your punch logs and daily records will appear here as you punch in and out.',
-                )
-              else
-                SectionCard(
-                  isDark: isDark,
-                  children: attendance.history
-                      .where((item) {
-                        final date = DateTime.tryParse(item.date);
-                        if (date == null) return false;
+                const SizedBox(height: 10),
+                if (attendance.history.isEmpty)
+                  const EmptyState(
+                    icon: Icons.event_busy_outlined,
+                    title: 'No attendance records yet',
+                    description:
+                        'Your punch logs and daily records will appear here as you punch in and out.',
+                  )
+                else
+                  SectionCard(
+                    isDark: isDark,
+                    children: attendance.history
+                        .where((item) {
+                          final date = DateTime.tryParse(item.date);
+                          if (date == null) return false;
 
-                        final now = DateTime.now();
-                        final startOfWeek =
-                            DateTime(now.year, now.month, now.day)
-                                .subtract(Duration(days: now.weekday - 1));
+                          final now = DateTime.now();
+                          final startOfWeek =
+                              DateTime(now.year, now.month, now.day)
+                                  .subtract(Duration(days: now.weekday - 1));
 
-                        return date.weekday != DateTime.sunday &&
-                            !date.isBefore(startOfWeek);
-                      })
-                      .take(7)
-                      .map((item) {
-                        String displayWorkHours = item.workHours;
-                        if (item.hasCheckedIn && !item.hasCheckedOut) {
-                          try {
-                            final now = attendance.currentTime;
-                            final recordDate =
-                                DateTime.parse(item.date).toLocal();
-                            if (recordDate.year == now.year &&
-                                recordDate.month == now.month &&
-                                recordDate.day == now.day) {
-                              final format = DateFormat('hh:mm a');
-                              final checkInTime = format.parse(item.checkIn);
-                              final checkInDateTime = DateTime(
-                                  now.year,
-                                  now.month,
-                                  now.day,
-                                  checkInTime.hour,
-                                  checkInTime.minute);
-                              final diff = now.difference(checkInDateTime);
-                              if (!diff.isNegative) {
-                                final h = diff.inHours;
-                                final m = diff.inMinutes % 60;
-                                displayWorkHours = '${h}h ${m}m';
+                          return date.weekday != DateTime.sunday &&
+                              !date.isBefore(startOfWeek);
+                        })
+                        .take(7)
+                        .map((item) {
+                          String displayWorkHours = item.workHours;
+                          if (item.hasCheckedIn && !item.hasCheckedOut) {
+                            try {
+                              final now = attendance.currentTime;
+                              final recordDate =
+                                  DateTime.parse(item.date).toLocal();
+                              if (recordDate.year == now.year &&
+                                  recordDate.month == now.month &&
+                                  recordDate.day == now.day) {
+                                final format = DateFormat('hh:mm a');
+                                final checkInTime = format.parse(item.checkIn);
+                                final checkInDateTime = DateTime(
+                                    now.year,
+                                    now.month,
+                                    now.day,
+                                    checkInTime.hour,
+                                    checkInTime.minute);
+                                final diff = now.difference(checkInDateTime);
+                                if (!diff.isNegative) {
+                                  final h = diff.inHours;
+                                  final m = diff.inMinutes % 60;
+                                  displayWorkHours = '${h}h ${m}m';
+                                }
                               }
-                            }
-                          } catch (_) {}
-                        }
+                            } catch (_) {}
+                          }
 
-                        return Row(
-                          children: [
-                            Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                color: M3ETheme.of(context).colorScheme.surface,
-                                borderRadius: BorderRadius.circular(8),
+                          return Row(
+                            children: [
+                              Container(
+                                width: 48,
+                                height: 48,
+                                decoration: BoxDecoration(
+                                  color:
+                                      M3ETheme.of(context).colorScheme.surface,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      AppDateUtils.formatDate(
+                                        item.date,
+                                      ).split(' ')[0],
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: M3ETheme.of(context)
+                                            .colorScheme
+                                            .onSurfaceVariant,
+                                      ),
+                                    ),
+                                    Text(
+                                      item.date.split('-').last,
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w800,
+                                        color: M3ETheme.of(context)
+                                            .colorScheme
+                                            .onSurface,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    AppDateUtils.formatDate(
-                                      item.date,
-                                    ).split(' ')[0],
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                      color: M3ETheme.of(context)
-                                          .colorScheme
-                                          .onSurfaceVariant,
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '${item.checkIn} - ${item.checkOut}',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
-                                  ),
-                                  Text(
-                                    item.date.split('-').last,
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w800,
-                                      color: M3ETheme.of(context)
-                                          .colorScheme
-                                          .onSurface,
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '$displayWorkHours • ${item.location}',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: isDark
+                                            ? AppColors.darkMuted
+                                            : AppColors.lightMuted,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '${item.checkIn} - ${item.checkOut}',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    '$displayWorkHours • ${item.location}',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: isDark
-                                          ? AppColors.darkMuted
-                                          : AppColors.lightMuted,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            StatusBadge(status: item.status),
-                          ],
-                        );
-                      })
-                      .toList(),
-                ),
-            ],
+                              StatusBadge(status: item.status),
+                            ],
+                          );
+                        })
+                        .toList(),
+                  ),
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -772,5 +806,3 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 }
-
-

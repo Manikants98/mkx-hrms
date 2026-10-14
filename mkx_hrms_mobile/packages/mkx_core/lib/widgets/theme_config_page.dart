@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../features/auth/state/auth_provider.dart';
 import '../theme/app_theme_scope.dart';
 import '../theme/app_theme_settings.dart';
+import 'section_tile.dart';
 import 'theme_mode_selector.dart';
 
 /// A page for configuring the app's theme settings.
@@ -82,39 +83,84 @@ class ThemeConfigPage extends StatelessWidget {
     AppThemeSettings settings,
     BuildContext context,
   ) {
-    final List<Widget> rows = <Widget>[
-      M3EListItem(
-        headline: 'Auto theming',
-        supportingText: 'Follow the platform light and dark setting',
-        trailing: M3ESwitch(
-          value: settings.autoTheming,
-          semanticLabel: 'Auto theming',
-          onChanged: (bool value) {
-            settings.autoTheming = value;
-            if (value) {
-              context.read<AuthProvider>().setThemeMode(ThemeMode.system);
-            }
-          },
-        ),
-      ),
-      M3EListItem(
-        headline: 'Dynamic color',
-        supportingText:
-            'Use the device wallpaper palette where the platform supports it',
-        trailing: M3ESwitch(
-          value: settings.dynamicColoring,
-          semanticLabel: 'Dynamic color',
-          onChanged: (bool value) => settings.dynamicColoring = value,
-        ),
-      ),
-    ];
+    final bool isDark = theme.brightness == Brightness.dark;
+    final M3EColorScheme scheme = theme.colorScheme;
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: rows,
-      ),
+    return SectionCard(
+      isDark: isDark,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Auto theming',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: scheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    'Follow the platform light and dark setting',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            M3ESwitch(
+              value: settings.autoTheming,
+              semanticLabel: 'Auto theming',
+              onChanged: (bool value) {
+                settings.autoTheming = value;
+                if (value) {
+                  context.read<AuthProvider>().setThemeMode(ThemeMode.system);
+                }
+              },
+            ),
+          ],
+        ),
+        Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Dynamic color',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: scheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    'Use the device wallpaper palette where the platform supports it',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            M3ESwitch(
+              value: settings.dynamicColoring,
+              semanticLabel: 'Dynamic color',
+              onChanged: (bool value) => settings.dynamicColoring = value,
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -227,40 +273,54 @@ class _SeedSwatch extends StatelessWidget {
   Widget build(BuildContext context) {
     final M3EThemeData theme = M3ETheme.of(context);
     final M3EColorScheme scheme = theme.colorScheme;
-    final Color tick = scheme.surface;
+    final bool isDark =
+        ThemeData.estimateBrightnessForColor(color) == Brightness.dark;
+    final Color tick =
+        isDark ? const Color(0xFFFFFFFF) : const Color(0xFF000000);
 
-    return M3ETappable(
-      onTap: onTap,
-      enabled: onTap != null,
-      semanticLabel: '$label seed',
-      pressedScale: 0.94,
-      haptic: M3EHapticFeedback.light,
-      builder: (BuildContext context, M3EInteractionState state) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            AnimatedContainer(
-              duration: M3EMotion.short3,
-              curve: M3EMotion.standard,
-              width: _size,
-              height: _size,
-              decoration: BoxDecoration(
-                color: onTap == null ? color.withValues(alpha: 0.38) : color,
-                shape: BoxShape.circle,
+    return SizedBox(
+      width: 58,
+      child: M3ETappable(
+        onTap: onTap,
+        enabled: onTap != null,
+        semanticLabel: '$label seed',
+        pressedScale: 0.94,
+        haptic: M3EHapticFeedback.light,
+        builder: (BuildContext context, M3EInteractionState state) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              AnimatedContainer(
+                duration: M3EMotion.short3,
+                curve: M3EMotion.standard,
+                width: _size,
+                height: _size,
+                decoration: BoxDecoration(
+                  color: onTap == null ? color.withValues(alpha: 0.38) : color,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: selected ? scheme.onSurface : scheme.outlineVariant,
+                    width: selected ? 3 : 1,
+                  ),
+                ),
+                child: selected
+                    ? Icon(M3EIcons.check, size: 24, color: tick)
+                    : null,
               ),
-              child:
-                  selected ? Icon(M3EIcons.check, size: 24, color: tick) : null,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: theme.typeScale.labelMedium.copyWith(
-                color: selected ? scheme.onSurface : scheme.onSurfaceVariant,
+              const SizedBox(height: 8),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.typeScale.labelMedium.copyWith(
+                  color: selected ? scheme.onSurface : scheme.onSurfaceVariant,
+                ),
               ),
-            ),
-          ],
-        );
-      },
+            ],
+          );
+        },
+      ),
     );
   }
 }
@@ -307,12 +367,17 @@ class _FamilySwatch extends StatelessWidget {
                     ? scheme.secondaryContainer
                     : scheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: selected ? scheme.onSurface : scheme.outlineVariant,
+                  width: selected ? 3 : 1,
+                ),
               ),
               child: Text(
                 'Aa',
                 style: theme.typeScale.titleMedium.copyWith(
                   fontFamily: family,
-                  color: selected ? scheme.surface : scheme.onSurface,
+                  color:
+                      selected ? scheme.onSecondaryContainer : scheme.onSurface,
                 ),
               ),
             ),

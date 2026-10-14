@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../../../services/leave_widget_service.dart';
 import '../data/leaves_repository.dart';
 import '../models/leave_model.dart';
 
@@ -72,6 +73,7 @@ class LeavesProvider extends ChangeNotifier {
       if (types.isNotEmpty) {
         _masterLeaveTypes = types;
       }
+      LeaveWidgetService.updateLeaveData(balances: _balances);
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -122,7 +124,7 @@ class LeavesProvider extends ChangeNotifier {
       _history.insert(0, newRecord);
       _isSubmitting = false;
       notifyListeners();
-      // Reload in background for updated balances
+      /// Reload in background for updated balances.
       await loadLeaves(employeeId: employeeId);
       return true;
     } catch (e) {

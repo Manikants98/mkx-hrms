@@ -12,11 +12,14 @@ import '../../../widgets/ios27_app_bar.dart';
 import '../../../widgets/ios27_glass_surface.dart';
 import '../../../widgets/ios27_loader.dart';
 import '../../../widgets/ios27_pull_to_refresh.dart';
+import '../../../widgets/ios27_session_restore_sheet.dart';
 import '../../ai_assistant/screens/smart_assistant_screen.dart';
 import '../../leaves/state/leaves_provider.dart';
 import '../../leaves/widgets/apply_leave_bottom_sheet.dart';
 import '../../notifications/screens/notifications_screen.dart';
 import '../../notifications/state/notifications_provider.dart';
+import '../../../services/leave_widget_service.dart';
+import '../../../services/shift_widget_service.dart';
 import '../state/attendance_provider.dart';
 import '../widgets/punch_card.dart';
 
@@ -35,6 +38,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
+    DioClient.onUnauthorized = () {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          Ios27SessionRestoreSheet.show(context);
+        } else {
+          Ios27SessionRestoreSheet.show();
+        }
+      });
+    };
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
     });
@@ -68,6 +80,43 @@ class _DashboardScreenState extends State<DashboardScreen> {
         debugPrint('Failed to load dashboard overview: $e');
       }),
     ]);
+
+    if (!mounted) return;
+    _syncShiftWidget();
+    _syncLeaveWidget();
+    final bool hasTokenExpired =
+        attendance.errorMessage?.toLowerCase().contains('token') == true ||
+        leaves.errorMessage?.toLowerCase().contains('token') == true;
+    if (hasTokenExpired) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          Ios27SessionRestoreSheet.show(context);
+        }
+      });
+    }
+  }
+
+  /// Synchronizes leave balances to native home screen widget.
+  void _syncLeaveWidget() {
+    if (!mounted) return;
+    final auth = context.read<AuthProvider>();
+    final leaves = context.read<LeavesProvider>();
+    LeaveWidgetService.updateLeaveData(
+      balances: leaves.balances,
+      employeeName: auth.currentUser?.name,
+    );
+  }
+
+  /// Synchronizes current daily attendance and shift state to native home screen widget.
+  void _syncShiftWidget() {
+    if (!mounted) return;
+    final auth = context.read<AuthProvider>();
+    final attendance = context.read<AttendanceProvider>();
+    ShiftWidgetService.updateShiftData(
+      record: attendance.todayRecord,
+      employeeName: auth.currentUser?.name,
+      shiftName: auth.currentUser?.shiftName,
+    );
   }
 
   Future<void> _handlePunchIn() async {
@@ -80,17 +129,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     if (!mounted) return;
     if (ok) {
+      _syncShiftWidget();
       UiHelpers.showSnackBar(
         context,
         'Successfully punched in at ${attendance.todayRecord?.checkIn}',
         isSuccess: true,
       );
     } else {
-      UiHelpers.showSnackBar(
-        context,
-        attendance.errorMessage ?? 'Failed to punch in',
-        isError: true,
-      );
+      if (attendance.errorMessage?.toLowerCase().contains('token') == true) {
+        Ios27SessionRestoreSheet.show(context);
+      } else {
+        UiHelpers.showSnackBar(
+          context,
+          attendance.errorMessage ?? 'Failed to punch in',
+          isError: true,
+        );
+      }
     }
   }
 
@@ -114,17 +168,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     if (!mounted) return;
     if (ok) {
+      _syncShiftWidget();
       UiHelpers.showSnackBar(
         context,
         'Shift completed! Punched out at ${attendance.todayRecord?.checkOut}',
         isSuccess: true,
       );
     } else {
-      UiHelpers.showSnackBar(
-        context,
-        attendance.errorMessage ?? 'Failed to punch out',
-        isError: true,
-      );
+      if (attendance.errorMessage?.toLowerCase().contains('token') == true) {
+        Ios27SessionRestoreSheet.show(context);
+      } else {
+        UiHelpers.showSnackBar(
+          context,
+          attendance.errorMessage ?? 'Failed to punch out',
+          isError: true,
+        );
+      }
     }
   }
 
@@ -253,8 +312,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     onPressed: () {
                       Navigator.of(context).push(
                         CupertinoPageRoute<void>(
-                          builder: (context) =>
-                              const SmartAssistantScreen(),
+                          builder: (context) => const SmartAssistantScreen(),
                         ),
                       );
                     },
@@ -274,8 +332,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         onPressed: () {
                           Navigator.of(context).push(
                             CupertinoPageRoute<void>(
-                              builder: (context) =>
-                                  const NotificationsScreen(),
+                              builder: (context) => const NotificationsScreen(),
                             ),
                           );
                         },
@@ -517,7 +574,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     const Ios27SectionHeader(title: 'Recent Activity'),
                     if (attendance.history.isEmpty)
                       Ios27GlassCard(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 24),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [

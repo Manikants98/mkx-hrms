@@ -12,18 +12,20 @@ class AuthProvider extends ChangeNotifier {
   UserModel? _currentUser;
   bool _isLoading = false;
   bool _isInitializing = true;
+  bool _hasSeenOnboarding = false;
   String? _errorMessage;
   ThemeMode _themeMode = ThemeMode.system;
 
   UserModel? get currentUser => _currentUser;
   bool get isLoading => _isLoading;
   bool get isInitializing => _isInitializing;
+  bool get hasSeenOnboarding => _hasSeenOnboarding;
   String? get errorMessage => _errorMessage;
   bool get isAuthenticated => _currentUser != null;
   ThemeMode get themeMode => _themeMode;
 
   AuthProvider() {
-    DioClient.onUnauthorized = () {
+    DioClient.onUnauthorized ??= () {
       logout();
     };
     _initApp();
@@ -33,7 +35,10 @@ class AuthProvider extends ChangeNotifier {
     _isInitializing = true;
     notifyListeners();
 
-    // Load theme preference
+    /// Check onboarding completion state
+    _hasSeenOnboarding = await TokenStorage.instance.getHasSeenOnboarding();
+
+    /// Load theme preference
     final savedMode = await TokenStorage.instance.getThemeMode();
     if (savedMode == 'dark') {
       _themeMode = ThemeMode.dark;
@@ -43,16 +48,23 @@ class AuthProvider extends ChangeNotifier {
       _themeMode = ThemeMode.system;
     }
 
-    // Check existing authentication token
+    /// Check existing authentication token
     final isAuth = await _repo.isAuthenticated();
     if (isAuth) {
       _currentUser = await _repo.getCachedUser();
       notifyListeners();
-      // Silently refresh profile in background
+      /// Silently refresh profile in background
       _currentUser = await _repo.getMe() ?? _currentUser;
     }
 
     _isInitializing = false;
+    notifyListeners();
+  }
+
+  /// Completes or skips the first-time onboarding flow and persists the state.
+  Future<void> completeOnboarding() async {
+    _hasSeenOnboarding = true;
+    await TokenStorage.instance.setHasSeenOnboarding(true);
     notifyListeners();
   }
 

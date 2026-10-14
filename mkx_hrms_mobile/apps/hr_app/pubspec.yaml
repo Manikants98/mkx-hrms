@@ -43,6 +43,8 @@ dependencies:
   intl: ^0.20.3
   material_3_expressive: ^1.1.2
   syncfusion_flutter_charts: ^34.2.9
+  home_widget: ^0.10.0
+  logger: ^2.8.0
 
 dev_dependencies:
   flutter_test:

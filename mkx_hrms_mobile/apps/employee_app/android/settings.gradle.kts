@@ -27,7 +27,7 @@ plugins {
 include(":app")
 
 gradle.beforeProject {
-    if (name == "flutter_tts") {
+    if (name == "flutter_tts" || name == "home_widget") {
         val buildFile = buildFile
         if (buildFile != null && buildFile.exists()) {
             var content = buildFile.readText()
@@ -41,13 +41,40 @@ gradle.beforeProject {
                 content = content.replace("apply plugin: \"kotlin-android\"", "// apply plugin: \"kotlin-android\"")
                 modified = true
             }
+            if (content.contains("id 'org.jetbrains.kotlin.android'") && !content.contains("// id 'org.jetbrains.kotlin.android'")) {
+                content = content.replace("id 'org.jetbrains.kotlin.android'", "// id 'org.jetbrains.kotlin.android'")
+                modified = true
+            }
+            if (content.contains("id \"org.jetbrains.kotlin.android\"") && !content.contains("// id \"org.jetbrains.kotlin.android\"")) {
+                content = content.replace("id \"org.jetbrains.kotlin.android\"", "// id \"org.jetbrains.kotlin.android\"")
+                modified = true
+            }
+            if (content.contains("id 'kotlin-android'") && !content.contains("// id 'kotlin-android'")) {
+                content = content.replace("id 'kotlin-android'", "// id 'kotlin-android'")
+                modified = true
+            }
+            if (content.contains("id \"kotlin-android\"") && !content.contains("// id \"kotlin-android\"")) {
+                content = content.replace("id \"kotlin-android\"", "// id \"kotlin-android\"")
+                modified = true
+            }
             if (content.contains("kotlinOptions")) {
                 content = content.replace(Regex("kotlinOptions\\s*\\{[\\s\\S]*?\\}"), "")
                 modified = true
             }
-            if (!content.contains("compileSdkVersion 34")) {
-                content = content + "\n\nandroid { compileSdkVersion 34 }\n"
-                modified = true
+            if (name == "home_widget") {
+                if (content.contains("android { compileSdkVersion 34 }")) {
+                    content = content.replace("android { compileSdkVersion 34 }", "")
+                    modified = true
+                }
+                if (!content.contains("compileSdk 35") && !content.contains("compileSdkVersion 35")) {
+                    content = content + "\n\nandroid { compileSdk 35 }\n"
+                    modified = true
+                }
+            } else if (name == "flutter_tts") {
+                if (!content.contains("compileSdkVersion 34")) {
+                    content = content + "\n\nandroid { compileSdkVersion 34 }\n"
+                    modified = true
+                }
             }
             
             if (modified) {

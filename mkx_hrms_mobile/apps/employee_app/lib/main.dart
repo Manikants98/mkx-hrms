@@ -6,6 +6,7 @@ import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:mkx_core/constants/app_colors.dart';
 import 'package:mkx_core/features/auth/screens/login_screen.dart';
 import 'package:mkx_core/features/auth/state/auth_provider.dart';
+import 'package:mkx_core/features/onboarding/screens/onboarding_screen.dart';
 import 'package:mkx_core/theme/app_theme.dart';
 import 'package:mkx_core/theme/app_theme_scope.dart';
 import 'package:mkx_core/theme/app_theme_settings.dart';
@@ -19,6 +20,7 @@ import 'features/leaves/state/leaves_provider.dart';
 import 'features/navigation/screens/main_shell_screen.dart';
 import 'features/notifications/state/notifications_provider.dart';
 import 'features/payroll/state/payroll_provider.dart';
+import 'services/shift_widget_service.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = UiHelpers.rootNavigatorKey;
 
@@ -28,6 +30,18 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await ShiftWidgetService.initialize(
+    onWidgetLaunch: (Uri? uri) {
+      if (uri == null) return;
+      final uriString = uri.toString();
+      if (uriString.contains('apply_leave')) {
+        MainShellScreen.shellKey.currentState?.switchTab(1);
+      } else if (uriString.contains('shift_tracker')) {
+        MainShellScreen.shellKey.currentState?.switchTab(0);
+      }
+    },
+  );
 
   try {
     await Firebase.initializeApp();
@@ -51,18 +65,9 @@ void main() async {
             message.data['message'] ??
             '';
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(body.isNotEmpty ? '$title: $body' : title),
-            backgroundColor: Colors.blue,
-            behavior: SnackBarBehavior.floating,
-            margin: EdgeInsets.only(
-              bottom: MediaQuery.of(context).size.height - 150,
-              left: 20,
-              right: 20,
-            ),
-            duration: const Duration(seconds: 4),
-          ),
+        UiHelpers.showSnackBar(
+          context,
+          body.isNotEmpty ? '$title: $body' : title,
         );
       }
     });
@@ -201,7 +206,12 @@ class _MkxHrmsAppState extends State<MkxHrmsApp> {
 
   Widget _buildHome(AuthProvider auth) {
     if (auth.isInitializing) return const AppSplashScreen();
-    if (auth.isAuthenticated) return const MainShellScreen();
+    if (auth.isAuthenticated) {
+      return MainShellScreen(key: MainShellScreen.shellKey);
+    }
+    if (!auth.hasSeenOnboarding) {
+      return const OnboardingScreen();
+    }
     return const LoginScreen();
   }
 }

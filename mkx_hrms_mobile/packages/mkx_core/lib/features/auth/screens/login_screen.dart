@@ -40,6 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
 
     if (success) {
+      FocusScope.of(context).unfocus();
       UiHelpers.showSnackBar(
         context,
         'Welcome back, ${auth.currentUser?.name ?? "Employee"}!',

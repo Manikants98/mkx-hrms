@@ -13,6 +13,7 @@ class TokenStorage {
   static const String _keyDynamicColoring = 'theme_dynamic_coloring';
   static const String _keySeedColor = 'theme_seed_color';
   static const String _keyFontFamily = 'theme_font_family';
+  static const String _keyHasSeenOnboarding = 'has_seen_onboarding';
 
   SharedPreferences? _prefs;
 
@@ -109,5 +110,17 @@ class TokenStorage {
   Future<String?> getBaseUrl() async {
     final p = await _asyncPrefs;
     return p.getString(_keyCustomBaseUrl);
+  }
+
+  /// Persists whether the user has already completed or skipped the first-launch onboarding.
+  Future<void> setHasSeenOnboarding(bool value) async {
+    final p = await _asyncPrefs;
+    await p.setBool(_keyHasSeenOnboarding, value);
+  }
+
+  /// Checks whether the user has previously completed or skipped the first-launch onboarding.
+  Future<bool> getHasSeenOnboarding() async {
+    final p = await _asyncPrefs;
+    return p.getBool(_keyHasSeenOnboarding) ?? false;
   }
 }

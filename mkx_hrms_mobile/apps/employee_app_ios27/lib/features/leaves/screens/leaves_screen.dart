@@ -168,6 +168,7 @@ class _LeavesScreenState extends State<LeavesScreen> {
                     else
                       Ios27GlassCard(
                         child: Column(
+                          spacing: 12,
                           children:
                               leaves.filteredHistory.map((LeaveRecord item) {
                             final Color statusColor = item.status == 'Approved'
@@ -175,7 +176,6 @@ class _LeavesScreenState extends State<LeavesScreen> {
                                 : (item.status == 'Pending'
                                     ? const Color(0xFFFF9500)
                                     : const Color(0xFFFF3B30));
-
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [

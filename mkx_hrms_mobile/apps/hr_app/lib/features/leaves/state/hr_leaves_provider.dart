@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../data/hr_leaves_repository.dart';
 import '../models/hr_leave_model.dart';
+import '../../../services/hr_widget_service.dart';
 
 /// State provider for HR leave management
 class HrLeavesProvider extends ChangeNotifier {
@@ -27,6 +28,23 @@ class HrLeavesProvider extends ChangeNotifier {
 
     try {
       _leaves = await _repo.getLeaves(status: status ?? _statusFilter);
+      final pendingList =
+          _leaves.where((l) => l.status.toLowerCase() == 'pending').toList();
+      if (pendingList.isNotEmpty) {
+        final top = pendingList.first;
+        HrWidgetService.updatePendingApprovals(
+          pendingCount: pendingList.length,
+          latestApplicant: '${top.employeeName} • ${top.leaveType}',
+          latestDuration:
+              '${top.startDate} - ${top.endDate} (${top.totalDays}d)',
+          latestReason:
+              top.reason.isNotEmpty ? top.reason : 'Pending manager review',
+        );
+      } else {
+        HrWidgetService.updatePendingApprovals(
+          pendingCount: 0,
+        );
+      }
     } catch (e) {
       _errorMessage = e.toString().replaceAll('Exception: ', '');
     } finally {

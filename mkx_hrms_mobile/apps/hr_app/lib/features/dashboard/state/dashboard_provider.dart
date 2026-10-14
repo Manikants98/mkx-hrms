@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../data/dashboard_repository.dart';
 import '../models/dashboard_stats_model.dart';
+import '../../../services/hr_widget_service.dart';
 
 /// State provider for the HR Dashboard feature
 class DashboardProvider extends ChangeNotifier {
@@ -22,6 +23,15 @@ class DashboardProvider extends ChangeNotifier {
     try {
       await Future.delayed(const Duration(milliseconds: 2500));
       _stats = await _repo.getStats();
+      HrWidgetService.updateAttendancePulse(
+        present: _stats.presentToday,
+        late: _stats.lateToday,
+        onLeave: _stats.absentToday,
+        totalStaff: _stats.totalEmployees,
+      );
+      HrWidgetService.updatePendingApprovals(
+        pendingCount: _stats.pendingLeaves,
+      );
     } catch (e) {
       _errorMessage = e.toString().replaceAll('Exception: ', '');
     } finally {

@@ -6,6 +6,16 @@ if "%1"=="run" (
         cd apps\employee_app && flutter build apk --release && cd ..\..
         exit /b 0
     )
+    if "%2"=="build:apk:employee_ios27" (
+        echo Building Employee App iOS 27...
+        cd apps\employee_app_ios27 && flutter build apk --release && cd ..\..
+        exit /b 0
+    )
+    if "%2"=="build:apk:ios27" (
+        echo Building Employee App iOS 27...
+        cd apps\employee_app_ios27 && flutter build apk --release && cd ..\..
+        exit /b 0
+    )
     if "%2"=="build:apk:hr" (
         echo Building HR App...
         cd apps\hr_app && flutter build apk --release && cd ..\..
@@ -15,6 +25,8 @@ if "%1"=="run" (
         if not exist release_apks mkdir release_apks
         echo Building Employee App...
         cd apps\employee_app && flutter build apk --release && copy /y "build\app\outputs\flutter-apk\app-release.apk" "..\..\release_apks\employee_app-release.apk" && cd ..\..
+        echo Building Employee App iOS 27...
+        cd apps\employee_app_ios27 && flutter build apk --release && copy /y "build\app\outputs\flutter-apk\app-release.apk" "..\..\release_apks\employee_app_ios27-release.apk" && cd ..\..
         echo Building HR App...
         cd apps\hr_app && flutter build apk --release && copy /y "build\app\outputs\flutter-apk\app-release.apk" "..\..\release_apks\hr_app-release.apk" && cd ..\..
         echo.
@@ -26,6 +38,16 @@ if "%1"=="run" (
     if "%2"=="run:employee" (
         echo Running Employee App...
         cd apps\employee_app && flutter run && cd ..\..
+        exit /b 0
+    )
+    if "%2"=="run:employee_ios27" (
+        echo Running Employee App iOS 27...
+        cd apps\employee_app_ios27 && flutter run && cd ..\..
+        exit /b 0
+    )
+    if "%2"=="run:ios27" (
+        echo Running Employee App iOS 27...
+        cd apps\employee_app_ios27 && flutter run && cd ..\..
         exit /b 0
     )
     if "%2"=="run:hr" (
