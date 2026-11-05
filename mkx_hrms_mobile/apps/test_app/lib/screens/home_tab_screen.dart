@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import '../constants/music_constants.dart';
 import '../models/song_model.dart';
 import '../services/audio_player_service.dart';
-import '../widgets/hero_card.dart';
 
 /// Apple Music Listen Now / Home tab screen with hero banners, categories, and top picks.
 class HomeTabScreen extends StatelessWidget {
@@ -71,32 +70,6 @@ class HomeTabScreen extends StatelessWidget {
         SliverToBoxAdapter(
           child: SizedBox(
             height: MediaQuery.paddingOf(context).top + 8 + 50,
-          ),
-        ),
-
-        /// Hero Card 1 - Vibrant Apple Music Red
-        SliverToBoxAdapter(
-          child: GestureDetector(
-            onTap: () {
-              if (activeList.isNotEmpty) {
-                onPlaySong(activeList.first, activeList);
-              }
-            },
-            child: const HeroCard(
-              title: 'Music just for you.\n2 months free.',
-              subtitle: 'Accept Free Trial',
-              subtext: '2 months free, then \$10.99/month',
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFFF83E4F),
-                  Color(0xFFE2072C),
-                ],
-              ),
-              textColor: CupertinoColors.white,
-              child: AppleMusicLogo(),
-            ),
           ),
         ),
 
@@ -246,23 +219,6 @@ class HomeTabScreen extends StatelessWidget {
               ),
             ),
           ),
-
-        /// Hero Card 2 - Spatial Audio / Family
-        const SliverToBoxAdapter(
-          child: HeroCard(
-            title: 'Spatial Audio with\nDolby Atmos.',
-            subtitle: 'Immersive Sound',
-            subtext: 'Experience sound all around you in studio quality',
-            color: Color(0xFF1D1B1E),
-            showBorder: true,
-            textColor: CupertinoColors.white,
-            child: Icon(
-              CupertinoIcons.headphones,
-              color: kMusicRed,
-              size: 110,
-            ),
-          ),
-        ),
 
         /// Section: Popular Tracks List
         SliverToBoxAdapter(

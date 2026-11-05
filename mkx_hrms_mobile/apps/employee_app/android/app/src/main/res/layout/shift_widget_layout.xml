@@ -5,10 +5,14 @@
     android:layout_height="match_parent"
     android:background="@drawable/widget_background"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:paddingStart="14dp"
+    android:paddingEnd="14dp"
+    android:paddingTop="12dp"
+    android:paddingBottom="12dp">
 
-    <!-- Header: App Name, Shift & Date -->
+    <!-- Header: App Name & Date -->
     <LinearLayout
+        android:id="@+id/widget_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
@@ -16,20 +20,34 @@
 
         <TextView
             android:id="@+id/widget_app_title"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
             android:text="MKX HRMS"
-            android:textColor="#60A5FA"
+            android:textColor="@color/widget_accent"
             android:textSize="11sp"
             android:textStyle="bold" />
 
         <TextView
+            android:id="@+id/widget_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingHorizontal="4dp"
-            android:text="•"
-            android:textColor="#64748B"
-            android:textSize="11sp" />
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Today"
+            android:textColor="@color/widget_text_muted"
+            android:textSize="10sp" />
+    </LinearLayout>
+
+    <!-- Subheader: Shift Name & Status Pill -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
         <TextView
             android:id="@+id/widget_shift_name"
@@ -38,115 +56,84 @@
             android:layout_weight="1"
             android:ellipsize="end"
             android:maxLines="1"
-            android:text="Live Shift"
-            android:textColor="#94A3B8"
+            android:text="General Shift"
+            android:textColor="@color/widget_text_secondary"
             android:textSize="11sp"
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/widget_date"
+            android:id="@+id/widget_status_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Today"
-            android:textColor="#64748B"
-            android:textSize="11sp" />
+            android:background="@drawable/widget_status_pill"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="3dp"
+            android:text="Not Clocked In"
+            android:textColor="@color/widget_stat_sick"
+            android:textSize="10sp"
+            android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- Main Content Row -->
+    <!-- Hero: Work Hours Section -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:gravity="center_vertical"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:layout_marginTop="6dp"
         android:layout_marginBottom="6dp">
 
-        <!-- Work Hours Column -->
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:letterSpacing="0.05"
-                android:text="WORKED TODAY"
-                android:textColor="#64748B"
-                android:textSize="10sp"
-                android:textStyle="bold" />
-
-            <Chronometer
-                android:id="@+id/widget_chronometer"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:includeFontPadding="false"
-                android:textColor="#F8FAFC"
-                android:textSize="28sp"
-                android:textStyle="bold"
-                android:visibility="gone" />
-
-            <TextView
-                android:id="@+id/widget_work_hours"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:includeFontPadding="false"
-                android:text="0h 00m"
-                android:textColor="#F8FAFC"
-                android:textSize="28sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/widget_check_in"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Clocked In: --:--"
-                android:textColor="#94A3B8"
-                android:textSize="11sp" />
-        </LinearLayout>
-
-        <!-- Status & Action Column -->
-        <LinearLayout
+        <TextView
+            android:id="@+id/widget_worked_today_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="end"
-            android:orientation="vertical">
+            android:letterSpacing="0.06"
+            android:text="WORKED TODAY"
+            android:textColor="@color/widget_text_muted"
+            android:textSize="10sp"
+            android:textStyle="bold" />
 
-            <!-- Status Pill -->
-            <TextView
-                android:id="@+id/widget_status_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/widget_status_pill"
-                android:paddingHorizontal="10dp"
-                android:paddingVertical="4dp"
-                android:text="Not Clocked In"
-                android:textColor="#34D399"
-                android:textSize="11sp"
-                android:textStyle="bold" />
+        <Chronometer
+            android:id="@+id/widget_chronometer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:singleLine="true"
+            android:textColor="@color/widget_text_primary"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
 
-            <!-- Action Button -->
-            <TextView
-                android:id="@+id/widget_action_btn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/widget_button_bg"
-                android:paddingHorizontal="14dp"
-                android:paddingVertical="6dp"
-                android:text="Punch In"
-                android:textColor="#FFFFFF"
-                android:textSize="12sp"
-                android:textStyle="bold" />
-        </LinearLayout>
+        <TextView
+            android:id="@+id/widget_work_hours"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:singleLine="true"
+            android:text="0h 00m"
+            android:textColor="@color/widget_text_primary"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_check_in"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="Clocked In: --:--"
+            android:textColor="@color/widget_text_secondary"
+            android:textSize="11sp" />
     </LinearLayout>
 
-    <!-- Footer: Employee Name & Tap hint -->
+    <!-- Footer: Employee Name & Tap Hint -->
     <LinearLayout
+        android:id="@+id/widget_footer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center_vertical"
         android:orientation="horizontal">
 
         <TextView
@@ -157,14 +144,14 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:text="Employee"
-            android:textColor="#64748B"
+            android:textColor="@color/widget_text_muted"
             android:textSize="10sp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Tap to open app"
-            android:textColor="#475569"
+            android:textColor="@color/widget_text_muted"
             android:textSize="10sp" />
     </LinearLayout>
 </LinearLayout>

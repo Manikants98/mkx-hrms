@@ -2,16 +2,15 @@ import { Close, PersonAdd } from "@mui/icons-material";
 import { Button, CircularProgress } from "@mui/material";
 import { useFormik } from "formik";
 import React, { useMemo } from "react";
-import * as Yup from "yup";
-
-import { useGetMasterDepartments } from "services/masters";
 import { useGetJobPostings } from "services/job-postings";
-
+import { useGetMasterDepartments } from "services/masters";
+import type { CandidateRecord } from "services/recruitment";
+import { DocumentPicker } from "shared/DocumentPicker";
 import { AppDrawer } from "shared/Drawer";
+import { ImagePicker } from "shared/ImagePicker";
 import { Input } from "shared/Input";
 import { Select, type SelectOption } from "shared/Select";
-import { ImagePicker } from "shared/ImagePicker";
-import { DocumentPicker } from "shared/DocumentPicker";
+import * as Yup from "yup";
 
 export interface ManageCandidateFormValues {
   name: string;
@@ -20,18 +19,18 @@ export interface ManageCandidateFormValues {
   position: string;
   department: string;
   experience: string;
-  rating?: string;
-  source?: string;
-  resume_url?: string;
-  job_posting_id?: number | "";
-  avatar?: string;
+  rating?: string | number | null;
+  source?: string | null;
+  resume_url?: string | null;
+  job_posting_id?: number | string | null;
+  avatar?: string | null;
 }
 
 export interface ManageCandidateProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (candidate: ManageCandidateFormValues) => Promise<void> | void;
-  initialData?: any;
+  initialData?: CandidateRecord | null;
 }
 
 const candidateValidationSchema = Yup.object({
@@ -112,7 +111,20 @@ export const ManageCandidate: React.FC<ManageCandidateProps> = ({
     validateOnChange: true,
     onSubmit: async (values, { setSubmitting, resetForm }) => {
       try {
-        await onSubmit(values);
+        const payload: ManageCandidateFormValues = {
+          ...values,
+          job_posting_id:
+            values.job_posting_id !== undefined &&
+            values.job_posting_id !== null &&
+            values.job_posting_id !== ""
+              ? Number(values.job_posting_id)
+              : null,
+          rating:
+            values.rating !== undefined && values.rating !== null && values.rating !== ""
+              ? Number(values.rating)
+              : null,
+        };
+        await onSubmit(payload);
         resetForm();
         onClose();
       } catch (err: unknown) {
@@ -128,10 +140,19 @@ export const ManageCandidate: React.FC<ManageCandidateProps> = ({
     onClose();
   };
 
-  // Populate initial values when initialData is provided
+  /**
+   * Populate initial values when initialData is provided
+   */
   React.useEffect(() => {
     if (open) {
       if (initialData) {
+        const linkedJobId =
+          initialData.job_posting &&
+          typeof initialData.job_posting === "object" &&
+          "id" in initialData.job_posting
+            ? (initialData.job_posting as { id: number }).id
+            : "";
+
         formik.setValues({
           name: initialData.name || "",
           email: initialData.email || "",
@@ -142,7 +163,7 @@ export const ManageCandidate: React.FC<ManageCandidateProps> = ({
           rating: initialData.rating || "",
           source: initialData.source || "Company Website",
           resume_url: initialData.resume_url || "",
-          job_posting_id: initialData.job_posting?.id || "",
+          job_posting_id: linkedJobId,
           avatar: initialData.avatar || "",
         });
       } else {
@@ -151,10 +172,19 @@ export const ManageCandidate: React.FC<ManageCandidateProps> = ({
     }
   }, [open, initialData]);
 
-  // Auto-fill position and department when a job posting is selected
+  /**
+   * Auto-fill position and department when a job posting is selected
+   */
   React.useEffect(() => {
     const jobId = formik.values.job_posting_id;
-    if (jobId && (!initialData || jobId !== initialData.job_posting?.id)) {
+    const initialJobId =
+      initialData?.job_posting &&
+      typeof initialData.job_posting === "object" &&
+      "id" in initialData.job_posting
+        ? (initialData.job_posting as { id: number }).id
+        : undefined;
+
+    if (jobId && (!initialData || jobId !== initialJobId)) {
       const job = (jobPostingsResponse?.data || []).find((j) => j.id === jobId);
       if (job) {
         if (!formik.touched.position) formik.setFieldValue("position", job.title);

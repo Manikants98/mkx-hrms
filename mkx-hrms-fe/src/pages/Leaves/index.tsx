@@ -30,7 +30,7 @@ import {
   type LeaveRequest,
 } from "services/leaves";
 import { ArrowMenu } from "shared/ArrowMenu";
-import { CustomDialog } from "shared/CustomDialog";
+import { AppDrawer } from "shared/Drawer";
 import { DataTable, type ColumnDef } from "shared/DataTable";
 import { CustomDateRangePicker } from "shared/DatePicker";
 import { StatsCard } from "shared/StatsCard";
@@ -529,96 +529,160 @@ export default function Leaves(): React.ReactElement {
       </FadeUpItem>
 
       {viewingLeave && (
-        <CustomDialog
+        <AppDrawer
           open={Boolean(viewingLeave)}
           onClose={() => setViewingLeave(null)}
           title="Leave Request Details"
-          maxWidth="sm"
-          actions={
-            <>
-              {viewingLeave.status !== "Approved" && (
-                <Button
-                  variant="contained"
+          subtitle={`Request #${viewingLeave.id}`}
+          width={560}
+          footer={
+            <div className="flex items-center justify-between w-full">
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => setViewingLeave(null)}
+                className="!border-border !text-muted-foreground hover:!text-foreground !text-xs !normal-case !rounded-[5px]"
+              >
+                Close
+              </Button>
+              <div className="flex items-center gap-2">
+                {viewingLeave.status !== "Rejected" && (
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    color="error"
+                    onClick={() => handleReject(viewingLeave)}
+                    className="!text-xs !normal-case !rounded-[5px]"
+                  >
+                    Reject Leave
+                  </Button>
+                )}
+                {viewingLeave.status !== "Approved" && (
+                  <Button
+                    variant="contained"
+                    size="small"
+                    color="success"
+                    onClick={() => handleApprove(viewingLeave)}
+                    className="!text-xs !normal-case !rounded-[5px]"
+                  >
+                    Approve Leave
+                  </Button>
+                )}
+              </div>
+            </div>
+          }
+        >
+          <div className="flex flex-col gap-6 text-xs bg-background/50 rounded-md">
+            {/** Employee Header Card */}
+            <div className="flex items-center gap-3.5 p-4 bg-secondary/30 rounded-[5px] border border-border/60">
+              <Avatar
+                src={viewingLeave.avatar || undefined}
+                className="!w-12 !h-12 !bg-primary/20 !text-primary !text-lg !font-bold shrink-0"
+              >
+                {viewingLeave.name.charAt(0)}
+              </Avatar>
+              <div className="flex flex-col min-w-0 flex-1">
+                <h4 className="text-base font-semibold text-foreground truncate">{viewingLeave.name}</h4>
+                <p className="text-xs text-muted-foreground truncate mt-0.5">
+                  {viewingLeave.email} • {viewingLeave.department}
+                </p>
+              </div>
+              <div className="shrink-0">
+                <Chip
+                  label={viewingLeave.status}
                   size="small"
+                  color={
+                    viewingLeave.status === "Approved"
+                      ? "success"
+                      : viewingLeave.status === "Pending"
+                        ? "warning"
+                        : "error"
+                  }
+                  variant="outlined"
+                  className="!text-xs !font-medium"
+                />
+              </div>
+            </div>
+
+            {/** Leave Parameters Grid */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3.5 bg-secondary/30 rounded-[5px] border border-border/60">
+                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  Leave Type
+                </span>
+                <p className="font-semibold text-sm text-foreground mt-1">{viewingLeave.leave_type}</p>
+              </div>
+              <div className="p-3.5 bg-secondary/30 rounded-[5px] border border-border/60">
+                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  Total Duration
+                </span>
+                <p className="font-semibold text-sm text-foreground mt-1">
+                  {viewingLeave.days_count} {viewingLeave.days_count === 1 ? "day" : "days"}
+                </p>
+              </div>
+              <div className="p-3.5 bg-secondary/30 rounded-[5px] border border-border/60">
+                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  Start Date
+                </span>
+                <p className="font-semibold text-sm text-foreground mt-1">{viewingLeave.start_date}</p>
+              </div>
+              <div className="p-3.5 bg-secondary/30 rounded-[5px] border border-border/60">
+                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  End Date
+                </span>
+                <p className="font-semibold text-sm text-foreground mt-1">{viewingLeave.end_date}</p>
+              </div>
+            </div>
+
+            {/** Application Timeline */}
+            <div className="flex items-center justify-between p-3.5 bg-secondary/20 rounded-[5px] border border-border/60">
+              <span className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold">
+                Applied On
+              </span>
+              <span className="text-xs font-medium text-foreground">{viewingLeave.applied_on}</span>
+            </div>
+
+            {/** Employee Reason */}
+            <div className="p-4 bg-secondary/30 border border-border/60 rounded-[5px] space-y-2">
+              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                Employee Reason
+              </span>
+              <p className="text-xs text-foreground leading-relaxed whitespace-pre-wrap">
+                {viewingLeave.reason || "No explanation provided."}
+              </p>
+            </div>
+
+            {/** Decision Section */}
+            <div className="p-4 border border-border/70 rounded-[5px] bg-secondary/20 space-y-2.5">
+              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                Update Status
+              </span>
+              <p className="text-xs text-muted-foreground">
+                Approve or reject this request. Changes take effect immediately.
+              </p>
+              <div className="flex flex-wrap gap-2 pt-1">
+                <Button
+                  size="small"
+                  variant={viewingLeave.status === "Approved" ? "contained" : "outlined"}
                   color="success"
                   onClick={() => handleApprove(viewingLeave)}
-                  className="!text-xs !normal-case"
+                  className="!text-xs !normal-case !rounded-[5px]"
                 >
                   Approve Leave
                 </Button>
-              )}
-              {viewingLeave.status !== "Rejected" && (
                 <Button
-                  variant="outlined"
                   size="small"
+                  variant={viewingLeave.status === "Rejected" ? "contained" : "outlined"}
                   color="error"
                   onClick={() => handleReject(viewingLeave)}
-                  className="!text-xs !normal-case"
+                  className="!text-xs !normal-case !rounded-[5px]"
                 >
                   Reject Leave
                 </Button>
-              )}
-            </>
-          }
-        >
-          <div className="flex items-center gap-3 pb-4 border-b border-border">
-            <Avatar
-              src={viewingLeave.avatar || undefined}
-              className="!w-12 !h-12 !bg-primary/20 !text-primary !text-lg !font-bold"
-            >
-              {viewingLeave.name.charAt(0)}
-            </Avatar>
-            <div>
-              <h4 className="text-base font-semibold text-foreground">{viewingLeave.name}</h4>
-              <p className="text-xs text-muted-foreground">
-                {viewingLeave.email} • {viewingLeave.department}
-              </p>
-            </div>
-            <div className="ml-auto">
-              <Chip
-                label={viewingLeave.status}
-                size="small"
-                color={
-                  viewingLeave.status === "Approved"
-                    ? "success"
-                    : viewingLeave.status === "Pending"
-                      ? "warning"
-                      : "error"
-                }
-                variant="outlined"
-                className="!text-xs"
-              />
+              </div>
             </div>
           </div>
-
-          <div className="grid grid-cols-2 gap-3 text-xs">
-            <div className="p-3 bg-secondary/50 rounded-[5px]">
-              <span className="text-muted-foreground">Leave Type</span>
-              <p className="font-semibold text-foreground mt-0.5">{viewingLeave.leave_type}</p>
-            </div>
-            <div className="p-3 bg-secondary/50 rounded-[5px]">
-              <span className="text-muted-foreground">Total Duration</span>
-              <p className="font-semibold text-foreground mt-0.5">
-                {viewingLeave.days_count} {viewingLeave.days_count === 1 ? "day" : "days"}
-              </p>
-            </div>
-            <div className="p-3 bg-secondary/50 rounded-[5px]">
-              <span className="text-muted-foreground">Start Date</span>
-              <p className="font-semibold text-foreground mt-0.5">{viewingLeave.start_date}</p>
-            </div>
-            <div className="p-3 bg-secondary/50 rounded-[5px]">
-              <span className="text-muted-foreground">End Date</span>
-              <p className="font-semibold text-foreground mt-0.5">{viewingLeave.end_date}</p>
-            </div>
-          </div>
-
-          <div className="p-3 bg-secondary/30 border border-border/60 rounded-[5px] space-y-1">
-            <span className="text-[11px] font-semibold text-muted-foreground uppercase">
-              Employee Reason
-            </span>
-            <p className="text-xs text-foreground leading-relaxed">{viewingLeave.reason}</p>
-          </div>
-        </CustomDialog>
+        </AppDrawer>
       )}
     </StaggerContainer>
   );

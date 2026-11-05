@@ -10,6 +10,18 @@ import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import '../models/song_model.dart';
 import 'youtube_music_service.dart';
 
+/// Repeat mode playback state matching Apple Music.
+enum MusicRepeatMode {
+  /// Play queue sequentially, stop when queue ends.
+  off,
+
+  /// Loop entire queue.
+  all,
+
+  /// Loop current song continuously.
+  one,
+}
+
 /// Service managing audio playback using native just_audio streaming with YouTube iframe fallback.
 class AudioPlayerService extends ChangeNotifier {
   /// Native audio player engine from just_audio.
@@ -43,7 +55,7 @@ class AudioPlayerService extends ChangeNotifier {
   StreamSubscription<YoutubePlayerValue>? _ytSubscription;
 
   /// Whether playback is currently handled by the YouTube iframe engine.
-  bool _usingIframe = true;
+  bool _usingIframe = false;
 
   /// Whether iOS 26 AI AutoMix is enabled for seamless beat-matched transitions.
   bool _isAutoMix = true;
@@ -59,7 +71,10 @@ class AudioPlayerService extends ChangeNotifier {
 
   /// Constructor initializing native audio player and iframe fallback.
   AudioPlayerService({required this.musicService}) {
-    _audioPlayer = ja.AudioPlayer();
+    _audioPlayer = ja.AudioPlayer(
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+      useProxyForRequestHeaders: false,
+    );
     _ytController = YoutubePlayerController(
       params: const YoutubePlayerParams(
         showControls: false,
@@ -140,6 +155,93 @@ class AudioPlayerService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Whether shuffle playback mode is enabled.
+  bool _isShuffle = false;
+
+  /// Getter for shuffle playback mode status.
+  bool get isShuffle => _isShuffle;
+
+  /// Toggles shuffle playback mode.
+  void toggleShuffle() {
+    _isShuffle = !_isShuffle;
+    notifyListeners();
+  }
+
+  /// Current repeat mode matching Apple Music iOS 26.
+  MusicRepeatMode _repeatMode = MusicRepeatMode.off;
+
+  /// Getter for active repeat playback mode.
+  MusicRepeatMode get repeatMode => _repeatMode;
+
+  /// Legacy getter for backwards compatibility.
+  bool get isRepeat => _repeatMode != MusicRepeatMode.off;
+
+  /// Toggles through Apple Music repeat modes: Off -> All -> One -> Off.
+  void toggleRepeat() {
+    switch (_repeatMode) {
+      case MusicRepeatMode.off:
+        _repeatMode = MusicRepeatMode.all;
+        _audioPlayer.setLoopMode(ja.LoopMode.off);
+        break;
+      case MusicRepeatMode.all:
+        _repeatMode = MusicRepeatMode.one;
+        _audioPlayer.setLoopMode(ja.LoopMode.one);
+        break;
+      case MusicRepeatMode.one:
+        _repeatMode = MusicRepeatMode.off;
+        _audioPlayer.setLoopMode(ja.LoopMode.off);
+        break;
+    }
+    notifyListeners();
+  }
+
+  /// Removes a song from the queue by index.
+  void removeFromQueue(int index) {
+    if (index < 0 || index >= _queue.length) return;
+    _queue.removeAt(index);
+    if (index < _currentIndex) {
+      _currentIndex--;
+    } else if (_currentIndex >= _queue.length) {
+      _currentIndex = _queue.length - 1;
+    }
+    notifyListeners();
+  }
+
+  /// Reorders a song within the queue.
+  void reorderQueue(int oldIndex, int newIndex) {
+    if (oldIndex < 0 || oldIndex >= _queue.length) return;
+    if (newIndex < 0 || newIndex >= _queue.length) return;
+    final currentSongId = _currentSong?.id;
+    final item = _queue.removeAt(oldIndex);
+    _queue.insert(newIndex, item);
+    if (currentSongId != null) {
+      _currentIndex = _queue.indexWhere((s) => s.id == currentSongId);
+    }
+    notifyListeners();
+  }
+
+  /// Clears upcoming tracks from the queue, preserving the currently playing song.
+  void clearUpcomingQueue() {
+    if (_currentSong != null && _currentIndex >= 0 && _currentIndex < _queue.length) {
+      final current = _queue[_currentIndex];
+      _queue = [current];
+      _currentIndex = 0;
+    } else {
+      _queue.clear();
+      _currentIndex = -1;
+    }
+    notifyListeners();
+  }
+
+  /// Getter for player volume level (0.0 to 1.0).
+  double get volume => _audioPlayer.volume;
+
+  /// Sets player volume level (0.0 to 1.0).
+  Future<void> setVolume(double val) async {
+    await _audioPlayer.setVolume(val.clamp(0.0, 1.0));
+    notifyListeners();
+  }
+
   /// Recently played tracks history.
   final List<SongModel> _recentlyPlayed = [];
 
@@ -189,93 +291,33 @@ class AudioPlayerService extends ChangeNotifier {
     _audioPlayerSubscription = _audioPlayer.playerStateStream.listen(
       (state) {
         if (state.processingState == ja.ProcessingState.completed) {
-          playNext();
+          if (_repeatMode == MusicRepeatMode.one) {
+            _audioPlayer.seek(Duration.zero);
+            _audioPlayer.play();
+          } else {
+            playNext();
+          }
         } else if (state.processingState == ja.ProcessingState.ready) {
           _isLoading = false;
           _errorMessage = null;
+          notifyListeners();
+        } else {
+          notifyListeners();
         }
       },
       onError: (Object err) {
-        if (_currentSong != null && !_usingIframe) {
-          _playViaIframe(_currentSong!);
-        } else {
-          _isLoading = false;
-          _errorMessage = 'Playback error: $err';
-        }
+        _isLoading = false;
+        _errorMessage = 'Playback error: $err';
+        notifyListeners();
       },
     );
 
     _audioPlayer.playbackEventStream.listen(
       (_) {},
       onError: (Object err) {
-        if (_currentSong != null && !_usingIframe) {
-          _playViaIframe(_currentSong!);
-        } else {
-          _isLoading = false;
-          _errorMessage = 'Audio error: $err';
-        }
+        debugPrint('[AudioPlayer] Native playbackEvent error: $err');
       },
     );
-  }
-
-  /// Seamlessly loads and plays the audio via the official YouTube iframe engine.
-  Future<void> _playViaIframe(SongModel song) async {
-    _usingIframe = true;
-    _isLoading = true;
-    _errorMessage = null;
-
-    debugPrint('[AudioPlayer] Loading via IFrame: ${song.id} (${song.title})');
-
-    try {
-      await _audioPlayer.stop();
-      await _ytController
-          .loadVideoById(videoId: song.id)
-          .timeout(
-            const Duration(seconds: 6),
-            onTimeout: () => throw TimeoutException('[AudioPlayer] loadVideoById timed out'),
-          );
-      await _ytController
-          .playVideo()
-          .timeout(
-            const Duration(seconds: 4),
-            onTimeout: () => throw TimeoutException('[AudioPlayer] playVideo timed out'),
-          );
-      _isLoading = false;
-      _errorMessage = null;
-      notifyListeners();
-    } catch (e) {
-      debugPrint(
-        '[AudioPlayer] loadVideoById error/timeout: $e, attempting cue + play',
-      );
-      try {
-        await _ytController
-            .cueVideoById(videoId: song.id)
-            .timeout(
-              const Duration(seconds: 5),
-              onTimeout: () => throw TimeoutException('[AudioPlayer] cueVideoById timed out'),
-            );
-        await _ytController
-            .playVideo()
-            .timeout(
-              const Duration(seconds: 4),
-              onTimeout: () => throw TimeoutException('[AudioPlayer] playVideo timed out'),
-            );
-        _isLoading = false;
-        _errorMessage = null;
-        notifyListeners();
-      } catch (cueErr) {
-        debugPrint('[AudioPlayer] IFrame fallback also failed: $cueErr');
-        _isLoading = false;
-        _errorMessage = 'Playback error: $cueErr';
-        notifyListeners();
-
-        /// Advance queue to next track if available
-        if (_queue.length > 1 && _currentIndex < _queue.length - 1) {
-          debugPrint('[AudioPlayer] Auto-skipping to next track in queue');
-          playNext();
-        }
-      }
-    }
   }
 
   /// Initializes player event listeners for iframe fallback.
@@ -301,14 +343,6 @@ class AudioPlayerService extends ChangeNotifier {
         _isLoading = false;
         _errorMessage = 'Playback error: ${value.error.name}';
         notifyListeners();
-
-        /// Auto-skip to next track on embedding error (e.g. 101/150)
-        if (_queue.length > 1 && _currentIndex < _queue.length - 1) {
-          debugPrint(
-            '[AudioPlayer] Track failed with ${value.error.name}, auto-advancing queue',
-          );
-          playNext();
-        }
       }
       notifyListeners();
     });
@@ -335,24 +369,39 @@ class AudioPlayerService extends ChangeNotifier {
     debugPrint('[AudioPlayer] playSong requested: ${song.title} (${song.id})');
 
     try {
-      await _ytController.pauseVideo();
-      final url = song.audioStreamUrl ??
-          await musicService
-              .getAudioStreamUrl(song.id)
-              .timeout(const Duration(seconds: 8));
+      if (_usingIframe) {
+        await _ytController.pauseVideo();
+      }
+      if (_audioPlayer.playing) {
+        await _audioPlayer.stop();
+      }
+      final url = await musicService
+          .getAudioStreamUrl(song.id)
+          .timeout(const Duration(seconds: 35));
       if (url == null || url.isEmpty) {
         throw Exception('No stream URL extracted');
       }
       song.audioStreamUrl = url;
       _usingIframe = false;
-      await _audioPlayer.setUrl(url);
+      await _audioPlayer.setUrl(
+        url,
+        headers: const {
+          'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+          'Referer': 'https://www.youtube.com/',
+        },
+      );
       await _audioPlayer.play();
       _isLoading = false;
       _errorMessage = null;
       notifyListeners();
     } catch (e) {
-      debugPrint('[AudioPlayer] Native audio failed ($e), falling back to IFrame');
-      await _playViaIframe(song);
+      song.audioStreamUrl = null;
+      debugPrint('[AudioPlayer] Native audio failed ($e)');
+      _isLoading = false;
+      _errorMessage =
+          'Unable to stream this track. Please select another song.';
+      notifyListeners();
     }
   }
 
@@ -399,16 +448,36 @@ class AudioPlayerService extends ChangeNotifier {
 
   /// Plays the next song in the queue.
   Future<void> playNext() async {
-    if (_queue.isEmpty || _currentIndex >= _queue.length - 1) return;
-    _currentIndex++;
-    await playSong(_queue[_currentIndex]);
+    if (_queue.isEmpty) return;
+    if (_isShuffle && _queue.length > 1) {
+      final nextIdx =
+          (_currentIndex + 1 + (DateTime.now().millisecond % (_queue.length - 1))) %
+              _queue.length;
+      _currentIndex = nextIdx;
+      await playSong(_queue[_currentIndex]);
+    } else {
+      if (_currentIndex >= _queue.length - 1) {
+        if (_repeatMode == MusicRepeatMode.all) {
+          _currentIndex = 0;
+          await playSong(_queue[0]);
+        }
+        return;
+      }
+      _currentIndex++;
+      await playSong(_queue[_currentIndex]);
+    }
   }
 
   /// Plays the previous song in the queue.
   Future<void> playPrevious() async {
-    if (_queue.isEmpty || _currentIndex <= 0) return;
-    _currentIndex--;
-    await playSong(_queue[_currentIndex]);
+    if (_queue.isEmpty) return;
+    if (_currentIndex > 0) {
+      _currentIndex--;
+      await playSong(_queue[_currentIndex]);
+    } else if (_repeatMode == MusicRepeatMode.all) {
+      _currentIndex = _queue.length - 1;
+      await playSong(_queue[_currentIndex]);
+    }
   }
 
   @override

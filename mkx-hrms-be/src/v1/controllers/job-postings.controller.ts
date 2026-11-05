@@ -40,12 +40,25 @@ export const getJobPostings = async (req: Request, res: Response) => {
 
 export const getJobPostingById = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const jobPosting = await prisma.jobPosting.findUnique({
-      where: { id: Number(id) },
+    const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const isNum = !isNaN(Number(rawId));
+    const jobPosting = await prisma.jobPosting.findFirst({
+      where: {
+        OR: [
+          { id: isNum ? Number(rawId) : undefined },
+          { job_code: rawId },
+        ],
+      },
       include: {
         department_rel: true,
-        candidates: true,
+        role_rel: true,
+        shift_rel: true,
+        candidates: {
+          orderBy: { applied_date: "desc" },
+        },
+        _count: {
+          select: { candidates: true },
+        },
       },
     });
 

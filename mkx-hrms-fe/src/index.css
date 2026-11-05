@@ -56,6 +56,7 @@
 
 @layer base {
   :root {
+    color-scheme: light;
     --font-family:
       -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --background: #ffffff;
@@ -97,6 +98,7 @@
   }
 
   .dark {
+    color-scheme: dark;
     --background: #020203;
     --foreground: #eee;
     --card: #050607;
@@ -213,6 +215,30 @@
     appearance: textfield !important;
   }
 
+  /**
+   * Neutralize browser autofill background and text color to match theme
+   */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px var(--secondary) inset !important;
+    box-shadow: 0 0 0 1000px var(--secondary) inset !important;
+    -webkit-text-fill-color: var(--foreground) !important;
+    caret-color: var(--foreground) !important;
+    transition: background-color 50000s ease-in-out 0s !important;
+  }
+
+  .dark input:-webkit-autofill,
+  .dark input:-webkit-autofill:hover,
+  .dark input:-webkit-autofill:focus,
+  .dark input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #101214 inset !important;
+    box-shadow: 0 0 0 1000px #101214 inset !important;
+    -webkit-text-fill-color: #eeeeee !important;
+    caret-color: #eeeeee !important;
+  }
+
   /* Premium Public Website Utilities */
   .glass-panel {
     background: color-mix(in srgb, var(--card) 60%, transparent);
@@ -299,4 +325,38 @@
     transform: translateX(0);
     opacity: 1;
   }
+}
+
+/**
+ * Unlayered browser autofill and focus overrides to guarantee dark theme retention
+ */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px var(--secondary, #101214) inset !important;
+  box-shadow: 0 0 0 1000px var(--secondary, #101214) inset !important;
+  -webkit-text-fill-color: var(--foreground, #eee) !important;
+  caret-color: var(--foreground, #eee) !important;
+  transition: background-color 50000s ease-in-out 0s !important;
+}
+
+html.dark input:-webkit-autofill,
+html.dark input:-webkit-autofill:hover,
+html.dark input:-webkit-autofill:focus,
+html.dark input:-webkit-autofill:active,
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover,
+.dark input:-webkit-autofill:focus,
+.dark input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #101214 inset !important;
+  box-shadow: 0 0 0 1000px #101214 inset !important;
+  -webkit-text-fill-color: #eeeeee !important;
+  caret-color: #eeeeee !important;
+  transition: background-color 50000s ease-in-out 0s !important;
+}
+
+input:focus,
+input:focus-visible {
+  outline: none !important;
 }

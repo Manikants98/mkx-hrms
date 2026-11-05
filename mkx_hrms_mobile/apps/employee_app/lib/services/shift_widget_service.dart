@@ -7,6 +7,20 @@ class ShiftWidgetService {
   static const String androidWidgetName = 'ShiftWidgetProvider';
   static const String iOSWidgetName = 'ShiftWidget';
 
+  /** Stored initial widget deep link URI on cold app launch */
+  static String? initialWidgetUri;
+
+  /**
+   * Consumes and clears the pending initial widget deep link URI.
+   *
+   * @returns The pending widget URI string, or null if none was recorded
+   */
+  static String? consumeInitialWidgetUri() {
+    final uri = initialWidgetUri;
+    initialWidgetUri = null;
+    return uri;
+  }
+
   /// Initializes widget listener for click events when launched from home screen.
   ///
   /// @param onWidgetLaunch Callback invoked when app is opened via home widget
@@ -17,8 +31,11 @@ class ShiftWidgetService {
       await HomeWidget.setAppGroupId('group.com.mkx.mkxhrms');
 
       final initialUri = await HomeWidget.initiallyLaunchedFromHomeWidget();
-      if (initialUri != null && onWidgetLaunch != null) {
-        onWidgetLaunch(initialUri);
+      if (initialUri != null) {
+        initialWidgetUri = initialUri.toString();
+        if (onWidgetLaunch != null) {
+          onWidgetLaunch(initialUri);
+        }
       }
 
       HomeWidget.widgetClicked.listen((Uri? uri) {

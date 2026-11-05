@@ -17,16 +17,21 @@ class YouTubeMusicService {
   final YoutubeExplode _ytExplode = YoutubeExplode();
 
   /// Searches for music tracks using YouTube Data API v3 with automatic fallback.
+  /// Searches YouTube Data API v3 for songs matching the query, prioritizing official releases.
   Future<List<SongModel>> searchMusic(
     String query, {
     int maxResults = 25,
   }) async {
+    final effectiveQuery = query.toLowerCase().contains('official')
+        ? query
+        : '$query official';
+
     try {
       final uri = Uri.parse(
         '$_baseUrl/search'
         '?part=snippet'
         '&maxResults=$maxResults'
-        '&q=${Uri.encodeComponent(query)}'
+        '&q=${Uri.encodeComponent(effectiveQuery)}'
         '&type=video'
         '&videoEmbeddable=true'
         '&videoSyndicated=true'
@@ -48,6 +53,8 @@ class YouTubeMusicService {
               .where((song) => song.id.isNotEmpty)
               .toList();
 
+          final officialResults = results.where(_isOfficialMusic).toList();
+          if (officialResults.isNotEmpty) return officialResults;
           if (results.isNotEmpty) return results;
         }
       }
@@ -57,7 +64,7 @@ class YouTubeMusicService {
         '$_baseUrl/search'
         '?part=snippet'
         '&maxResults=$maxResults'
-        '&q=${Uri.encodeComponent('$query song')}'
+        '&q=${Uri.encodeComponent('$query official song')}'
         '&type=video'
         '&videoEmbeddable=true'
         '&videoSyndicated=true'
@@ -79,14 +86,49 @@ class YouTubeMusicService {
               .where((song) => song.id.isNotEmpty)
               .toList();
 
+          final officialResults = results.where(_isOfficialMusic).toList();
+          if (officialResults.isNotEmpty) return officialResults;
           if (results.isNotEmpty) return results;
         }
       }
 
-      return await _fallbackExplodeSearch(query);
+      return await _fallbackExplodeSearch(effectiveQuery);
     } catch (_) {
-      return await _fallbackExplodeSearch(query);
+      return await _fallbackExplodeSearch(effectiveQuery);
     }
+  }
+
+  /// Filters out fan-made re-uploads, slowed+reverb edits, whatsapp status clips, etc.
+  static bool _isOfficialMusic(SongModel song) {
+    final title = song.title.toLowerCase();
+
+    const unofficialKeywords = [
+      'slowed',
+      'reverb',
+      '8d audio',
+      'whatsapp status',
+      'status video',
+      'ringtone',
+      'bass boosted',
+      'cover by',
+      'dance cover',
+      'reaction',
+      'short',
+      'shorts',
+      'karaoke',
+      'instrumental cover',
+      'nightcore',
+      'mashup by',
+      'parody',
+      'ai cover',
+      'fan made',
+    ];
+
+    for (final term in unofficialKeywords) {
+      if (title.contains(term)) return false;
+    }
+
+    return true;
   }
 
   /// In-memory cache for trending tracks.
@@ -122,6 +164,7 @@ class YouTubeMusicService {
               .whereType<Map>()
               .map((item) => SongModel.fromYouTubeMap(item))
               .where((song) => song.id.isNotEmpty)
+              .where(_isOfficialMusic)
               .toList();
 
           if (songs.isNotEmpty) {
@@ -156,6 +199,7 @@ class YouTubeMusicService {
               .whereType<Map>()
               .map((item) => SongModel.fromYouTubeMap(item))
               .where((song) => song.id.isNotEmpty)
+              .where(_isOfficialMusic)
               .toList();
 
           if (songs.isNotEmpty) {
@@ -166,8 +210,11 @@ class YouTubeMusicService {
       }
     } catch (_) {}
 
-    /// 3. Fallback: Search for trending hit songs
-    final fallbackSongs = await searchMusic('trending songs hindi', maxResults: maxResults);
+    /// 3. Fallback: Search for official trending hits in Hindi, English, Punjabi, Haryanvi
+    final fallbackSongs = await searchMusic(
+      'official hindi english punjabi haryanvi hit songs',
+      maxResults: maxResults,
+    );
     if (fallbackSongs.isNotEmpty) {
       _cachedTrending = fallbackSongs;
     }
@@ -195,25 +242,33 @@ class YouTubeMusicService {
     return songs;
   }
 
-  /// Maps category name to optimal YouTube search keywords.
+  /// Maps category name to optimal official YouTube search keywords.
   String _categoryToQuery(String category) {
     switch (category) {
-      case 'AutoMix':
-        return 'Apple Music AutoMix continuous transition DJ mix';
-      case 'Spatial Audio':
-        return 'Spatial Audio Dolby Atmos popular songs';
-      case 'Lo-Fi Chill':
-        return 'lofi chill hip hop beats study music';
-      case 'Pop Hits':
-        return 'top billboard pop hits songs 2026';
-      case 'Bollywood':
-        return 'trending bollywood hindi songs';
-      case 'EDM':
-        return 'EDM dance electronic festival music';
-      case 'Rock':
-        return 'classic and modern rock anthems';
+      case 'All':
+        return 'official hindi english punjabi haryanvi hit songs';
+      case 'Hindi':
+      case 'Hindi Official':
+        return 'official hindi bollywood hit songs';
+      case 'English':
+      case 'English Hits':
+        return 'official english billboard pop songs';
+      case 'Punjabi':
+      case 'Punjabi Hits':
+        return 'official punjabi hit songs';
+      case 'Haryanvi':
+      case 'Haryanvi Dhaakad':
+        return 'official haryanvi hit songs';
+      case 'Bollywood Romance':
+        return 'official romantic bollywood hindi songs';
+      case 'Global Billboard':
+        return 'official english global billboard top songs';
+      case 'Punjabi Bhangra':
+        return 'official punjabi bhangra party songs';
+      case 'Haryanvi Folk & Beats':
+        return 'official haryanvi hit ragni beats songs';
       default:
-        return '$category songs';
+        return 'official $category songs';
     }
   }
 
@@ -223,7 +278,7 @@ class YouTubeMusicService {
       final searchResults = await _ytExplode.search
           .search(query)
           .timeout(const Duration(seconds: 8));
-      return searchResults.map((video) {
+      final all = searchResults.map((video) {
         return SongModel(
           id: video.id.value,
           title: video.title,
@@ -234,59 +289,61 @@ class YouTubeMusicService {
               : '--:--',
         );
       }).toList();
+
+      final official = all.where(_isOfficialMusic).toList();
+      return official.isNotEmpty ? official : all;
     } catch (_) {
       return [];
     }
   }
 
   /// Extracts direct audio stream URL for a given YouTube video ID using YoutubeExplode.
+  /// Prioritizes progressive muxed MP4 streams because YouTube permits open-ended byte
+  /// range requests (Range: bytes=0-) returning HTTP 206 Partial Content, permanently
+  /// bypassing the 403 Forbidden errors that occur with standalone adaptive audio streams.
   Future<String?> getAudioStreamUrl(String videoId) async {
-    try {
-      final manifest = await _ytExplode.videos.streamsClient
-          .getManifest(
-            videoId,
-            ytClients: [
-              YoutubeApiClient.ios,
-              YoutubeApiClient.safari,
-              YoutubeApiClient.androidVr,
-            ],
-          )
-          .timeout(const Duration(seconds: 12));
-      if (manifest.audioOnly.isNotEmpty) {
-        return manifest.audioOnly.withHighestBitrate().url.toString();
-      }
-      if (manifest.muxed.isNotEmpty) {
-        return manifest.muxed.withHighestBitrate().url.toString();
-      }
-    } catch (_) {}
-
-    try {
-      final manifest = await _ytExplode.videos.streamsClient
-          .getManifest(
-            videoId,
-            ytClients: [
-              YoutubeApiClient.tv,
-              YoutubeApiClient.android,
-            ],
-          )
-          .timeout(const Duration(seconds: 10));
-      if (manifest.audioOnly.isNotEmpty) {
-        return manifest.audioOnly.withHighestBitrate().url.toString();
-      }
-      if (manifest.muxed.isNotEmpty) {
-        return manifest.muxed.withHighestBitrate().url.toString();
-      }
-    } catch (_) {}
-
+    /// 1. Primary: Default YouTube client prioritizing progressive muxed MP4 streams
     try {
       final manifest = await _ytExplode.videos.streamsClient
           .getManifest(videoId)
-          .timeout(const Duration(seconds: 10));
+          .timeout(const Duration(seconds: 25));
+
+      if (manifest.muxed.isNotEmpty) {
+        return manifest.muxed.sortByBitrate().first.url.toString();
+      }
+      final aacStreams = manifest.audioOnly
+          .where((s) => s.container.name.toLowerCase() == 'mp4')
+          .toList();
+      if (aacStreams.isNotEmpty) {
+        return aacStreams.withHighestBitrate().url.toString();
+      }
       if (manifest.audioOnly.isNotEmpty) {
         return manifest.audioOnly.withHighestBitrate().url.toString();
       }
+    } catch (_) {}
+
+    /// 2. Fallback: Android client with high reliability
+    try {
+      final manifest = await _ytExplode.videos.streamsClient
+          .getManifest(
+            videoId,
+            ytClients: [
+              YoutubeApiClient.android,
+            ],
+          )
+          .timeout(const Duration(seconds: 20));
+
       if (manifest.muxed.isNotEmpty) {
-        return manifest.muxed.withHighestBitrate().url.toString();
+        return manifest.muxed.sortByBitrate().first.url.toString();
+      }
+      final aacStreams = manifest.audioOnly
+          .where((s) => s.container.name.toLowerCase() == 'mp4')
+          .toList();
+      if (aacStreams.isNotEmpty) {
+        return aacStreams.withHighestBitrate().url.toString();
+      }
+      if (manifest.audioOnly.isNotEmpty) {
+        return manifest.audioOnly.withHighestBitrate().url.toString();
       }
     } catch (_) {}
 

@@ -18,10 +18,26 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
+    if (!email && !password) {
       res.sendError({
         statusCode: 400,
         message: "Email and password are required",
+      });
+      return;
+    }
+
+    if (!email) {
+      res.sendError({
+        statusCode: 400,
+        message: "Email is required",
+      });
+      return;
+    }
+
+    if (!password) {
+      res.sendError({
+        statusCode: 400,
+        message: "Password is required",
       });
       return;
     }
@@ -46,7 +62,7 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
     if (!user) {
       res.sendError({
         statusCode: 401,
-        message: "Invalid email or password",
+        message: "Email is not registered",
       });
       return;
     }
@@ -60,7 +76,7 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
     if (!isPasswordValid) {
       res.sendError({
         statusCode: 401,
-        message: "Invalid email or password",
+        message: "Incorrect password",
       });
       return;
     }

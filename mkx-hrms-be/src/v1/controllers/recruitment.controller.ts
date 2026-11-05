@@ -602,11 +602,14 @@ export const createCandidate = async (
         position,
         department,
         experience,
-        rating: rating || null,
+        rating: rating !== undefined && rating !== null && rating !== "" ? Number(rating) : null,
         avatar: avatar || null,
         resume_url: resume_url || null,
         source: source || null,
-        job_posting_id: job_posting_id || null,
+        job_posting_id:
+          job_posting_id !== undefined && job_posting_id !== null && job_posting_id !== ""
+            ? Number(job_posting_id)
+            : null,
         stage: "Screening",
         status: "Active",
       },
@@ -665,11 +668,21 @@ export const updateCandidateDetails = async (
         position: position !== undefined ? position : candidate.position,
         department: department !== undefined ? department : candidate.department,
         experience: experience !== undefined ? experience : candidate.experience,
-        rating: rating !== undefined ? rating : candidate.rating,
+        rating:
+          rating !== undefined
+            ? rating !== null && rating !== ""
+              ? Number(rating)
+              : null
+            : candidate.rating,
         avatar: avatar !== undefined ? avatar : candidate.avatar,
         resume_url: resume_url !== undefined ? resume_url : candidate.resume_url,
         source: source !== undefined ? source : candidate.source,
-        job_posting_id: job_posting_id !== undefined ? job_posting_id : candidate.job_posting_id,
+        job_posting_id:
+          job_posting_id !== undefined
+            ? job_posting_id !== null && job_posting_id !== ""
+              ? Number(job_posting_id)
+              : null
+            : candidate.job_posting_id,
       },
     });
 

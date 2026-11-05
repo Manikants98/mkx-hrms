@@ -67,6 +67,8 @@ class ShiftWidgetProvider : HomeWidgetProvider() {
                 /**
                  * When clocked in, use Android's native Chronometer to tick live continuously
                  * on the home screen even when the app is completely closed.
+                 * A 16-hour maximum window prevents the chronometer from ticking indefinitely
+                 * when the app remains inactive for days or weeks.
                  */
                 val checkInEpoch = try {
                     val epochLong = widgetData.getLong("check_in_epoch", 0L)
@@ -78,9 +80,15 @@ class ShiftWidgetProvider : HomeWidgetProvider() {
 
                 val nowWall = System.currentTimeMillis()
                 val nowElapsed = SystemClock.elapsedRealtime()
+                val maxShiftDurationMs = 16L * 60 * 60 * 1000
+                val elapsedSinceCheckIn = if (checkInEpoch > 0L) nowWall - checkInEpoch else 0L
 
-                if (isCheckedIn && checkInEpoch > 0L && checkInEpoch <= nowWall) {
-                    val elapsedSinceCheckIn = nowWall - checkInEpoch
+                val isShiftActive = isCheckedIn &&
+                        checkInEpoch > 0L &&
+                        checkInEpoch <= nowWall &&
+                        elapsedSinceCheckIn < maxShiftDurationMs
+
+                if (isShiftActive) {
                     val chronometerBase = nowElapsed - elapsedSinceCheckIn
                     setChronometer(R.id.widget_chronometer, chronometerBase, null, true)
                     setViewVisibility(R.id.widget_chronometer, View.VISIBLE)
@@ -89,7 +97,14 @@ class ShiftWidgetProvider : HomeWidgetProvider() {
                     setChronometer(R.id.widget_chronometer, 0L, null, false)
                     setViewVisibility(R.id.widget_chronometer, View.GONE)
                     setViewVisibility(R.id.widget_work_hours, View.VISIBLE)
-                    setTextViewText(R.id.widget_work_hours, workHours)
+                    if (isCheckedIn && elapsedSinceCheckIn >= maxShiftDurationMs) {
+                        setTextViewText(R.id.widget_status_text, "Shift Ended")
+                        setTextColor(R.id.widget_status_text, Color.parseColor("#FF9F0A"))
+                        setTextViewText(R.id.widget_work_hours, "--:--")
+                        setTextViewText(R.id.widget_action_btn, "Punch In")
+                    } else {
+                        setTextViewText(R.id.widget_work_hours, workHours)
+                    }
                 }
             }
             appWidgetManager.updateAppWidget(widgetId, views)

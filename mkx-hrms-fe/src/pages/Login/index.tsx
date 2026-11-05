@@ -22,6 +22,7 @@ import { useAuth } from "contexts/AuthContext";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useLogin } from "services/auth";
 import { FadeUpItem, StaggerContainer } from "shared/animations";
 
 /**
@@ -34,9 +35,8 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { login } = useAuth();
+  const { setSession } = useAuth();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
@@ -45,28 +45,39 @@ export default function Login() {
 
   const from = (location.state as { from?: { pathname?: string } })?.from?.pathname || "/dashboard";
 
+  const { mutateAsync: loginMutate, isPending } = useLogin(async (response) => {
+    setSession(response.data.token, response.data.user);
+    if (typeof window !== "undefined" && "credentials" in navigator && "PasswordCredential" in window) {
+      try {
+        const CredentialConstructor = (
+          window as unknown as {
+            PasswordCredential: new (data: { id: string; password: string; name?: string }) => unknown;
+          }
+        ).PasswordCredential;
+        const cred = new CredentialConstructor({
+          id: email.trim(),
+          password,
+          name: response.data.user.name || email.trim(),
+        });
+        await navigator.credentials.store(cred as unknown as Credential);
+      } catch {
+        /** Browser credential storage handled silently */
+      }
+    }
+    setTimeout(() => {
+      navigate(from, { replace: true });
+    }, 350);
+  });
+
   /**
    * Handle form submission
    */
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!email.trim() || !password) {
-      toast.error("Please enter both email and password");
-      return;
-    }
-
-    setIsSubmitting(true);
     try {
-      await login(email.trim(), password);
-      toast.success("Welcome back! Authentication successful.");
-      navigate(from, { replace: true });
-    } catch (err: unknown) {
-      const errorMsg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        "Invalid email or password";
-      toast.error(errorMsg);
-    } finally {
-      setIsSubmitting(false);
+      await loginMutate({ email: email.trim(), password });
+    } catch {
+      /** Error toast notification is automatically dispatched by useCustomMutation */
     }
   };
 
@@ -153,7 +164,7 @@ export default function Login() {
         {/* Right Column: Modern Glassmorphic Login Card */}
         <FadeUpItem className="lg:col-span-7 flex justify-center">
           <div className="w-full max-w-md bg-card/80 backdrop-blur-xl border border-border rounded-2xl p-6 sm:p-8 shadow-2xl">
-            {/* Mobile Brand Logo */}
+        ms- {/* Mobile Brand Logo */}
             <div className="lg:hidden flex items-center gap-2 mb-6">
               <div className="w-8 h-8 rounded-[5px] bg-primary flex items-center justify-center">
                 <Shield className="w-4 h-4 text-primary-foreground" />
@@ -169,7 +180,7 @@ export default function Login() {
             </div>
 
             {/* Login Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} method="POST" action="/login" autoComplete="on" className="space-y-4">
               <div>
                 <label className="block text-xs font-medium text-foreground mb-1.5">
                   Email Address
@@ -181,12 +192,35 @@ export default function Login() {
                     placeholder="name@company.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    inputProps={{
+                      autoComplete: "username",
+                      name: "username",
+                      id: "username",
+                    }}
+                    sx={{
+                      "& input": {
+                        backgroundColor: "transparent !important",
+                      },
+                      "& input:-webkit-autofill, & input:-webkit-autofill:hover, & input:-webkit-autofill:focus, & input:-webkit-autofill:active": {
+                        WebkitBoxShadow:
+                          theme === "dark"
+                            ? "0 0 0 1000px #101214 inset !important"
+                            : "0 0 0 1000px #f4f4f5 inset !important",
+                        boxShadow:
+                          theme === "dark"
+                            ? "0 0 0 1000px #101214 inset !important"
+                            : "0 0 0 1000px #f4f4f5 inset !important",
+                        WebkitTextFillColor: theme === "dark" ? "#eeeeee !important" : "#09090b !important",
+                        caretColor: theme === "dark" ? "#eeeeee !important" : "#09090b !important",
+                        transition: "background-color 50000s ease-in-out 0s !important",
+                      },
+                    }}
                     startAdornment={
                       <InputAdornment position="start" className="!ml-3">
                         <Mail className="!w-4 !h-4 text-muted-foreground" />
                       </InputAdornment>
                     }
-                    className="w-full h-10 px-3 rounded-[5px] bg-secondary border border-border text-sm text-foreground [&_input]:p-0 [&_input::placeholder]:text-muted-foreground [&_input::placeholder]:opacity-100 transition-all focus-within:!border-primary"
+                    className="w-full h-10 px-3 rounded-[5px] bg-secondary border border-border text-sm text-foreground [&_input]:p-0 [&_input]:!bg-transparent [&_input::placeholder]:text-muted-foreground [&_input::placeholder]:opacity-100 transition-all focus-within:!border-[#00b1d8] focus-within:!ring-1 focus-within:!ring-[#00b1d8]/30"
                   />
                 </div>
               </div>
@@ -213,6 +247,29 @@ export default function Login() {
                     placeholder="••••••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    inputProps={{
+                      autoComplete: "current-password",
+                      name: "password",
+                      id: "password",
+                    }}
+                    sx={{
+                      "& input": {
+                        backgroundColor: "transparent !important",
+                      },
+                      "& input:-webkit-autofill, & input:-webkit-autofill:hover, & input:-webkit-autofill:focus, & input:-webkit-autofill:active": {
+                        WebkitBoxShadow:
+                          theme === "dark"
+                            ? "0 0 0 1000px #101214 inset !important"
+                            : "0 0 0 1000px #f4f4f5 inset !important",
+                        boxShadow:
+                          theme === "dark"
+                            ? "0 0 0 1000px #101214 inset !important"
+                            : "0 0 0 1000px #f4f4f5 inset !important",
+                        WebkitTextFillColor: theme === "dark" ? "#eeeeee !important" : "#09090b !important",
+                        caretColor: theme === "dark" ? "#eeeeee !important" : "#09090b !important",
+                        transition: "background-color 50000s ease-in-out 0s !important",
+                      },
+                    }}
                     startAdornment={
                       <InputAdornment position="start" className="!ml-3">
                         <Lock className="!w-4 !h-4 text-muted-foreground" />
@@ -233,7 +290,7 @@ export default function Login() {
                         </IconButton>
                       </InputAdornment>
                     }
-                    className="w-full h-10 px-3 rounded-[5px] bg-secondary border border-border text-sm text-foreground [&_input]:p-0 [&_input::placeholder]:text-muted-foreground [&_input::placeholder]:opacity-100 transition-all focus-within:!border-primary"
+                    className="w-full h-10 px-3 rounded-[5px] bg-secondary border border-border text-sm text-foreground [&_input]:p-0 [&_input]:!bg-transparent [&_input::placeholder]:text-muted-foreground [&_input::placeholder]:opacity-100 transition-all focus-within:!border-[#00b1d8] focus-within:!ring-1 focus-within:!ring-[#00b1d8]/30"
                   />
                 </div>
               </div>
@@ -253,10 +310,10 @@ export default function Login() {
               <Button
                 type="submit"
                 variant="contained"
-                disabled={isSubmitting}
+                disabled={isPending}
                 className="!w-full !h-10 !rounded-[5px] !bg-primary hover:!bg-primary/90 !text-primary-foreground !font-semibold !text-sm !shadow-md !shadow-primary/20 transition-all"
               >
-                {isSubmitting ? (
+                {isPending ? (
                   <div className="flex items-center gap-2">
                     <CircularProgress size={18} className="!text-primary-foreground" />
                     <span>Signing in...</span>

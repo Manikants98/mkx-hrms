@@ -18,6 +18,7 @@ import Reports from "pages/Reports";
 import Settings from "pages/Settings";
 import Blogs from "pages/Blogs";
 import Masters from "pages/Masters";
+import JobPostingDetail from "pages/Masters/JobPostingDetail";
 
 // Public Website Imports
 import { PublicLayout } from "pages/PublicWebsite/PublicLayout";
@@ -94,6 +95,10 @@ export const appRoutes: AppRouteItem[] = [
   {
     path: "/masters/job-postings",
     element: <Masters />,
+  },
+  {
+    path: "/masters/job-postings/:id",
+    element: <JobPostingDetail />,
   },
   {
     path: "/masters/leave-types",

@@ -62,68 +62,37 @@ export const useGetSettings = () => {
  * @param onSuccessCallback - Optional callback on success
  * @returns Mutation trigger
  */
-export const useUpdateProfile = (onSuccessCallback?: () => void) => {
-  const mutation = useCustomMutation<ApiResponse<unknown>, unknown, Partial<UserProfileSettings>>({
+export const useUpdateProfile = (onSuccess?: () => void) => {
+  return useCustomMutation<ApiResponse<unknown>, unknown, Partial<UserProfileSettings>>({
+    url: "/v1/settings/profile",
+    method: "PUT",
+    invalidateQueries: [["settings"]],
     toastMessages: {
       loading: "Updating profile...",
-      success: "Profile updated successfully!",
     },
-    onSuccess: () => {
-      if (onSuccessCallback) onSuccessCallback();
-    },
+    onSuccess,
   });
-
-  return {
-    ...mutation,
-    mutate: (data: Partial<UserProfileSettings>) =>
-      mutation.mutate({
-        url: "/v1/settings/profile",
-        method: "PUT",
-        data,
-      }),
-    mutateAsync: (data: Partial<UserProfileSettings>) =>
-      mutation.mutateAsync({
-        url: "/v1/settings/profile",
-        method: "PUT",
-        data,
-      }),
-  };
 };
 
 /**
  * Hook to update notification channel switches
  *
- * @param onSuccessCallback - Optional callback on success
+ * @param onSuccess - Optional callback on success
  * @returns Mutation trigger
  */
-export const useUpdateNotificationPreferences = (onSuccessCallback?: () => void) => {
-  const mutation = useCustomMutation<
+export const useUpdateNotificationPreferences = (onSuccess?: () => void) => {
+  return useCustomMutation<
     ApiResponse<unknown>,
     unknown,
     { preferences: Record<string, { email: boolean; push: boolean }> }
   >({
+    url: "/v1/settings/notifications",
+    method: "PUT",
+    invalidateQueries: [["settings"]],
     toastMessages: {
       loading: "Saving preferences...",
-      success: "Notification preferences updated!",
     },
-    onSuccess: () => {
-      if (onSuccessCallback) onSuccessCallback();
-    },
+    onSuccess,
   });
-
-  return {
-    ...mutation,
-    mutate: (data: { preferences: Record<string, { email: boolean; push: boolean }> }) =>
-      mutation.mutate({
-        url: "/v1/settings/notifications",
-        method: "PUT",
-        data,
-      }),
-    mutateAsync: (data: { preferences: Record<string, { email: boolean; push: boolean }> }) =>
-      mutation.mutateAsync({
-        url: "/v1/settings/notifications",
-        method: "PUT",
-        data,
-      }),
-  };
 };
+

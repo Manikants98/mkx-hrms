@@ -23,8 +23,8 @@ export interface CandidateRecord {
   source?: string | null;
   onboarded_at?: string | null;
   employee_id?: number | null;
-  interviews?: any[];
-  job_posting?: any;
+  interviews?: unknown[];
+  job_posting?: Record<string, unknown> | null;
 }
 
 /**

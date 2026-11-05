@@ -8,11 +8,11 @@ export const createCandidateSchema = z.object({
     position: z.string().min(1, "Position is required"),
     department: z.string().min(1, "Department is required"),
     experience: z.string().min(1, "Experience is required"),
-    rating: z.union([z.string(), z.number()]).optional(),
+    rating: z.union([z.string(), z.number()]).nullable().optional(),
     avatar: z.string().nullable().optional(),
     resume_url: z.string().nullable().optional(),
     source: z.string().nullable().optional(),
-    job_posting_id: z.number().nullable().optional(),
+    job_posting_id: z.union([z.string(), z.number()]).nullable().optional(),
   }),
 });
 
@@ -24,11 +24,11 @@ export const updateCandidateDetailsSchema = z.object({
     position: z.string().optional(),
     department: z.string().optional(),
     experience: z.string().optional(),
-    rating: z.union([z.string(), z.number()]).optional(),
+    rating: z.union([z.string(), z.number()]).nullable().optional(),
     avatar: z.string().nullable().optional(),
     resume_url: z.string().nullable().optional(),
     source: z.string().nullable().optional(),
-    job_posting_id: z.number().nullable().optional(),
+    job_posting_id: z.union([z.string(), z.number()]).nullable().optional(),
   }),
 });
 

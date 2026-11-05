@@ -7,7 +7,6 @@ import 'package:flutter/foundation.dart'
 import 'package:flutter/material.dart' show showModalBottomSheet;
 import 'package:flutter/services.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
-import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 import '../constants/music_constants.dart';
 import '../models/song_model.dart';
@@ -240,9 +239,28 @@ class _MusicHomeScreenState extends State<MusicHomeScreen> {
     _onSearchQueryChanged(categoryName);
   }
 
-  void _playSong(SongModel song, List<SongModel> queue) {
+  /// Displays the full-screen Apple Music iOS 26 Now Playing sheet.
+  void _showNowPlayingSheet() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: CupertinoColors.transparent,
+      useSafeArea: true,
+      builder: (_) => NowPlayingSheet(playerService: _playerService),
+    );
+  }
+
+  /// Plays a given song and optionally presents the Now Playing sheet.
+  void _playSong(
+    SongModel song,
+    List<SongModel> queue, {
+    bool openNowPlaying = false,
+  }) {
     HapticFeedback.mediumImpact();
     _playerService.playSong(song, newQueue: queue);
+    if (openNowPlaying) {
+      _showNowPlayingSheet();
+    }
   }
 
   @override
@@ -305,7 +323,7 @@ class _MusicHomeScreenState extends State<MusicHomeScreen> {
                         isLoadingTrending: _isLoadingTrending,
                         isLoadingCategory: _isLoadingCategory,
                         onCategorySelected: _onCategoryChipTap,
-                        onPlaySong: _playSong,
+                        onPlaySong: (song, queue) => _playSong(song, queue),
                       ),
                       RadioScreen(
                         key: const ValueKey('radio-tab'),
@@ -357,16 +375,13 @@ class _MusicHomeScreenState extends State<MusicHomeScreen> {
                 if (_isMiniMode) {
                   _dismissMiniMode();
                 } else if (_playerService.currentSong != null) {
-                  showModalBottomSheet<void>(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: CupertinoColors.transparent,
-                    useSafeArea: true,
-                    builder: (_) =>
-                        NowPlayingSheet(playerService: _playerService),
-                  );
+                  _showNowPlayingSheet();
                 } else if (_trendingSongs.isNotEmpty) {
-                  _playSong(_trendingSongs.first, _trendingSongs);
+                  _playSong(
+                    _trendingSongs.first,
+                    _trendingSongs,
+                    openNowPlaying: true,
+                  );
                 }
               },
             ),
@@ -442,22 +457,6 @@ class _MusicHomeScreenState extends State<MusicHomeScreen> {
               },
             ),
             tabs: _kTabs,
-          ),
-        ),
-        /// Active YouTube Player iframe placed after Scaffold so PlatformView is in front and not occluded
-        Positioned(
-          left: 0,
-          top: 0,
-          width: 200,
-          height: 120,
-          child: IgnorePointer(
-            child: Opacity(
-              opacity: 0.02,
-              child: YoutubePlayer(
-                controller: _playerService.ytController,
-                aspectRatio: 16 / 9,
-              ),
-            ),
           ),
         ),
       ],
@@ -662,7 +661,10 @@ class _MusicHomeScreenState extends State<MusicHomeScreen> {
                     _playerService.currentSong?.id == song.id;
 
                 return GestureDetector(
-                  onTap: () => _playSong(song, _searchResults),
+                  onTap: () {
+                    FocusScope.of(context).unfocus();
+                    _playSong(song, _searchResults, openNowPlaying: true);
+                  },
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 8),
                     padding: const EdgeInsets.symmetric(

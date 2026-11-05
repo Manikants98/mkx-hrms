@@ -27,7 +27,7 @@ import {
 import { useMemo, useState, type ElementType } from "react";
 
 import { ArrowMenu } from "shared/ArrowMenu";
-import { CustomDialog } from "shared/CustomDialog";
+import { AppDrawer } from "shared/Drawer";
 import { DataTable, type ColumnDef } from "shared/DataTable";
 import { CustomDatePicker } from "shared/DatePicker";
 import { StatsCard } from "shared/StatsCard";
@@ -606,107 +606,156 @@ export default function Attendance() {
       </FadeUpItem>
 
       {viewingAttendance && (
-        <CustomDialog
+        <AppDrawer
           open={Boolean(viewingAttendance)}
           onClose={() => setViewingAttendance(null)}
           title="Attendance Log Details"
-          maxWidth="xs"
-        >
-          <div className="flex items-center gap-3 pb-4 border-b border-border">
-            <Avatar
-              src={viewingAttendance.avatar || undefined}
-              className="!w-12 !h-12 !bg-primary/20 !text-primary !text-lg !font-bold"
-            >
-              {viewingAttendance.name.charAt(0)}
-            </Avatar>
-            <div>
-              <h4 className="text-base font-semibold text-foreground">{viewingAttendance.name}</h4>
-              <p className="text-xs text-muted-foreground">
-                {viewingAttendance.email} • {viewingAttendance.department}
-              </p>
-            </div>
-            <div className="ml-auto">
-              <Chip
-                label={viewingAttendance.status}
-                size="small"
-                color={
-                  viewingAttendance.status === "Present"
-                    ? "success"
-                    : viewingAttendance.status === "Late"
-                      ? "warning"
-                      : viewingAttendance.status === "Remote"
-                        ? "info"
-                        : "error"
-                }
+          subtitle={`Log #${viewingAttendance.id} • ${viewingAttendance.name}`}
+          width={560}
+          footer={
+            <div className="flex items-center justify-between w-full">
+              <Button
                 variant="outlined"
-                className="!text-xs"
-              />
+                size="small"
+                onClick={() => setViewingAttendance(null)}
+                className="!border-border !text-muted-foreground hover:!text-foreground !text-xs !normal-case !rounded-[5px]"
+              >
+                Close
+              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="small"
+                  variant={viewingAttendance.status === "Present" ? "contained" : "outlined"}
+                  color="success"
+                  onClick={() => handleUpdateStatus(viewingAttendance, "Present")}
+                  className="!text-xs !normal-case !rounded-[5px]"
+                >
+                  Mark Present
+                </Button>
+                <Button
+                  size="small"
+                  variant={viewingAttendance.status === "Late" ? "contained" : "outlined"}
+                  color="warning"
+                  onClick={() => handleUpdateStatus(viewingAttendance, "Late")}
+                  className="!text-xs !normal-case !rounded-[5px]"
+                >
+                  Mark Late
+                </Button>
+              </div>
             </div>
-          </div>
+          }
+        >
+          <div className="flex flex-col gap-6 text-xs bg-background/50 rounded-md">
+            {/** Employee Header Card */}
+            <div className="flex items-center gap-3.5 p-4 bg-secondary/30 rounded-[5px] border border-border/60">
+              <Avatar
+                src={viewingAttendance.avatar || undefined}
+                className="!w-12 !h-12 !bg-primary/20 !text-primary !text-lg !font-bold shrink-0"
+              >
+                {viewingAttendance.name.charAt(0)}
+              </Avatar>
+              <div className="flex flex-col min-w-0 flex-1">
+                <h4 className="text-base font-semibold text-foreground truncate">{viewingAttendance.name}</h4>
+                <p className="text-xs text-muted-foreground truncate mt-0.5">
+                  {viewingAttendance.email} • {viewingAttendance.department}
+                </p>
+              </div>
+              <div className="shrink-0">
+                <Chip
+                  label={viewingAttendance.status}
+                  size="small"
+                  color={
+                    viewingAttendance.status === "Present"
+                      ? "success"
+                      : viewingAttendance.status === "Late"
+                        ? "warning"
+                        : viewingAttendance.status === "Remote"
+                          ? "info"
+                          : "error"
+                  }
+                  variant="outlined"
+                  className="!text-xs !font-medium"
+                />
+              </div>
+            </div>
 
-          <div className="grid grid-cols-2 gap-3 text-xs">
-            <div className="p-3 bg-secondary/50 rounded-[5px]">
-              <span className="text-muted-foreground">Check In</span>
-              <p className="font-semibold text-foreground mt-0.5">{viewingAttendance.check_in}</p>
+            {/** Attendance Parameters Grid */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3.5 bg-secondary/30 rounded-[5px] border border-border/60">
+                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  Check In
+                </span>
+                <p className="font-semibold text-sm text-foreground mt-1">{viewingAttendance.check_in}</p>
+              </div>
+              <div className="p-3.5 bg-secondary/30 rounded-[5px] border border-border/60">
+                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  Check Out
+                </span>
+                <p className="font-semibold text-sm text-foreground mt-1">{viewingAttendance.check_out}</p>
+              </div>
+              <div className="p-3.5 bg-secondary/30 rounded-[5px] border border-border/60">
+                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  Total Work Hours
+                </span>
+                <p className="font-semibold text-sm text-foreground mt-1">{viewingAttendance.work_hours}</p>
+              </div>
+              <div className="p-3.5 bg-secondary/30 rounded-[5px] border border-border/60">
+                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  Punch Location
+                </span>
+                <p className="font-semibold text-sm text-foreground mt-1">{viewingAttendance.location}</p>
+              </div>
             </div>
-            <div className="p-3 bg-secondary/50 rounded-[5px]">
-              <span className="text-muted-foreground">Check Out</span>
-              <p className="font-semibold text-foreground mt-0.5">{viewingAttendance.check_out}</p>
-            </div>
-            <div className="p-3 bg-secondary/50 rounded-[5px]">
-              <span className="text-muted-foreground">Work Hours</span>
-              <p className="font-semibold text-foreground mt-0.5">{viewingAttendance.work_hours}</p>
-            </div>
-            <div className="p-3 bg-secondary/50 rounded-[5px]">
-              <span className="text-muted-foreground">Location</span>
-              <p className="font-semibold text-foreground mt-0.5">{viewingAttendance.location}</p>
-            </div>
-          </div>
 
-          <div className="pt-2 border-t border-border space-y-2">
-            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-              Quick Status Change
-            </span>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                size="small"
-                variant={viewingAttendance.status === "Present" ? "contained" : "outlined"}
-                color="success"
-                onClick={() => handleUpdateStatus(viewingAttendance, "Present")}
-                className="!text-xs !normal-case"
-              >
-                Present
-              </Button>
-              <Button
-                size="small"
-                variant={viewingAttendance.status === "Late" ? "contained" : "outlined"}
-                color="warning"
-                onClick={() => handleUpdateStatus(viewingAttendance, "Late")}
-                className="!text-xs !normal-case"
-              >
-                Late
-              </Button>
-              <Button
-                size="small"
-                variant={viewingAttendance.status === "Remote" ? "contained" : "outlined"}
-                color="info"
-                onClick={() => handleUpdateStatus(viewingAttendance, "Remote")}
-                className="!text-xs !normal-case"
-              >
-                Remote
-              </Button>
-              <Button
-                size="small"
-                variant={viewingAttendance.status === "Absent" ? "contained" : "outlined"}
-                color="error"
-                onClick={() => handleUpdateStatus(viewingAttendance, "Absent")}
-                className="!text-xs !normal-case"
-              >
-                Absent
-              </Button>
+            {/** Quick Status Change Actions */}
+            <div className="p-4 border border-border/70 rounded-[5px] bg-secondary/20 space-y-2.5">
+              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                Quick Status Change
+              </span>
+              <p className="text-xs text-muted-foreground">
+                Override today's attendance status for this employee record.
+              </p>
+              <div className="flex flex-wrap gap-2 pt-1">
+                <Button
+                  size="small"
+                  variant={viewingAttendance.status === "Present" ? "contained" : "outlined"}
+                  color="success"
+                  onClick={() => handleUpdateStatus(viewingAttendance, "Present")}
+                  className="!text-xs !normal-case !rounded-[5px]"
+                >
+                  Present
+                </Button>
+                <Button
+                  size="small"
+                  variant={viewingAttendance.status === "Late" ? "contained" : "outlined"}
+                  color="warning"
+                  onClick={() => handleUpdateStatus(viewingAttendance, "Late")}
+                  className="!text-xs !normal-case !rounded-[5px]"
+                >
+                  Late
+                </Button>
+                <Button
+                  size="small"
+                  variant={viewingAttendance.status === "Remote" ? "contained" : "outlined"}
+                  color="info"
+                  onClick={() => handleUpdateStatus(viewingAttendance, "Remote")}
+                  className="!text-xs !normal-case !rounded-[5px]"
+                >
+                  Remote
+                </Button>
+                <Button
+                  size="small"
+                  variant={viewingAttendance.status === "Absent" ? "contained" : "outlined"}
+                  color="error"
+                  onClick={() => handleUpdateStatus(viewingAttendance, "Absent")}
+                  className="!text-xs !normal-case !rounded-[5px]"
+                >
+                  Absent
+                </Button>
+              </div>
             </div>
           </div>
-        </CustomDialog>
+        </AppDrawer>
       )}
     </StaggerContainer>
   );

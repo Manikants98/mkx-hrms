@@ -8,7 +8,7 @@ import 'screens/music_home_screen.dart';
 /// Entry point of the Apple Music iOS 26 application.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await LiquidGlassWidgets.initialize();
+  await LiquidGlassWidgets.initialize(enablePerformanceMonitor: false);
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -22,7 +22,14 @@ Future<void> main() async {
   runApp(
     LiquidGlassWidgets.wrap(
       adaptiveQuality: true,
-      brightnessResolver: (_) => Brightness.dark,
+      adaptiveConfig: const GlassAdaptiveScopeConfig(
+        initialQuality: GlassQuality.standard,
+        allowStepUp: false,
+      ),
+      theme: const GlassThemeData(
+        dark: GlassThemeVariant(quality: GlassQuality.standard),
+        light: GlassThemeVariant(quality: GlassQuality.standard),
+      ),
       child: const MKXMusicApp(),
     ),
   );
@@ -38,6 +45,9 @@ class MKXMusicApp extends StatelessWidget {
     return CupertinoApp(
       title: 'Apple Music',
       debugShowCheckedModeBanner: false,
+      builder: (context, child) => ScaffoldMessenger(
+        child: child ?? const SizedBox.shrink(),
+      ),
       theme: const CupertinoThemeData(
         brightness: Brightness.dark,
         primaryColor: Color(0xFFFA2D48),

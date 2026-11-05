@@ -26,7 +26,8 @@ export interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<string>;
+  setSession: (token: string, user: AuthUser) => void;
   logout: () => Promise<void>;
 }
 
@@ -93,11 +94,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   /**
+   * Set active authentication session from token and user profile
+   *
+   * @param newToken - JWT session token
+   * @param newUser - Authenticated user profile
+   */
+  const setSession = (newToken: string, newUser: AuthUser): void => {
+    localStorage.setItem("token", newToken);
+    localStorage.setItem("user", JSON.stringify(newUser));
+    setToken(newToken);
+    setUser(newUser);
+  };
+
+  /**
    * Execute authentication login request
    */
-  const login = async (email: string, password: string): Promise<void> => {
+  const login = async (email: string, password: string): Promise<string> => {
     const response = await api.post<{
       success: boolean;
+      statusCode: number;
+      message: string;
       data: { token: string; user: AuthUser };
     }>("/v1/auth/login", {
       email,
@@ -105,12 +121,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     const { token: receivedToken, user: receivedUser } = response.data.data;
+    setSession(receivedToken, receivedUser);
 
-    localStorage.setItem("token", receivedToken);
-    localStorage.setItem("user", JSON.stringify(receivedUser));
-
-    setToken(receivedToken);
-    setUser(receivedUser);
+    return response.data.message;
   };
 
   /**
@@ -138,6 +151,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isAuthenticated: Boolean(token),
         isLoading,
         login,
+        setSession,
         logout,
       }}
     >

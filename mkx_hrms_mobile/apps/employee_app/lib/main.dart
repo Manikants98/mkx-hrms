@@ -38,9 +38,9 @@ void main() async {
       if (uri == null) return;
       final uriString = uri.toString();
       if (uriString.contains('apply_leave')) {
-        MainShellScreen.shellKey.currentState?.switchTab(1);
+        MainShellScreen.switchShellTab(1);
       } else if (uriString.contains('shift_tracker')) {
-        MainShellScreen.shellKey.currentState?.switchTab(0);
+        MainShellScreen.switchShellTab(0);
       }
     },
   );
@@ -190,6 +190,7 @@ class _MkxHrmsAppState extends State<MkxHrmsApp> {
                       );
 
                       return M3ETheme(
+                        key: const ValueKey('app_root_m3e_theme'),
                         data: baseTheme.copyWith(
                           colorScheme: m3eColorScheme,
                           fontFamily: settings.fontFamily,
@@ -230,7 +231,7 @@ class _MkxHrmsAppState extends State<MkxHrmsApp> {
   Widget _buildHome(AuthProvider auth) {
     if (auth.isInitializing) return const AppSplashScreen();
     if (auth.isAuthenticated) {
-      return MainShellScreen(key: MainShellScreen.shellKey);
+      return const MainShellScreen();
     }
     if (!auth.hasSeenOnboarding) {
       return const OnboardingScreen();

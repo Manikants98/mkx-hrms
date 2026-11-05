@@ -3,6 +3,8 @@ import { useCustomMutation } from "hooks/useCustomMutation";
 import { useQueryClient } from "@tanstack/react-query";
 import { type ApiResponse } from "../api.types";
 
+import type { CandidateRecord } from "services/recruitment";
+
 export interface JobPosting {
   id: number;
   job_code: string;
@@ -10,7 +12,9 @@ export interface JobPosting {
   department_id: number | null;
   role_id?: number | null;
   shift_id?: number | null;
-  department_rel?: { id: number; name: string };
+  department_rel?: { id: number; name: string } | null;
+  role_rel?: { id: number; name: string } | null;
+  shift_rel?: { id: number; name: string; start_time?: string; end_time?: string } | null;
   location: string;
   employment_type: string;
   experience_level: string;
@@ -18,6 +22,9 @@ export interface JobPosting {
   description: string;
   vacancies: number;
   status: string;
+  created_at?: string;
+  updated_at?: string;
+  candidates?: CandidateRecord[];
   _count?: { candidates: number };
 }
 
@@ -25,9 +32,9 @@ export const useGetJobPostings = () => {
   return useCustomQuery<ApiResponse<JobPosting[]>>(["job-postings"], "/v1/job-postings");
 };
 
-export const useGetJobPostingById = (id: number) => {
-  return useCustomQuery<ApiResponse<JobPosting>>(["job-postings", id], `/v1/job-postings/${id}`, {
-    enabled: !!id,
+export const useGetJobPostingById = (id: number | string) => {
+  return useCustomQuery<ApiResponse<JobPosting>>(["job-postings", String(id)], `/v1/job-postings/${id}`, {
+    enabled: Boolean(id),
   });
 };
 

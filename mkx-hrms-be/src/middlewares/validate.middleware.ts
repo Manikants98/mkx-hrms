@@ -12,7 +12,7 @@ import { ApiError } from "../utils/ApiError";
  * @returns Express middleware function
  */
 export const validate = (schema: ZodType<unknown>) => {
-  return (req: Request, res: Response, next: NextFunction): void => {
+  return (req: Request, _res: Response, next: NextFunction): void => {
     try {
       const parsed = schema.parse({
         body: req.body,
@@ -41,8 +41,8 @@ export const validate = (schema: ZodType<unknown>) => {
       next();
     } catch (err) {
       if (err instanceof ZodError) {
-        const errorMessages = err.issues.map((e) => `${e.path.join(".")} - ${e.message}`);
-        next(new ApiError(400, `Validation Error: ${errorMessages.join(" | ")}`));
+        const errorMessages = err.issues.map((e) => e.message);
+        next(new ApiError(400, errorMessages.join(", ")));
       } else {
         next(err);
       }

@@ -1,4 +1,6 @@
 import { Button, Checkbox, Chip, Switch } from "@mui/material";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 import { useTheme } from "context/ThemeContext/useTheme";
 import { useAuth } from "contexts/AuthContext";
 import { useFontContext } from "contexts/FontContext";
@@ -13,8 +15,12 @@ import {
   Smartphone,
   User,
 } from "lucide-react";
-import React, { useEffect, useMemo, useState } from "react";
-import { useGetSettings, useUpdateProfile } from "services/settings";
+import React, { useMemo, useState } from "react";
+import {
+  useGetSettings,
+  useUpdateProfile,
+  useUpdateNotificationPreferences,
+} from "services/settings";
 import { FontSwitcherModal } from "shared/FontSwitcherModal";
 import { ImagePicker } from "shared/ImagePicker";
 import { Input } from "shared/Input";
@@ -51,6 +57,34 @@ interface PasswordFieldConfig {
 }
 
 /**
+ * Form values model for user profile settings
+ */
+export interface ProfileFormValues {
+  avatar: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  role: string;
+}
+
+/**
+ * Form values model for security credentials update
+ */
+export interface PasswordFormValues {
+  current_password: string;
+  new_password: string;
+  confirm_password: string;
+}
+
+/**
+ * Form values model for system notification subscriptions
+ */
+export interface NotificationPreferencesFormValues {
+  channels: Record<string, boolean>;
+  preferences: Record<string, { email: boolean; push: boolean }>;
+}
+
+/**
  * Available tab configurations
  */
 const tabs: TabItem[] = [
@@ -82,6 +116,33 @@ const passwordFields: PasswordFieldConfig[] = [
 ];
 
 /**
+ * Validation schema for personal profile settings
+ */
+const profileValidationSchema = Yup.object({
+  first_name: Yup.string().trim().required("First name is required"),
+  last_name: Yup.string().trim().required("Last name is required"),
+  email: Yup.string()
+    .trim()
+    .email("Please enter a valid email address")
+    .required("Email is required"),
+  role: Yup.string().required("Role is required"),
+  avatar: Yup.string().optional(),
+});
+
+/**
+ * Validation schema for security password updates
+ */
+const passwordValidationSchema = Yup.object({
+  current_password: Yup.string().required("Current password is required"),
+  new_password: Yup.string()
+    .min(8, "Password must be at least 8 characters")
+    .required("New password is required"),
+  confirm_password: Yup.string()
+    .oneOf([Yup.ref("new_password")], "Passwords must match")
+    .required("Please confirm your new password"),
+});
+
+/**
  * Settings Page Component
  *
  * Provides a modular interface for managing user profile, display preferences,
@@ -94,11 +155,10 @@ export default function Settings() {
   const { theme, setTheme } = useTheme();
 
   const { user } = useAuth();
-  const { data: settingsResponse, refetch } = useGetSettings();
+  const { data: settingsResponse } = useGetSettings();
 
-  const updateProfileMutation = useUpdateProfile(() => {
-    refetch();
-  });
+  const updateProfileMutation = useUpdateProfile();
+  const updateNotificationsMutation = useUpdateNotificationPreferences();
 
   /**
    * Dynamic roles fetched from PostgreSQL database with initial fallback for current user role
@@ -130,44 +190,82 @@ export default function Settings() {
   const [fontModalOpen, setFontModalOpen] = useState(false);
 
   /**
-   * Controlled form state for Profile bound to real authenticated user
+   * Initial profile values derived reactively from backend response or authenticated session
    */
-  const [profileForm, setProfileForm] = useState({
-    avatar: user?.avatar || "",
-    first_name: user?.first_name || "",
-    last_name: user?.last_name || "",
-    email: user?.email || "",
-    role: user?.role || "",
-  });
-
-  useEffect(() => {
-    if (settingsResponse?.data?.profile) {
-      const p = settingsResponse.data.profile;
-      setProfileForm({
-        avatar: p.avatar || user?.avatar || "",
-        first_name: p.first_name || user?.first_name || "",
-        last_name: p.last_name || user?.last_name || "",
-        email: p.email || user?.email || "",
-        role: p.role || user?.role || "",
-      });
-    } else if (user) {
-      setProfileForm({
-        avatar: user.avatar || "",
-        first_name: user.first_name || "",
-        last_name: user.last_name || "",
-        email: user.email || "",
-        role: user.role || "",
-      });
-    }
-  }, [settingsResponse, user]);
+  const initialProfileValues: ProfileFormValues = useMemo(() => {
+    const p = settingsResponse?.data?.profile;
+    return {
+      avatar: p?.avatar || user?.avatar || "",
+      first_name: p?.first_name || user?.first_name || "",
+      last_name: p?.last_name || user?.last_name || "",
+      email: p?.email || user?.email || "",
+      role: p?.role || user?.role || "",
+    };
+  }, [settingsResponse?.data?.profile, user]);
 
   /**
-   * Controlled state for password change
+   * Formik controller for Profile Information form
    */
-  const [passwords, setPasswords] = useState({
-    current_password: "",
-    new_password: "",
-    confirm_password: "",
+  const profileFormik = useFormik<ProfileFormValues>({
+    initialValues: initialProfileValues,
+    enableReinitialize: true,
+    validationSchema: profileValidationSchema,
+    validateOnBlur: true,
+    validateOnChange: true,
+    onSubmit: (values) => {
+      updateProfileMutation.mutate(values);
+    },
+  });
+
+  /**
+   * Initial notification values derived from channels and preferences
+   */
+  const initialNotificationValues: NotificationPreferencesFormValues = useMemo(() => {
+    const channelsMap: Record<string, boolean> = {};
+    notificationChannels.forEach((ch) => {
+      channelsMap[ch.id] = ch.default_checked;
+    });
+
+    const prefsMap: Record<string, { email: boolean; push: boolean }> = {};
+    notificationPreferences.forEach((pref) => {
+      prefsMap[pref.key] = {
+        email: pref.default_email,
+        push: pref.default_push,
+      };
+    });
+
+    return {
+      channels: channelsMap,
+      preferences: prefsMap,
+    };
+  }, [notificationPreferences]);
+
+  /**
+   * Formik controller for Notification Preferences form
+   */
+  const notificationsFormik = useFormik<NotificationPreferencesFormValues>({
+    initialValues: initialNotificationValues,
+    enableReinitialize: true,
+    onSubmit: (values) => {
+      updateNotificationsMutation.mutate({ preferences: values.preferences });
+    },
+  });
+
+  /**
+   * Formik controller for Password and Authentication form
+   */
+  const passwordFormik = useFormik<PasswordFormValues>({
+    initialValues: {
+      current_password: "",
+      new_password: "",
+      confirm_password: "",
+    },
+    validationSchema: passwordValidationSchema,
+    validateOnBlur: true,
+    validateOnChange: true,
+    onSubmit: (_values, { resetForm }) => {
+      resetForm();
+    },
   });
 
   /**
@@ -221,63 +319,51 @@ export default function Settings() {
             title="Personal Information"
             description="Update your personal details and company preferences"
           >
-            {/* Avatar Image Picker */}
-            <div className="mb-4">
-              <ImagePicker
-                name="avatar"
-                label="Profile Picture"
-                value={profileForm.avatar}
-                onChange={(base64Data) =>
-                  setProfileForm((prev) => ({ ...prev, avatar: base64Data }))
-                }
-                initials={
-                  `${profileForm.first_name.charAt(0)}${profileForm.last_name.charAt(0)}`.toUpperCase() ||
-                  "JD"
-                }
-              />
-            </div>
+            <form onSubmit={profileFormik.handleSubmit} noValidate>
+              {/* Avatar Image Picker */}
+              <div className="mb-4">
+                <ImagePicker
+                  name="avatar"
+                  label="Profile Picture"
+                  formik={profileFormik}
+                  initials={
+                    `${profileFormik.values.first_name.charAt(0)}${profileFormik.values.last_name.charAt(0)}`.toUpperCase() ||
+                    "JD"
+                  }
+                />
+              </div>
 
-            {/* Profile Fields Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <Input
-                name="first_name"
-                label="First Name"
-                value={profileForm.first_name}
-                onChange={(e) =>
-                  setProfileForm((prev) => ({ ...prev, first_name: e.target.value }))
-                }
-              />
-              <Input
-                name="last_name"
-                label="Last Name"
-                value={profileForm.last_name}
-                onChange={(e) => setProfileForm((prev) => ({ ...prev, last_name: e.target.value }))}
-              />
-              <Input
-                name="email"
-                type="email"
-                label="Email Address"
-                value={profileForm.email}
-                onChange={(e) => setProfileForm((prev) => ({ ...prev, email: e.target.value }))}
-              />
-              <Select
-                name="role"
-                label="Assigned Role"
-                value={profileForm.role}
-                options={roleOptions}
-                onValueChange={(val) => setProfileForm((prev) => ({ ...prev, role: String(val) }))}
-              />
-            </div>
+              {/* Profile Fields Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <Input name="first_name" label="First Name" formik={profileFormik} required />
+                <Input name="last_name" label="Last Name" formik={profileFormik} required />
+                <Input
+                  name="email"
+                  type="email"
+                  label="Email Address"
+                  formik={profileFormik}
+                  required
+                />
+                <Select
+                  name="role"
+                  label="Assigned Role"
+                  formik={profileFormik}
+                  options={roleOptions}
+                  required
+                />
+              </div>
 
-            <div className="pt-4 border-t border-border flex justify-end">
-              <Button
-                variant="contained"
-                size="small"
-                onClick={() => updateProfileMutation.mutate(profileForm)}
-              >
-                Save Profile Changes
-              </Button>
-            </div>
+              <div className="pt-4 border-t border-border flex justify-end">
+                <Button
+                  type="submit"
+                  variant="contained"
+                  size="small"
+                  disabled={updateProfileMutation.isPending}
+                >
+                  {updateProfileMutation.isPending ? "Saving..." : "Save Profile Changes"}
+                </Button>
+              </div>
+            </form>
           </SettingsPanel>
 
           <SettingsPanel
@@ -317,43 +403,86 @@ export default function Settings() {
             title="Notification Preferences"
             description="Choose how and when you want to receive system updates"
           >
-            {/* Delivery Channels Mapped */}
-            <SettingsRow
-              label="Active Channels"
-              description="Select which communication endpoints receive alerts"
-            >
-              <div className="flex flex-col gap-2 min-w-[150px]">
-                {notificationChannels.map((channel) => {
-                  const ChannelIcon = channel.icon;
-                  return (
-                    <label
-                      key={channel.id}
-                      className="flex items-center gap-2 text-sm text-foreground cursor-pointer hover:opacity-80 transition-opacity"
-                    >
-                      <Checkbox defaultChecked={channel.default_checked} className="!p-1" />
-                      <ChannelIcon className="w-4 h-4 text-muted-foreground" />
-                      <span>{channel.label}</span>
-                    </label>
-                  );
-                })}
-              </div>
-            </SettingsRow>
-
-            {/* Event Preferences Mapped */}
-            {notificationPreferences.map((pref) => (
-              <SettingsRow key={pref.key} label={pref.label} description={pref.description}>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>Email</span>
-                    <Switch defaultChecked={pref.default_email} size="small" />
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>Push</span>
-                    <Switch defaultChecked={pref.default_push} size="small" />
-                  </div>
+            <form onSubmit={notificationsFormik.handleSubmit} noValidate>
+              {/* Delivery Channels Mapped */}
+              <SettingsRow
+                label="Active Channels"
+                description="Select which communication endpoints receive alerts"
+              >
+                <div className="flex flex-col gap-2 min-w-[150px]">
+                  {notificationChannels.map((channel) => {
+                    const ChannelIcon = channel.icon;
+                    const isChecked = Boolean(notificationsFormik.values.channels[channel.id]);
+                    return (
+                      <label
+                        key={channel.id}
+                        className="flex items-center gap-2 text-sm text-foreground cursor-pointer hover:opacity-80 transition-opacity"
+                      >
+                        <Checkbox
+                          checked={isChecked}
+                          onChange={(e) =>
+                            notificationsFormik.setFieldValue(
+                              `channels.${channel.id}`,
+                              e.target.checked,
+                            )
+                          }
+                          className="!p-1"
+                        />
+                        <ChannelIcon className="w-4 h-4 text-muted-foreground" />
+                        <span>{channel.label}</span>
+                      </label>
+                    );
+                  })}
                 </div>
               </SettingsRow>
-            ))}
+
+              {/* Event Preferences Mapped */}
+              {notificationPreferences.map((pref) => (
+                <SettingsRow key={pref.key} label={pref.label} description={pref.description}>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span>Email</span>
+                      <Switch
+                        checked={Boolean(notificationsFormik.values.preferences[pref.key]?.email)}
+                        onChange={(e) =>
+                          notificationsFormik.setFieldValue(
+                            `preferences.${pref.key}.email`,
+                            e.target.checked,
+                          )
+                        }
+                        size="small"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span>Push</span>
+                      <Switch
+                        checked={Boolean(notificationsFormik.values.preferences[pref.key]?.push)}
+                        onChange={(e) =>
+                          notificationsFormik.setFieldValue(
+                            `preferences.${pref.key}.push`,
+                            e.target.checked,
+                          )
+                        }
+                        size="small"
+                      />
+                    </div>
+                  </div>
+                </SettingsRow>
+              ))}
+
+              <div className="pt-4 border-t border-border flex justify-end">
+                <Button
+                  type="submit"
+                  variant="contained"
+                  size="small"
+                  disabled={updateNotificationsMutation.isPending}
+                >
+                  {updateNotificationsMutation.isPending
+                    ? "Saving..."
+                    : "Save Notification Preferences"}
+                </Button>
+              </div>
+            </form>
           </SettingsPanel>
         </div>
       )}
@@ -446,25 +575,26 @@ export default function Settings() {
             title="Password & Authentication"
             description="Manage your account login credentials and security parameters"
           >
-            <div className="flex flex-col gap-4 max-w-md">
-              {passwordFields.map((field) => (
-                <Input
-                  key={field.name}
-                  name={field.name}
-                  label={field.label}
-                  type="password"
-                  value={passwords[field.name as keyof typeof passwords]}
-                  onChange={(e) =>
-                    setPasswords((prev) => ({ ...prev, [field.name]: e.target.value }))
-                  }
-                />
-              ))}
-              <div className="pt-2">
-                <Button variant="contained" size="small">
-                  Update Password
-                </Button>
+            <form onSubmit={passwordFormik.handleSubmit} noValidate>
+              <div className="flex flex-col gap-4 max-w-md">
+                {passwordFields.map((field) => (
+                  <Input
+                    key={field.name}
+                    name={field.name}
+                    label={field.label}
+                    placeholder={field.placeholder}
+                    type="password"
+                    formik={passwordFormik}
+                    required
+                  />
+                ))}
+                <div className="pt-2">
+                  <Button type="submit" variant="contained" size="small">
+                    Update Password
+                  </Button>
+                </div>
               </div>
-            </div>
+            </form>
           </SettingsPanel>
 
           <SettingsPanel

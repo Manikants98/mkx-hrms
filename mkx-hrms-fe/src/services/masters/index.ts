@@ -133,107 +133,53 @@ export const useGetMasterDepartments = (params?: { search?: string; status?: str
  * @param onSuccessCallback - Optional callback executed on success
  * @returns Mutation trigger
  */
-export const useCreateMasterDepartment = (onSuccessCallback?: () => void) => {
-  const mutation = useCustomMutation<
-    ApiResponse<MasterDepartment>,
-    unknown,
-    Partial<MasterDepartment>
-  >({
+export const useCreateMasterDepartment = (onSuccess?: () => void) => {
+  return useCustomMutation<ApiResponse<MasterDepartment>, unknown, Partial<MasterDepartment>>({
+    url: "/v1/masters/departments",
+    method: "POST",
+    invalidateQueries: [["masters", "departments"]],
     toastMessages: {
       loading: "Creating department...",
-      success: (res) => `Department ${res.data?.name || ""} created successfully!`,
     },
-    onSuccess: () => {
-      if (onSuccessCallback) onSuccessCallback();
-    },
+    onSuccess,
   });
-
-  return {
-    ...mutation,
-    mutate: (data: Partial<MasterDepartment>) =>
-      mutation.mutate({
-        url: "/v1/masters/departments",
-        method: "POST",
-        data,
-      }),
-    mutateAsync: (data: Partial<MasterDepartment>) =>
-      mutation.mutateAsync({
-        url: "/v1/masters/departments",
-        method: "POST",
-        data,
-      }),
-  };
 };
 
 /**
  * Mutation hook to update a department
  *
  * @param id - Department ID
- * @param onSuccessCallback - Optional callback executed on success
+ * @param onSuccess - Optional callback executed on success
  * @returns Mutation trigger
  */
-export const useUpdateMasterDepartment = (id: number, onSuccessCallback?: () => void) => {
-  const mutation = useCustomMutation<
-    ApiResponse<MasterDepartment>,
-    unknown,
-    Partial<MasterDepartment>
-  >({
+export const useUpdateMasterDepartment = (id: number, onSuccess?: () => void) => {
+  return useCustomMutation<ApiResponse<MasterDepartment>, unknown, Partial<MasterDepartment>>({
+    url: `/v1/masters/departments/${id}`,
+    method: "PUT",
+    invalidateQueries: [["masters", "departments"]],
     toastMessages: {
       loading: "Updating department...",
-      success: (res) => `Department ${res.data?.name || ""} updated successfully!`,
     },
-    onSuccess: () => {
-      if (onSuccessCallback) onSuccessCallback();
-    },
+    onSuccess,
   });
-
-  return {
-    ...mutation,
-    mutate: (data: Partial<MasterDepartment>) =>
-      mutation.mutate({
-        url: `/v1/masters/departments/${id}`,
-        method: "PUT",
-        data,
-      }),
-    mutateAsync: (data: Partial<MasterDepartment>) =>
-      mutation.mutateAsync({
-        url: `/v1/masters/departments/${id}`,
-        method: "PUT",
-        data,
-      }),
-  };
 };
 
 /**
  * Mutation hook to delete a department
  *
- * @param onSuccessCallback - Optional callback executed on success
+ * @param onSuccess - Optional callback executed on success
  * @returns Mutation trigger
  */
-export const useDeleteMasterDepartment = (onSuccessCallback?: () => void) => {
-  const mutation = useCustomMutation<ApiResponse<{ id: number }>, unknown, undefined>({
+export const useDeleteMasterDepartment = (onSuccess?: () => void) => {
+  return useCustomMutation<ApiResponse<{ id: number }>, unknown, number>({
+    url: (id) => `/v1/masters/departments/${id}`,
+    method: "DELETE",
+    invalidateQueries: [["masters", "departments"]],
     toastMessages: {
       loading: "Deleting department...",
-      success: "Department deleted successfully",
     },
-    onSuccess: () => {
-      if (onSuccessCallback) onSuccessCallback();
-    },
+    onSuccess,
   });
-
-  return {
-    ...mutation,
-    mutate: (id: number) =>
-      mutation.mutate({
-        url: `/v1/masters/departments/${id}`,
-        method: "DELETE",
-      }),
-    mutateAsync: (id: number) =>
-      mutation.mutateAsync({
-        url: `/v1/masters/departments/${id}`,
-        method: "DELETE",
-      }),
-  };
 };
 
 /**
@@ -246,9 +192,7 @@ export const useGetMasterRoles = (params?: { search?: string; status?: string })
   const queryParams = new URLSearchParams();
   if (params?.search) queryParams.append("search", params.search);
   if (params?.status && params.status !== "All") queryParams.append("status", params.status);
-
   const queryString = queryParams.toString() ? `?${queryParams.toString()}` : "";
-
   return useCustomQuery<ApiResponse<MasterRole[]>>(
     ["masters", "roles", params?.search, params?.status],
     `/v1/masters/roles${queryString}`,
@@ -273,127 +217,61 @@ export const useGetMasterPermissions = () => {
  * @param onSuccessCallback - Optional callback executed on success
  * @returns Mutation trigger
  */
-export const useCreateMasterRole = (onSuccessCallback?: () => void) => {
-  const mutation = useCustomMutation<
+export const useCreateMasterRole = (onSuccess?: () => void) => {
+  return useCustomMutation<
     ApiResponse<MasterRole>,
     unknown,
     { name: string; description?: string; status?: string; permission_ids?: number[] }
   >({
+    url: "/v1/masters/roles",
+    method: "POST",
+    invalidateQueries: [["masters", "roles"]],
     toastMessages: {
       loading: "Creating role...",
-      success: (res) => `Role ${res.data?.name || ""} created successfully!`,
     },
-    onSuccess: () => {
-      if (onSuccessCallback) onSuccessCallback();
-    },
+    onSuccess,
   });
-
-  return {
-    ...mutation,
-    mutate: (data: {
-      name: string;
-      description?: string;
-      status?: string;
-      permission_ids?: number[];
-    }) =>
-      mutation.mutate({
-        url: "/v1/masters/roles",
-        method: "POST",
-        data,
-      }),
-    mutateAsync: (data: {
-      name: string;
-      description?: string;
-      status?: string;
-      permission_ids?: number[];
-    }) =>
-      mutation.mutateAsync({
-        url: "/v1/masters/roles",
-        method: "POST",
-        data,
-      }),
-  };
 };
 
 /**
  * Mutation hook to update a role
  *
  * @param id - Role ID
- * @param onSuccessCallback - Optional callback executed on success
+ * @param onSuccess - Optional callback executed on success
  * @returns Mutation trigger
  */
-export const useUpdateMasterRole = (id: number, onSuccessCallback?: () => void) => {
-  const mutation = useCustomMutation<
+export const useUpdateMasterRole = (id: number, onSuccess?: () => void) => {
+  return useCustomMutation<
     ApiResponse<MasterRole>,
     unknown,
     { name?: string; description?: string; status?: string; permission_ids?: number[] }
   >({
+    url: `/v1/masters/roles/${id}`,
+    method: "PUT",
+    invalidateQueries: [["masters", "roles"]],
     toastMessages: {
       loading: "Updating role...",
-      success: (res) => `Role ${res.data?.name || ""} updated successfully!`,
     },
-    onSuccess: () => {
-      if (onSuccessCallback) onSuccessCallback();
-    },
+    onSuccess,
   });
-
-  return {
-    ...mutation,
-    mutate: (data: {
-      name?: string;
-      description?: string;
-      status?: string;
-      permission_ids?: number[];
-    }) =>
-      mutation.mutate({
-        url: `/v1/masters/roles/${id}`,
-        method: "PUT",
-        data,
-      }),
-    mutateAsync: (data: {
-      name?: string;
-      description?: string;
-      status?: string;
-      permission_ids?: number[];
-    }) =>
-      mutation.mutateAsync({
-        url: `/v1/masters/roles/${id}`,
-        method: "PUT",
-        data,
-      }),
-  };
 };
 
 /**
  * Mutation hook to delete a role
  *
- * @param onSuccessCallback - Optional callback executed on success
+ * @param onSuccess - Optional callback executed on success
  * @returns Mutation trigger
  */
-export const useDeleteMasterRole = (onSuccessCallback?: () => void) => {
-  const mutation = useCustomMutation<ApiResponse<{ id: number }>, unknown, undefined>({
+export const useDeleteMasterRole = (onSuccess?: () => void) => {
+  return useCustomMutation<ApiResponse<{ id: number }>, unknown, number>({
+    url: (id) => `/v1/masters/roles/${id}`,
+    method: "DELETE",
+    invalidateQueries: [["masters", "roles"]],
     toastMessages: {
       loading: "Deleting role...",
-      success: "Role deleted successfully",
     },
-    onSuccess: () => {
-      if (onSuccessCallback) onSuccessCallback();
-    },
+    onSuccess,
   });
-
-  return {
-    ...mutation,
-    mutate: (id: number) =>
-      mutation.mutate({
-        url: `/v1/masters/roles/${id}`,
-        method: "DELETE",
-      }),
-    mutateAsync: (id: number) =>
-      mutation.mutateAsync({
-        url: `/v1/masters/roles/${id}`,
-        method: "DELETE",
-      }),
-  };
 };
 
 /**
@@ -427,8 +305,8 @@ export const useGetMasterDesignations = (params?: {
  * @param onSuccessCallback - Optional callback executed on success
  * @returns Mutation trigger
  */
-export const useCreateMasterDesignation = (onSuccessCallback?: () => void) => {
-  const mutation = useCustomMutation<
+export const useCreateMasterDesignation = (onSuccess?: () => void) => {
+  return useCustomMutation<
     ApiResponse<MasterDesignation>,
     unknown,
     {
@@ -439,53 +317,25 @@ export const useCreateMasterDesignation = (onSuccessCallback?: () => void) => {
       status?: string;
     }
   >({
+    url: "/v1/masters/designations",
+    method: "POST",
+    invalidateQueries: [["masters", "designations"]],
     toastMessages: {
       loading: "Creating designation...",
-      success: (res) => `Designation ${res.data?.title || ""} created successfully!`,
     },
-    onSuccess: () => {
-      if (onSuccessCallback) onSuccessCallback();
-    },
+    onSuccess,
   });
-
-  return {
-    ...mutation,
-    mutate: (data: {
-      title: string;
-      code?: string;
-      department_id?: number | null;
-      description?: string;
-      status?: string;
-    }) =>
-      mutation.mutate({
-        url: "/v1/masters/designations",
-        method: "POST",
-        data,
-      }),
-    mutateAsync: (data: {
-      title: string;
-      code?: string;
-      department_id?: number | null;
-      description?: string;
-      status?: string;
-    }) =>
-      mutation.mutateAsync({
-        url: "/v1/masters/designations",
-        method: "POST",
-        data,
-      }),
-  };
 };
 
 /**
  * Mutation hook to update a designation
  *
  * @param id - Designation ID
- * @param onSuccessCallback - Optional callback executed on success
+ * @param onSuccess - Optional callback executed on success
  * @returns Mutation trigger
  */
-export const useUpdateMasterDesignation = (id: number, onSuccessCallback?: () => void) => {
-  const mutation = useCustomMutation<
+export const useUpdateMasterDesignation = (id: number, onSuccess?: () => void) => {
+  return useCustomMutation<
     ApiResponse<MasterDesignation>,
     unknown,
     {
@@ -496,74 +346,32 @@ export const useUpdateMasterDesignation = (id: number, onSuccessCallback?: () =>
       status?: string;
     }
   >({
+    url: `/v1/masters/designations/${id}`,
+    method: "PUT",
+    invalidateQueries: [["masters", "designations"]],
     toastMessages: {
       loading: "Updating designation...",
-      success: (res) => `Designation ${res.data?.title || ""} updated successfully!`,
     },
-    onSuccess: () => {
-      if (onSuccessCallback) onSuccessCallback();
-    },
+    onSuccess,
   });
-
-  return {
-    ...mutation,
-    mutate: (data: {
-      title?: string;
-      code?: string;
-      department_id?: number | null;
-      description?: string;
-      status?: string;
-    }) =>
-      mutation.mutate({
-        url: `/v1/masters/designations/${id}`,
-        method: "PUT",
-        data,
-      }),
-    mutateAsync: (data: {
-      title?: string;
-      code?: string;
-      department_id?: number | null;
-      description?: string;
-      status?: string;
-    }) =>
-      mutation.mutateAsync({
-        url: `/v1/masters/designations/${id}`,
-        method: "PUT",
-        data,
-      }),
-  };
 };
 
 /**
  * Mutation hook to delete a designation
  *
- * @param onSuccessCallback - Optional callback executed on success
+ * @param onSuccess - Optional callback executed on success
  * @returns Mutation trigger
  */
-export const useDeleteMasterDesignation = (onSuccessCallback?: () => void) => {
-  const mutation = useCustomMutation<ApiResponse<{ id: number }>, unknown, undefined>({
+export const useDeleteMasterDesignation = (onSuccess?: () => void) => {
+  return useCustomMutation<ApiResponse<{ id: number }>, unknown, number>({
+    url: (id) => `/v1/masters/designations/${id}`,
+    method: "DELETE",
+    invalidateQueries: [["masters", "designations"]],
     toastMessages: {
       loading: "Deleting designation...",
-      success: "Designation deleted successfully",
     },
-    onSuccess: () => {
-      if (onSuccessCallback) onSuccessCallback();
-    },
+    onSuccess,
   });
-
-  return {
-    ...mutation,
-    mutate: (id: number) =>
-      mutation.mutate({
-        url: `/v1/masters/designations/${id}`,
-        method: "DELETE",
-      }),
-    mutateAsync: (id: number) =>
-      mutation.mutateAsync({
-        url: `/v1/masters/designations/${id}`,
-        method: "DELETE",
-      }),
-  };
 };
 
 /**
@@ -591,107 +399,61 @@ export const useGetMasterLeaveTypes = (params?: { search?: string; status?: stri
  * @param onSuccessCallback - Optional callback executed on success
  * @returns Mutation trigger
  */
-export const useCreateMasterLeaveType = (onSuccessCallback?: () => void) => {
-  const mutation = useCustomMutation<
+export const useCreateMasterLeaveType = (onSuccess?: () => void) => {
+  return useCustomMutation<
     ApiResponse<MasterLeaveType>,
     unknown,
     Partial<MasterLeaveType>
   >({
+    url: "/v1/masters/leave-types",
+    method: "POST",
+    invalidateQueries: [["masters", "leave-types"]],
     toastMessages: {
       loading: "Creating leave type...",
-      success: (res) => `Leave type ${res.data?.name || ""} created successfully!`,
     },
-    onSuccess: () => {
-      if (onSuccessCallback) onSuccessCallback();
-    },
+    onSuccess,
   });
-
-  return {
-    ...mutation,
-    mutate: (data: Partial<MasterLeaveType>) =>
-      mutation.mutate({
-        url: "/v1/masters/leave-types",
-        method: "POST",
-        data,
-      }),
-    mutateAsync: (data: Partial<MasterLeaveType>) =>
-      mutation.mutateAsync({
-        url: "/v1/masters/leave-types",
-        method: "POST",
-        data,
-      }),
-  };
 };
 
 /**
  * Mutation hook to update a leave type
  *
  * @param id - Leave type ID
- * @param onSuccessCallback - Optional callback executed on success
+ * @param onSuccess - Optional callback executed on success
  * @returns Mutation trigger
  */
-export const useUpdateMasterLeaveType = (id: number, onSuccessCallback?: () => void) => {
-  const mutation = useCustomMutation<
+export const useUpdateMasterLeaveType = (id: number, onSuccess?: () => void) => {
+  return useCustomMutation<
     ApiResponse<MasterLeaveType>,
     unknown,
     Partial<MasterLeaveType>
   >({
+    url: `/v1/masters/leave-types/${id}`,
+    method: "PUT",
+    invalidateQueries: [["masters", "leave-types"]],
     toastMessages: {
       loading: "Updating leave type...",
-      success: (res) => `Leave type ${res.data?.name || ""} updated successfully!`,
     },
-    onSuccess: () => {
-      if (onSuccessCallback) onSuccessCallback();
-    },
+    onSuccess,
   });
-
-  return {
-    ...mutation,
-    mutate: (data: Partial<MasterLeaveType>) =>
-      mutation.mutate({
-        url: `/v1/masters/leave-types/${id}`,
-        method: "PUT",
-        data,
-      }),
-    mutateAsync: (data: Partial<MasterLeaveType>) =>
-      mutation.mutateAsync({
-        url: `/v1/masters/leave-types/${id}`,
-        method: "PUT",
-        data,
-      }),
-  };
 };
 
 /**
  * Mutation hook to delete a leave type
  *
- * @param onSuccessCallback - Optional callback executed on success
+ * @param onSuccess - Optional callback executed on success
  * @returns Mutation trigger
  */
-export const useDeleteMasterLeaveType = (onSuccessCallback?: () => void) => {
-  const mutation = useCustomMutation<ApiResponse<{ id: number }>, unknown, undefined>({
+export const useDeleteMasterLeaveType = (onSuccess?: () => void) => {
+  return useCustomMutation<ApiResponse<{ id: number }>, unknown, number>({
+    url: (id) => `/v1/masters/leave-types/${id}`,
+    method: "DELETE",
+    invalidateQueries: [["masters", "leave-types"]],
     toastMessages: {
       loading: "Deleting leave type...",
-      success: "Leave type deleted successfully",
     },
-    onSuccess: () => {
-      if (onSuccessCallback) onSuccessCallback();
-    },
+    onSuccess,
   });
-
-  return {
-    ...mutation,
-    mutate: (id: number) =>
-      mutation.mutate({
-        url: `/v1/masters/leave-types/${id}`,
-        method: "DELETE",
-      }),
-    mutateAsync: (id: number) =>
-      mutation.mutateAsync({
-        url: `/v1/masters/leave-types/${id}`,
-        method: "DELETE",
-      }),
-  };
 };
 
 /**
@@ -719,107 +481,61 @@ export const useGetMasterSalaryStructures = (params?: { search?: string; status?
  * @param onSuccessCallback - Optional callback executed on success
  * @returns Mutation trigger
  */
-export const useCreateMasterSalaryStructure = (onSuccessCallback?: () => void) => {
-  const mutation = useCustomMutation<
+export const useCreateMasterSalaryStructure = (onSuccess?: () => void) => {
+  return useCustomMutation<
     ApiResponse<MasterSalaryStructure>,
     unknown,
     Partial<MasterSalaryStructure>
   >({
+    url: "/v1/masters/salary-structures",
+    method: "POST",
+    invalidateQueries: [["masters", "salary-structures"]],
     toastMessages: {
       loading: "Creating salary structure...",
-      success: (res) => `Salary structure ${res.data?.name || ""} created successfully!`,
     },
-    onSuccess: () => {
-      if (onSuccessCallback) onSuccessCallback();
-    },
+    onSuccess,
   });
-
-  return {
-    ...mutation,
-    mutate: (data: Partial<MasterSalaryStructure>) =>
-      mutation.mutate({
-        url: "/v1/masters/salary-structures",
-        method: "POST",
-        data,
-      }),
-    mutateAsync: (data: Partial<MasterSalaryStructure>) =>
-      mutation.mutateAsync({
-        url: "/v1/masters/salary-structures",
-        method: "POST",
-        data,
-      }),
-  };
 };
 
 /**
  * Mutation hook to update a salary structure
  *
  * @param id - Salary structure ID
- * @param onSuccessCallback - Optional callback executed on success
+ * @param onSuccess - Optional callback executed on success
  * @returns Mutation trigger
  */
-export const useUpdateMasterSalaryStructure = (id: number, onSuccessCallback?: () => void) => {
-  const mutation = useCustomMutation<
+export const useUpdateMasterSalaryStructure = (id: number, onSuccess?: () => void) => {
+  return useCustomMutation<
     ApiResponse<MasterSalaryStructure>,
     unknown,
     Partial<MasterSalaryStructure>
   >({
+    url: `/v1/masters/salary-structures/${id}`,
+    method: "PUT",
+    invalidateQueries: [["masters", "salary-structures"]],
     toastMessages: {
       loading: "Updating salary structure...",
-      success: (res) => `Salary structure ${res.data?.name || ""} updated successfully!`,
     },
-    onSuccess: () => {
-      if (onSuccessCallback) onSuccessCallback();
-    },
+    onSuccess,
   });
-
-  return {
-    ...mutation,
-    mutate: (data: Partial<MasterSalaryStructure>) =>
-      mutation.mutate({
-        url: `/v1/masters/salary-structures/${id}`,
-        method: "PUT",
-        data,
-      }),
-    mutateAsync: (data: Partial<MasterSalaryStructure>) =>
-      mutation.mutateAsync({
-        url: `/v1/masters/salary-structures/${id}`,
-        method: "PUT",
-        data,
-      }),
-  };
 };
 
 /**
  * Mutation hook to delete a salary structure
  *
- * @param onSuccessCallback - Optional callback executed on success
+ * @param onSuccess - Optional callback executed on success
  * @returns Mutation trigger
  */
-export const useDeleteMasterSalaryStructure = (onSuccessCallback?: () => void) => {
-  const mutation = useCustomMutation<ApiResponse<{ id: number }>, unknown, undefined>({
+export const useDeleteMasterSalaryStructure = (onSuccess?: () => void) => {
+  return useCustomMutation<ApiResponse<{ id: number }>, unknown, number>({
+    url: (id) => `/v1/masters/salary-structures/${id}`,
+    method: "DELETE",
+    invalidateQueries: [["masters", "salary-structures"]],
     toastMessages: {
       loading: "Deleting salary structure...",
-      success: "Salary structure deleted successfully",
     },
-    onSuccess: () => {
-      if (onSuccessCallback) onSuccessCallback();
-    },
+    onSuccess,
   });
-
-  return {
-    ...mutation,
-    mutate: (id: number) =>
-      mutation.mutate({
-        url: `/v1/masters/salary-structures/${id}`,
-        method: "DELETE",
-      }),
-    mutateAsync: (id: number) =>
-      mutation.mutateAsync({
-        url: `/v1/masters/salary-structures/${id}`,
-        method: "DELETE",
-      }),
-  };
 };
 
 /**
@@ -844,108 +560,64 @@ export const useGetMasterWorkShifts = (params?: { search?: string; status?: stri
 /**
  * Mutation hook to create a work shift
  *
- * @param onSuccessCallback - Optional callback executed on success
+ * @param onSuccess - Optional callback executed on success
  * @returns Mutation trigger
  */
-export const useCreateMasterWorkShift = (onSuccessCallback?: () => void) => {
-  const mutation = useCustomMutation<
+export const useCreateMasterWorkShift = (onSuccess?: () => void) => {
+  return useCustomMutation<
     ApiResponse<MasterWorkShift>,
     unknown,
     Partial<MasterWorkShift>
   >({
+    url: "/v1/masters/shifts",
+    method: "POST",
+    invalidateQueries: [["masters", "shifts"]],
     toastMessages: {
       loading: "Creating work shift...",
-      success: (res) => `Work shift ${res.data?.name || ""} created successfully!`,
     },
-    onSuccess: () => {
-      if (onSuccessCallback) onSuccessCallback();
-    },
+    onSuccess,
   });
-
-  return {
-    ...mutation,
-    mutate: (data: Partial<MasterWorkShift>) =>
-      mutation.mutate({
-        url: "/v1/masters/shifts",
-        method: "POST",
-        data,
-      }),
-    mutateAsync: (data: Partial<MasterWorkShift>) =>
-      mutation.mutateAsync({
-        url: "/v1/masters/shifts",
-        method: "POST",
-        data,
-      }),
-  };
 };
 
 /**
  * Mutation hook to update a work shift
  *
  * @param id - Work shift ID
- * @param onSuccessCallback - Optional callback executed on success
+ * @param onSuccess - Optional callback executed on success
  * @returns Mutation trigger
  */
-export const useUpdateMasterWorkShift = (id: number, onSuccessCallback?: () => void) => {
-  const mutation = useCustomMutation<
+export const useUpdateMasterWorkShift = (id: number, onSuccess?: () => void) => {
+  return useCustomMutation<
     ApiResponse<MasterWorkShift>,
     unknown,
     Partial<MasterWorkShift>
   >({
+    url: `/v1/masters/shifts/${id}`,
+    method: "PUT",
+    invalidateQueries: [["masters", "shifts"]],
     toastMessages: {
       loading: "Updating work shift...",
-      success: (res) => `Work shift ${res.data?.name || ""} updated successfully!`,
     },
-    onSuccess: () => {
-      if (onSuccessCallback) onSuccessCallback();
-    },
+    onSuccess,
   });
-
-  return {
-    ...mutation,
-    mutate: (data: Partial<MasterWorkShift>) =>
-      mutation.mutate({
-        url: `/v1/masters/shifts/${id}`,
-        method: "PUT",
-        data,
-      }),
-    mutateAsync: (data: Partial<MasterWorkShift>) =>
-      mutation.mutateAsync({
-        url: `/v1/masters/shifts/${id}`,
-        method: "PUT",
-        data,
-      }),
-  };
 };
 
 /**
  * Mutation hook to delete a work shift
  *
- * @param onSuccessCallback - Optional callback executed on success
+ * @param onSuccess - Optional callback executed on success
  * @returns Mutation trigger
  */
-export const useDeleteMasterWorkShift = (onSuccessCallback?: () => void) => {
-  const mutation = useCustomMutation<ApiResponse<{ id: number }>, unknown, undefined>({
+export const useDeleteMasterWorkShift = (onSuccess?: () => void) => {
+  return useCustomMutation<ApiResponse<{ id: number }>, unknown, number>({
+    url: (id) => `/v1/masters/shifts/${id}`,
+    method: "DELETE",
+    invalidateQueries: [["masters", "shifts"]],
     toastMessages: {
       loading: "Deleting work shift...",
-      success: "Work shift deleted successfully",
     },
-    onSuccess: () => {
-      if (onSuccessCallback) onSuccessCallback();
-    },
+    onSuccess,
   });
-
-  return {
-    ...mutation,
-    mutate: (id: number) =>
-      mutation.mutate({
-        url: `/v1/masters/shifts/${id}`,
-        method: "DELETE",
-      }),
-    mutateAsync: (id: number) =>
-      mutation.mutateAsync({
-        url: `/v1/masters/shifts/${id}`,
-        method: "DELETE",
-      }),
-  };
 };
+
+

@@ -7,11 +7,13 @@ import {
   Group,
   MoreHoriz,
   Search,
+  Visibility,
   WorkOutlined,
 } from "@mui/icons-material";
 import { Button, Chip, IconButton, InputAdornment, InputBase, MenuItem } from "@mui/material";
 import { useFormik } from "formik";
 import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   useCreateJobPosting,
   useDeleteJobPosting,
@@ -53,11 +55,17 @@ const filterOptions: StatusFilter[] = ["All", "Active", "Closed"];
 
 interface JobPostingRowActionsProps {
   row: JobPosting;
+  onView: (item: JobPosting) => void;
   onEdit: (item: JobPosting) => void;
   onDelete: (item: JobPosting) => void;
 }
 
-const JobPostingRowActions: React.FC<JobPostingRowActionsProps> = ({ row, onEdit, onDelete }) => {
+const JobPostingRowActions: React.FC<JobPostingRowActionsProps> = ({
+  row,
+  onView,
+  onEdit,
+  onDelete,
+}) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   return (
@@ -76,6 +84,16 @@ const JobPostingRowActions: React.FC<JobPostingRowActionsProps> = ({ row, onEdit
         arrowPosition="right"
         paperClassName="!min-w-[140px]"
       >
+        <MenuItem
+          onClick={() => {
+            setAnchorEl(null);
+            onView(row);
+          }}
+          className="!text-xs !py-2 !px-3 !gap-2 !rounded-[5px] !text-muted-foreground hover:!text-foreground hover:!bg-secondary/70"
+        >
+          <Visibility className="!w-4 !h-4" />
+          View Details
+        </MenuItem>
         <MenuItem
           onClick={() => {
             setAnchorEl(null);
@@ -102,6 +120,7 @@ const JobPostingRowActions: React.FC<JobPostingRowActionsProps> = ({ row, onEdit
 };
 
 export const JobPostingMasterTab: React.FC = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("All");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -292,7 +311,12 @@ export const JobPostingMasterTab: React.FC = () => {
             <WorkOutlined className="!w-4 !h-4" />
           </div>
           <div className="flex flex-col">
-            <span className="font-semibold text-foreground text-sm">{row.title}</span>
+            <span
+              onClick={() => navigate(`/masters/job-postings/${row.id}`)}
+              className="font-semibold text-foreground text-sm hover:text-primary transition-colors cursor-pointer"
+            >
+              {row.title}
+            </span>
             <span className="text-xs text-muted-foreground mt-0.5">{row.job_code}</span>
           </div>
         </div>
@@ -379,6 +403,7 @@ export const JobPostingMasterTab: React.FC = () => {
       cell: (row) => (
         <JobPostingRowActions
           row={row}
+          onView={(item) => navigate(`/masters/job-postings/${item.id}`)}
           onEdit={(item) => handleOpenDrawer(item)}
           onDelete={(item) => setDeletingItem(item)}
         />
@@ -553,7 +578,7 @@ export const JobPostingMasterTab: React.FC = () => {
             </label>
             <RichTextEditor
               name="description"
-              formik={formik as any}
+              formik={formik}
               minHeight={250}
               placeholder="Write the job description, responsibilities, and requirements here..."
             />
@@ -561,7 +586,7 @@ export const JobPostingMasterTab: React.FC = () => {
         </form>
       </AppDrawer>
 
-      {/* Delete Confirmation Dialog */}
+      {/** Delete Confirmation Dialog */}
       <CustomDialog
         open={Boolean(deletingItem)}
         onClose={() => setDeletingItem(null)}
