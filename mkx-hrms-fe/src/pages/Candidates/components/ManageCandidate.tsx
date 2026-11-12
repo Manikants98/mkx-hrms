@@ -19,7 +19,7 @@ export interface ManageCandidateFormValues {
   position: string;
   department: string;
   experience: string;
-  rating?: string | number | null;
+  rating?: number | null;
   source?: string | null;
   resume_url?: string | null;
   job_posting_id?: number | string | null;
@@ -57,7 +57,7 @@ const initialValues: ManageCandidateFormValues = {
   position: "",
   department: "",
   experience: "Mid-Level",
-  rating: "",
+  rating: 0,
   source: "Company Website",
   resume_url: "",
   job_posting_id: "",
@@ -120,7 +120,7 @@ export const ManageCandidate: React.FC<ManageCandidateProps> = ({
               ? Number(values.job_posting_id)
               : null,
           rating:
-            values.rating !== undefined && values.rating !== null && values.rating !== ""
+            values.rating !== undefined && values.rating !== null && values.rating !== 0
               ? Number(values.rating)
               : null,
         };
@@ -160,7 +160,7 @@ export const ManageCandidate: React.FC<ManageCandidateProps> = ({
           position: initialData.position || "",
           department: initialData.department || "",
           experience: initialData.experience || "Mid-Level",
-          rating: initialData.rating || "",
+          rating: initialData.rating || 0,
           source: initialData.source || "Company Website",
           resume_url: initialData.resume_url || "",
           job_posting_id: linkedJobId,

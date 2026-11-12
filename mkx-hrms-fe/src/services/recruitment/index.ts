@@ -15,7 +15,7 @@ export interface CandidateRecord {
   department: string;
   stage: "Screening" | "Interviewing" | "Offered" | "Hired";
   experience: string;
-  rating: string;
+  rating: number;
   status: "Active" | "In Review" | "Offered" | "Rejected" | "Onboarded";
   applied_date: string;
   avatar?: string | null;
