@@ -47,11 +47,19 @@ export default function Login() {
 
   const { mutateAsync: loginMutate, isPending } = useLogin(async (response) => {
     setSession(response.data.token, response.data.user);
-    if (typeof window !== "undefined" && "credentials" in navigator && "PasswordCredential" in window) {
+    if (
+      typeof window !== "undefined" &&
+      "credentials" in navigator &&
+      "PasswordCredential" in window
+    ) {
       try {
         const CredentialConstructor = (
           window as unknown as {
-            PasswordCredential: new (data: { id: string; password: string; name?: string }) => unknown;
+            PasswordCredential: new (data: {
+              id: string;
+              password: string;
+              name?: string;
+            }) => unknown;
           }
         ).PasswordCredential;
         const cred = new CredentialConstructor({
@@ -164,7 +172,7 @@ export default function Login() {
         {/* Right Column: Modern Glassmorphic Login Card */}
         <FadeUpItem className="lg:col-span-7 flex justify-center">
           <div className="w-full max-w-md bg-card/80 backdrop-blur-xl border border-border rounded-2xl p-6 sm:p-8 shadow-2xl">
-        ms- {/* Mobile Brand Logo */}
+            {/* Mobile Brand Logo */}
             <div className="lg:hidden flex items-center gap-2 mb-6">
               <div className="w-8 h-8 rounded-[5px] bg-primary flex items-center justify-center">
                 <Shield className="w-4 h-4 text-primary-foreground" />
@@ -180,7 +188,13 @@ export default function Login() {
             </div>
 
             {/* Login Form */}
-            <form onSubmit={handleSubmit} method="POST" action="/login" autoComplete="on" className="space-y-4">
+            <form
+              onSubmit={handleSubmit}
+              method="POST"
+              action="/login"
+              autoComplete="on"
+              className="space-y-4"
+            >
               <div>
                 <label className="block text-xs font-medium text-foreground mb-1.5">
                   Email Address
@@ -201,19 +215,22 @@ export default function Login() {
                       "& input": {
                         backgroundColor: "transparent !important",
                       },
-                      "& input:-webkit-autofill, & input:-webkit-autofill:hover, & input:-webkit-autofill:focus, & input:-webkit-autofill:active": {
-                        WebkitBoxShadow:
-                          theme === "dark"
-                            ? "0 0 0 1000px #101214 inset !important"
-                            : "0 0 0 1000px #f4f4f5 inset !important",
-                        boxShadow:
-                          theme === "dark"
-                            ? "0 0 0 1000px #101214 inset !important"
-                            : "0 0 0 1000px #f4f4f5 inset !important",
-                        WebkitTextFillColor: theme === "dark" ? "#eeeeee !important" : "#09090b !important",
-                        caretColor: theme === "dark" ? "#eeeeee !important" : "#09090b !important",
-                        transition: "background-color 50000s ease-in-out 0s !important",
-                      },
+                      "& input:-webkit-autofill, & input:-webkit-autofill:hover, & input:-webkit-autofill:focus, & input:-webkit-autofill:active":
+                        {
+                          WebkitBoxShadow:
+                            theme === "dark"
+                              ? "0 0 0 1000px #101214 inset !important"
+                              : "0 0 0 1000px #f4f4f5 inset !important",
+                          boxShadow:
+                            theme === "dark"
+                              ? "0 0 0 1000px #101214 inset !important"
+                              : "0 0 0 1000px #f4f4f5 inset !important",
+                          WebkitTextFillColor:
+                            theme === "dark" ? "#eeeeee !important" : "#09090b !important",
+                          caretColor:
+                            theme === "dark" ? "#eeeeee !important" : "#09090b !important",
+                          transition: "background-color 50000s ease-in-out 0s !important",
+                        },
                     }}
                     startAdornment={
                       <InputAdornment position="start" className="!ml-3">
@@ -256,19 +273,22 @@ export default function Login() {
                       "& input": {
                         backgroundColor: "transparent !important",
                       },
-                      "& input:-webkit-autofill, & input:-webkit-autofill:hover, & input:-webkit-autofill:focus, & input:-webkit-autofill:active": {
-                        WebkitBoxShadow:
-                          theme === "dark"
-                            ? "0 0 0 1000px #101214 inset !important"
-                            : "0 0 0 1000px #f4f4f5 inset !important",
-                        boxShadow:
-                          theme === "dark"
-                            ? "0 0 0 1000px #101214 inset !important"
-                            : "0 0 0 1000px #f4f4f5 inset !important",
-                        WebkitTextFillColor: theme === "dark" ? "#eeeeee !important" : "#09090b !important",
-                        caretColor: theme === "dark" ? "#eeeeee !important" : "#09090b !important",
-                        transition: "background-color 50000s ease-in-out 0s !important",
-                      },
+                      "& input:-webkit-autofill, & input:-webkit-autofill:hover, & input:-webkit-autofill:focus, & input:-webkit-autofill:active":
+                        {
+                          WebkitBoxShadow:
+                            theme === "dark"
+                              ? "0 0 0 1000px #101214 inset !important"
+                              : "0 0 0 1000px #f4f4f5 inset !important",
+                          boxShadow:
+                            theme === "dark"
+                              ? "0 0 0 1000px #101214 inset !important"
+                              : "0 0 0 1000px #f4f4f5 inset !important",
+                          WebkitTextFillColor:
+                            theme === "dark" ? "#eeeeee !important" : "#09090b !important",
+                          caretColor:
+                            theme === "dark" ? "#eeeeee !important" : "#09090b !important",
+                          transition: "background-color 50000s ease-in-out 0s !important",
+                        },
                     }}
                     startAdornment={
                       <InputAdornment position="start" className="!ml-3">
