@@ -165,6 +165,7 @@ class _MusicHomeScreenState extends State<MusicHomeScreen> {
           _trendingSongs = songs;
           _isLoadingTrending = false;
         });
+        _musicService.prefetchSongStream(songs.first.id);
       }
     } catch (_) {
       if (mounted) setState(() => _isLoadingTrending = false);

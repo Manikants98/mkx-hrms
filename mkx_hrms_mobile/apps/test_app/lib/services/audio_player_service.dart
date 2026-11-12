@@ -476,9 +476,16 @@ class AudioPlayerService extends ChangeNotifier {
       if (_audioPlayer.playing) {
         await _audioPlayer.stop();
       }
-      final url = await musicService
-          .getAudioStreamUrl(song.id)
-          .timeout(const Duration(seconds: 35));
+
+      final String? url;
+      if (song.audioStreamUrl != null && song.audioStreamUrl!.isNotEmpty) {
+        url = song.audioStreamUrl;
+      } else {
+        url = await musicService
+            .getAudioStreamUrl(song.id)
+            .timeout(const Duration(seconds: 20));
+      }
+
       if (url == null || url.isEmpty) {
         throw Exception('No stream URL extracted');
       }
@@ -492,12 +499,13 @@ class AudioPlayerService extends ChangeNotifier {
           'Referer': 'https://www.youtube.com/',
         },
       );
+      _audioPlayer.play();
       await _audioPlayer.setAudioSource(audioSource);
-      await _audioPlayer.play();
       _isLoading = false;
       _errorMessage = null;
       notifyListeners();
       _syncNotification();
+      _preloadNextSongs();
     } catch (e) {
       song.audioStreamUrl = null;
       debugPrint('[AudioPlayer] Native audio failed ($e)');
@@ -506,6 +514,20 @@ class AudioPlayerService extends ChangeNotifier {
           'Unable to stream this track. Please select another song.';
       notifyListeners();
       _syncNotification();
+    }
+  }
+
+  /// Pre-fetches stream URLs for upcoming tracks in background for instant playback.
+  void _preloadNextSongs() {
+    if (_queue.isEmpty || _currentIndex < 0) return;
+    final nextIndex = (_currentIndex + 1) % _queue.length;
+    final nextSong = _queue[nextIndex];
+    if (nextSong.audioStreamUrl == null || nextSong.audioStreamUrl!.isEmpty) {
+      musicService.getAudioStreamUrl(nextSong.id).then((url) {
+        if (url != null && url.isNotEmpty) {
+          nextSong.audioStreamUrl = url;
+        }
+      }).catchError((_) {});
     }
   }
 

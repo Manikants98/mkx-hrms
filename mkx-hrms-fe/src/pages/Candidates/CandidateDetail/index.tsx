@@ -184,14 +184,16 @@ export default function CandidateDetail(): React.ReactElement {
                 </h3>
 
                 <div className="flex flex-col gap-3">
-                  <h4 className="font-semibold text-foreground">{candidate.job_posting.title}</h4>
+                  <h4 className="font-semibold text-foreground">
+                    {String(candidate.job_posting.title)}
+                  </h4>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
                     <div className="flex flex-col gap-1.5">
                       <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                         Location
                       </span>
                       <span className="text-sm text-foreground">
-                        {candidate.job_posting.location}
+                        {String(candidate.job_posting.location)}
                       </span>
                     </div>
                     <div className="flex flex-col gap-1.5">
@@ -199,7 +201,7 @@ export default function CandidateDetail(): React.ReactElement {
                         Type
                       </span>
                       <span className="text-sm text-foreground">
-                        {candidate.job_posting.employment_type}
+                        {String(candidate.job_posting.employment_type)}
                       </span>
                     </div>
                   </div>

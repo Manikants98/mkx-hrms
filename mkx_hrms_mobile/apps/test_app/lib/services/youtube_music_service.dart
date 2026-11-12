@@ -297,32 +297,63 @@ class YouTubeMusicService {
     }
   }
 
-  /// Extracts direct audio stream URL for a given YouTube video ID using YoutubeExplode.
-  /// Prioritizes progressive muxed MP4 streams because YouTube permits open-ended byte
-  /// range requests (Range: bytes=0-) returning HTTP 206 Partial Content, permanently
-  /// bypassing the 403 Forbidden errors that occur with standalone adaptive audio streams.
+  /// In-memory cache for fast stream URL lookup (5-hour validity).
+  final Map<String, ({String url, DateTime cachedAt})> _audioStreamCache = {};
+
+  /// Selects optimal stream URL prioritizing progressive muxed MP4 followed by high-bitrate AAC.
+  String? _selectBestStreamUrl(StreamManifest manifest) {
+    if (manifest.muxed.isNotEmpty) {
+      return manifest.muxed.sortByBitrate().first.url.toString();
+    }
+    final aacStreams = manifest.audioOnly
+        .where((s) => s.container.name.toLowerCase() == 'mp4')
+        .toList();
+    if (aacStreams.isNotEmpty) {
+      return aacStreams.withHighestBitrate().url.toString();
+    }
+    if (manifest.audioOnly.isNotEmpty) {
+      return manifest.audioOnly.withHighestBitrate().url.toString();
+    }
+    return null;
+  }
+
+  /// Extracts direct audio stream URL with multi-tiered caching and fast-path execution.
   Future<String?> getAudioStreamUrl(String videoId) async {
-    /// 1. Primary: Default YouTube client prioritizing progressive muxed MP4 streams
+    final cached = _audioStreamCache[videoId];
+    if (cached != null &&
+        DateTime.now().difference(cached.cachedAt).inHours < 5) {
+      return cached.url;
+    }
+
     try {
       final manifest = await _ytExplode.videos.streamsClient
-          .getManifest(videoId)
-          .timeout(const Duration(seconds: 25));
+          .getManifest(
+            videoId,
+            requireWatchPage: false,
+          )
+          .timeout(const Duration(seconds: 4));
 
-      if (manifest.muxed.isNotEmpty) {
-        return manifest.muxed.sortByBitrate().first.url.toString();
-      }
-      final aacStreams = manifest.audioOnly
-          .where((s) => s.container.name.toLowerCase() == 'mp4')
-          .toList();
-      if (aacStreams.isNotEmpty) {
-        return aacStreams.withHighestBitrate().url.toString();
-      }
-      if (manifest.audioOnly.isNotEmpty) {
-        return manifest.audioOnly.withHighestBitrate().url.toString();
+      final streamUrl = _selectBestStreamUrl(manifest);
+      if (streamUrl != null) {
+        _audioStreamCache[videoId] =
+            (url: streamUrl, cachedAt: DateTime.now());
+        return streamUrl;
       }
     } catch (_) {}
 
-    /// 2. Fallback: Android client with high reliability
+    try {
+      final manifest = await _ytExplode.videos.streamsClient
+          .getManifest(videoId)
+          .timeout(const Duration(seconds: 15));
+
+      final streamUrl = _selectBestStreamUrl(manifest);
+      if (streamUrl != null) {
+        _audioStreamCache[videoId] =
+            (url: streamUrl, cachedAt: DateTime.now());
+        return streamUrl;
+      }
+    } catch (_) {}
+
     try {
       final manifest = await _ytExplode.videos.streamsClient
           .getManifest(
@@ -331,23 +362,23 @@ class YouTubeMusicService {
               YoutubeApiClient.android,
             ],
           )
-          .timeout(const Duration(seconds: 20));
+          .timeout(const Duration(seconds: 15));
 
-      if (manifest.muxed.isNotEmpty) {
-        return manifest.muxed.sortByBitrate().first.url.toString();
-      }
-      final aacStreams = manifest.audioOnly
-          .where((s) => s.container.name.toLowerCase() == 'mp4')
-          .toList();
-      if (aacStreams.isNotEmpty) {
-        return aacStreams.withHighestBitrate().url.toString();
-      }
-      if (manifest.audioOnly.isNotEmpty) {
-        return manifest.audioOnly.withHighestBitrate().url.toString();
+      final streamUrl = _selectBestStreamUrl(manifest);
+      if (streamUrl != null) {
+        _audioStreamCache[videoId] =
+            (url: streamUrl, cachedAt: DateTime.now());
+        return streamUrl;
       }
     } catch (_) {}
 
     return null;
+  }
+
+  /// Warms up stream URL cache in background for instant playback.
+  void prefetchSongStream(String videoId) {
+    if (_audioStreamCache.containsKey(videoId)) return;
+    getAudioStreamUrl(videoId).catchError((_) => null);
   }
 
   /// Getter for the underlying YoutubeExplode instance.
