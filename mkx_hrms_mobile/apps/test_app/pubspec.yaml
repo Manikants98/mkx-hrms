@@ -40,6 +40,7 @@ dependencies:
   cached_network_image: ^3.4.1
   youtube_player_iframe: ^5.1.2
   liquid_glass_widgets: ^1.13.0
+  audio_service: ^0.18.19
 
 dev_dependencies:
   flutter_test:

@@ -1,13 +1,34 @@
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 import 'screens/music_home_screen.dart';
+import 'services/music_audio_handler.dart';
+
+/// Global reference to the system audio background handler.
+late final MusicAudioHandler appAudioHandler;
 
 /// Entry point of the Apple Music iOS 26 application.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  appAudioHandler = await AudioService.init(
+    builder: () => MusicAudioHandler(),
+    config: const AudioServiceConfig(
+      androidNotificationChannelId: 'com.example.test_app.channel.audio_v2',
+      androidNotificationChannelName: 'MKX Music Playback',
+      androidNotificationOngoing: false,
+      androidStopForegroundOnPause: false,
+      androidNotificationClickStartsActivity: true,
+      androidResumeOnClick: true,
+      androidNotificationIcon: 'mipmap/ic_launcher',
+      notificationColor: Color(0xFFFA2D48),
+      preloadArtwork: true,
+      artDownscaleWidth: 512,
+      artDownscaleHeight: 512,
+    ),
+  );
   await LiquidGlassWidgets.initialize(enablePerformanceMonitor: false);
 
   SystemChrome.setSystemUIOverlayStyle(

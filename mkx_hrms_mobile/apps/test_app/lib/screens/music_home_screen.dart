@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 import '../constants/music_constants.dart';
+import '../main.dart';
 import '../models/song_model.dart';
 import '../services/audio_player_service.dart';
 import '../services/youtube_music_service.dart';
@@ -80,7 +81,10 @@ class _MusicHomeScreenState extends State<MusicHomeScreen> {
   void initState() {
     super.initState();
     _trendingSongs = List<SongModel>.from(kInitialCuratedSongs);
-    _playerService = AudioPlayerService(musicService: _musicService);
+    _playerService = AudioPlayerService(
+      musicService: _musicService,
+      audioHandler: appAudioHandler,
+    );
     _scrollController.addListener(_onScroll);
     _radioScrollController.addListener(_onScroll);
     _libraryScrollController.addListener(_onScroll);

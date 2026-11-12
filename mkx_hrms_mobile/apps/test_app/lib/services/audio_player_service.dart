@@ -3,11 +3,13 @@ library;
 
 import 'dart:async';
 
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart' as ja;
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 import '../models/song_model.dart';
+import 'music_audio_handler.dart';
 import 'youtube_music_service.dart';
 
 /// Repeat mode playback state matching Apple Music.
@@ -69,8 +71,14 @@ class AudioPlayerService extends ChangeNotifier {
   /// Pinned songs list containing full SongModel instances.
   final List<SongModel> _pinnedSongsList = [];
 
-  /// Constructor initializing native audio player and iframe fallback.
-  AudioPlayerService({required this.musicService}) {
+  /// Background audio handler managing system notifications and lockscreen.
+  final MusicAudioHandler? audioHandler;
+
+  /// Constructor initializing native audio player, iframe fallback, and background audio handler.
+  AudioPlayerService({
+    required this.musicService,
+    this.audioHandler,
+  }) {
     _audioPlayer = ja.AudioPlayer(
       userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
       useProxyForRequestHeaders: false,
@@ -86,8 +94,62 @@ class AudioPlayerService extends ChangeNotifier {
       ),
     );
 
+    _initAudioHandlerCallbacks();
     _initNativeListeners();
     _initIframeListeners();
+  }
+
+  /// Connects audio handler notification actions to player controls.
+  void _initAudioHandlerCallbacks() {
+    if (audioHandler == null) return;
+    audioHandler!.onPlay = play;
+    audioHandler!.onPause = pause;
+    audioHandler!.onSkipToNext = playNext;
+    audioHandler!.onSkipToPrevious = playPrevious;
+    audioHandler!.onToggleRepeat = () async {
+      toggleRepeat();
+    };
+    audioHandler!.onSeek = seek;
+    audioHandler!.onStop = () async {
+      await pause();
+    };
+  }
+
+  /// Maps native player state to AudioProcessingState for the notification.
+  AudioProcessingState _getAudioProcessingState() {
+    if (_isLoading) return AudioProcessingState.loading;
+    if (_errorMessage != null) return AudioProcessingState.error;
+    switch (_audioPlayer.playerState.processingState) {
+      case ja.ProcessingState.idle:
+        return AudioProcessingState.idle;
+      case ja.ProcessingState.loading:
+        return AudioProcessingState.loading;
+      case ja.ProcessingState.buffering:
+        return AudioProcessingState.buffering;
+      case ja.ProcessingState.ready:
+        return AudioProcessingState.ready;
+      case ja.ProcessingState.completed:
+        return AudioProcessingState.completed;
+    }
+  }
+
+  /// Synchronizes current song and playback status with the system notification.
+  void _syncNotification() {
+    if (audioHandler == null || _currentSong == null) return;
+    audioHandler!.updatePlaybackState(
+      isPlaying: isPlaying,
+      processingState: _getAudioProcessingState(),
+      position: _usingIframe ? Duration.zero : _audioPlayer.position,
+      bufferedPosition:
+          _usingIframe ? Duration.zero : _audioPlayer.bufferedPosition,
+      speed: _audioPlayer.speed,
+      queueIndex: _currentIndex >= 0 ? _currentIndex : 0,
+      repeatMode: _repeatMode == MusicRepeatMode.one
+          ? AudioServiceRepeatMode.one
+          : (_repeatMode == MusicRepeatMode.all
+              ? AudioServiceRepeatMode.all
+              : AudioServiceRepeatMode.none),
+    );
   }
 
   /// Getter for YouTube player controller.
@@ -192,6 +254,7 @@ class AudioPlayerService extends ChangeNotifier {
         _audioPlayer.setLoopMode(ja.LoopMode.off);
         break;
     }
+    _syncNotification();
     notifyListeners();
   }
 
@@ -304,13 +367,28 @@ class AudioPlayerService extends ChangeNotifier {
         } else {
           notifyListeners();
         }
+        _syncNotification();
       },
       onError: (Object err) {
         _isLoading = false;
         _errorMessage = 'Playback error: $err';
         notifyListeners();
+        _syncNotification();
       },
     );
+
+    _audioPlayer.durationStream.listen((duration) {
+      if (duration != null && _currentSong != null) {
+        audioHandler?.setTrackMetadata(
+          id: _currentSong!.id,
+          title: _currentSong!.title,
+          artist: _currentSong!.artist,
+          album: 'MKX Music',
+          artUri: _currentSong!.thumbnailUrl,
+          duration: duration,
+        );
+      }
+    });
 
     _audioPlayer.playbackEventStream.listen(
       (_) {},
@@ -357,6 +435,17 @@ class AudioPlayerService extends ChangeNotifier {
         _queue.insert(0, song);
         _currentIndex = 0;
       }
+    } else if (_queue.isEmpty) {
+      _queue = [song];
+      _currentIndex = 0;
+    } else {
+      final existingIdx = _queue.indexWhere((s) => s.id == song.id);
+      if (existingIdx != -1) {
+        _currentIndex = existingIdx;
+      } else {
+        _queue.add(song);
+        _currentIndex = _queue.length - 1;
+      }
     }
 
     _currentSong = song;
@@ -365,6 +454,16 @@ class AudioPlayerService extends ChangeNotifier {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
+
+    audioHandler?.setTrackMetadata(
+      id: song.id,
+      title: song.title,
+      artist: song.artist,
+      album: 'MKX Music',
+      artUri: song.thumbnailUrl,
+      duration: null,
+    );
+    _syncNotification();
 
     debugPrint('[AudioPlayer] playSong requested: ${song.title} (${song.id})');
 
@@ -383,18 +482,20 @@ class AudioPlayerService extends ChangeNotifier {
       }
       song.audioStreamUrl = url;
       _usingIframe = false;
-      await _audioPlayer.setUrl(
-        url,
+      final audioSource = ja.AudioSource.uri(
+        Uri.parse(url),
         headers: const {
           'User-Agent':
               'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
           'Referer': 'https://www.youtube.com/',
         },
       );
+      await _audioPlayer.setAudioSource(audioSource);
       await _audioPlayer.play();
       _isLoading = false;
       _errorMessage = null;
       notifyListeners();
+      _syncNotification();
     } catch (e) {
       song.audioStreamUrl = null;
       debugPrint('[AudioPlayer] Native audio failed ($e)');
@@ -402,6 +503,7 @@ class AudioPlayerService extends ChangeNotifier {
       _errorMessage =
           'Unable to stream this track. Please select another song.';
       notifyListeners();
+      _syncNotification();
     }
   }
 
@@ -412,6 +514,7 @@ class AudioPlayerService extends ChangeNotifier {
     } else {
       await _audioPlayer.play();
     }
+    _syncNotification();
     notifyListeners();
   }
 
@@ -422,6 +525,7 @@ class AudioPlayerService extends ChangeNotifier {
     } else {
       await _audioPlayer.pause();
     }
+    _syncNotification();
     notifyListeners();
   }
 
@@ -444,39 +548,61 @@ class AudioPlayerService extends ChangeNotifier {
     } else {
       await _audioPlayer.seek(position);
     }
+    _syncNotification();
   }
 
   /// Plays the next song in the queue.
   Future<void> playNext() async {
-    if (_queue.isEmpty) return;
+    if (_queue.isEmpty) {
+      if (_currentSong != null) {
+        _queue = [_currentSong!];
+        _currentIndex = 0;
+      } else {
+        return;
+      }
+    }
     if (_isShuffle && _queue.length > 1) {
       final nextIdx =
           (_currentIndex + 1 + (DateTime.now().millisecond % (_queue.length - 1))) %
               _queue.length;
       _currentIndex = nextIdx;
       await playSong(_queue[_currentIndex]);
-    } else {
+    } else if (_queue.length > 1) {
       if (_currentIndex >= _queue.length - 1) {
-        if (_repeatMode == MusicRepeatMode.all) {
-          _currentIndex = 0;
-          await playSong(_queue[0]);
-        }
-        return;
+        _currentIndex = 0;
+      } else {
+        _currentIndex++;
       }
-      _currentIndex++;
       await playSong(_queue[_currentIndex]);
+    } else {
+      await seek(Duration.zero);
+      await play();
     }
   }
 
   /// Plays the previous song in the queue.
   Future<void> playPrevious() async {
-    if (_queue.isEmpty) return;
+    if (_queue.isEmpty) {
+      if (_currentSong != null) {
+        _queue = [_currentSong!];
+        _currentIndex = 0;
+      } else {
+        return;
+      }
+    }
+    if (_audioPlayer.position > const Duration(seconds: 3)) {
+      await seek(Duration.zero);
+      return;
+    }
     if (_currentIndex > 0) {
       _currentIndex--;
       await playSong(_queue[_currentIndex]);
-    } else if (_repeatMode == MusicRepeatMode.all) {
+    } else if (_queue.length > 1) {
       _currentIndex = _queue.length - 1;
       await playSong(_queue[_currentIndex]);
+    } else {
+      await seek(Duration.zero);
+      await play();
     }
   }
 
