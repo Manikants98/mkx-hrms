@@ -44,7 +44,7 @@ export const ApplyJobModal: React.FC<ApplyJobModalProps> = ({ open, onClose, job
         department: job.department_rel?.name || "General",
         stage: "Screening",
         status: "Active",
-        rating: "0",
+        rating: 0,
         source: "Website",
         applied_date: new Date().toISOString(),
       })

@@ -15,7 +15,7 @@ export interface CandidateRecord {
   department: string;
   stage: "Screening" | "Interviewing" | "Offered" | "Hired";
   experience: string;
-  rating: number;
+  rating?: number | null;
   status: "Active" | "In Review" | "Offered" | "Rejected" | "Onboarded";
   applied_date: string;
   avatar?: string | null;
@@ -25,6 +25,7 @@ export interface CandidateRecord {
   employee_id?: number | null;
   interviews?: unknown[];
   job_posting?: Record<string, unknown> | null;
+  job_posting_id?: number | string | null;
 }
 
 /**
