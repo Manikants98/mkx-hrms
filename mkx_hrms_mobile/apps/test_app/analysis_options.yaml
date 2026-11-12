@@ -12,6 +12,7 @@ include: package:flutter_lints/flutter.yaml
 analyzer:
   errors:
     experimental_member_use: ignore
+    slash_for_doc_comments: ignore
   exclude:
     - build/**
     - android/**

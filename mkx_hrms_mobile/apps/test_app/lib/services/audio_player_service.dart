@@ -117,27 +117,29 @@ class AudioPlayerService extends ChangeNotifier {
 
   /// Maps native player state to AudioProcessingState for the notification.
   AudioProcessingState _getAudioProcessingState() {
-    if (_isLoading) return AudioProcessingState.loading;
     if (_errorMessage != null) return AudioProcessingState.error;
-    switch (_audioPlayer.playerState.processingState) {
-      case ja.ProcessingState.idle:
-        return AudioProcessingState.idle;
-      case ja.ProcessingState.loading:
-        return AudioProcessingState.loading;
-      case ja.ProcessingState.buffering:
-        return AudioProcessingState.buffering;
-      case ja.ProcessingState.ready:
-        return AudioProcessingState.ready;
-      case ja.ProcessingState.completed:
-        return AudioProcessingState.completed;
+    if (_currentSong != null) {
+      if (_isLoading) return AudioProcessingState.loading;
+      switch (_audioPlayer.playerState.processingState) {
+        case ja.ProcessingState.idle:
+        case ja.ProcessingState.loading:
+          return AudioProcessingState.loading;
+        case ja.ProcessingState.buffering:
+          return AudioProcessingState.buffering;
+        case ja.ProcessingState.ready:
+          return AudioProcessingState.ready;
+        case ja.ProcessingState.completed:
+          return AudioProcessingState.completed;
+      }
     }
+    return AudioProcessingState.idle;
   }
 
   /// Synchronizes current song and playback status with the system notification.
   void _syncNotification() {
     if (audioHandler == null || _currentSong == null) return;
     audioHandler!.updatePlaybackState(
-      isPlaying: isPlaying,
+      isPlaying: _isLoading ? true : isPlaying,
       processingState: _getAudioProcessingState(),
       position: _usingIframe ? Duration.zero : _audioPlayer.position,
       bufferedPosition:
